@@ -1,0 +1,21 @@
+from distutils.core import setup, Extension
+from os.path import realpath
+
+libdir = ['@abs_top_builddir@/src/.libs']
+incdir = ['@abs_top_builddir@/src']
+libraries = '@CPPFLAGS@'
+tokens = libraries.split()
+for s in tokens:
+    if s[0:2] == '-I':
+        incdir.append(s[2:])
+
+balmodule = Extension('bal',
+                      library_dirs = libdir,
+                      include_dirs = incdir,
+                      libraries = ['bal'],
+                      sources = ['pybal.cpp'])
+
+setup(name = 'PyBal',\
+          version = '0.1',\
+          ext_modules = [balmodule])
+
