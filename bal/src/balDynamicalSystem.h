@@ -43,6 +43,9 @@
 #include <sundials/sundials_types.h>
 #include <nvector/nvector_serial.h>
 #include <sundials/sundials_dense.h>
+#ifdef CVODE26
+#include <sundials/sundials_direct.h>
+#endif
 #include <cvode/cvode.h>
 
 #include "balCommon.h"
@@ -86,16 +89,19 @@ class balDynamicalSystem : public balObject {
 		virtual void ManageEvents(realtype t, N_Vector X, int * events, int * constraints = NULL) {}
 
 		int GetNumberOfEvents() const { return nev; }
-		int GetDimension() const { return n; }
+		int GetDimension() const;
 		int GetNumberOfParameters() const { return p; }
 		void SetParameters(balParameters *) throw(balException);
 		balParameters * GetParameters() const;
+
+		void Extend(bool extend);
+		bool IsExtended() const { return ext; }
 
 	protected:
 		balDynamicalSystem();
 		balDynamicalSystem(const balDynamicalSystem& system);
 		virtual ~balDynamicalSystem();
-		void SetDimension(int n_) { if(n_ > 0) n = n_; }
+		void SetDimension(int n_);
 		void SetNumberOfParameters(int p_) { if(p_ >= 0) p = p_; }
 		void SetNumberOfEvents(int nev_) { if(nev_ >= 0) nev = nev_; }
 
@@ -103,6 +109,16 @@ class balDynamicalSystem : public balObject {
 		int n;
 		int p;
 		int nev;
+
+		int nExt;
+		bool ext;
+
+#ifdef CVODE25
+		DenseMat jac;
+#endif
+#ifdef CVODE26
+		DlsMat jac;
+#endif
 		balParameters * pars;
 };
 

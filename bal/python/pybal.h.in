@@ -91,7 +91,7 @@ static PyObject * pyBalSolution_getattro(pyBalSolution *self, PyObject *name);
 
 /******************** Module stuff ********************/
 
-#define BALLIB "libbal.0.0.0.dylib"
+#define BALLIB "libbal.@LIB_TAG@.dylib"
 #define BALLIBEXT "libbalext.so"
 extern void * ballib;
 extern void * ballibext;

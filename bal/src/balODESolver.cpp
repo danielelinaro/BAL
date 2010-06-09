@@ -419,8 +419,8 @@ bool balODESolver::AllocateSolutionBuffer() {
 		int lrows;
 		if(delete_buffer) {
 			delete buffer;
+			delete_buffer = false;
 		}
-		delete_buffer = false;
 		switch(mode) {
 			case balTRAJ:
 				lrows = (int) ceil ((tfinal - ttran) / tstep);
@@ -554,7 +554,7 @@ bool balODESolver::SolveTrajectory() {
   /************* TRAJECTORY *****************/
 	if(!eq && !err) {
 		tout += tstep;
-		while (t < tfinal) {
+		while (tout < tfinal+tstep) {
 		  flag = CVode (cvode_mem, tout, x, &t, CV_NORMAL);
 			StoreRecordInBuffer(balSTEP);
 

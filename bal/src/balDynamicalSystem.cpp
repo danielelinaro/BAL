@@ -26,7 +26,10 @@ balDynamicalSystem::balDynamicalSystem() {
 	n = 0;
 	p = 0;
 	nev = 0;
+	ext = false;
+	nExt = 0;
 	pars = NULL;
+	jac = NULL;
 }
 
 balDynamicalSystem::balDynamicalSystem(const balDynamicalSystem& system) {
@@ -34,9 +37,25 @@ balDynamicalSystem::balDynamicalSystem(const balDynamicalSystem& system) {
 	nev = system.GetNumberOfEvents();
 	pars = system.GetParameters(); // non rialloco spazio parametri
 	p = (system.GetParameters())->GetNumber();
+	nExt = system.nExt;
+	ext = system.ext;
+#ifdef CVODE25
+	jac = newDenseMat(n,n);
+#endif
+#ifdef CVODE26
+	jac = NewDenseMat(n,n);
+#endif
 }
 
-balDynamicalSystem::~balDynamicalSystem() {}
+balDynamicalSystem::~balDynamicalSystem() {
+	if(jac != NULL)
+#ifdef CVODE25
+		destroyMat(jac);
+#endif
+#ifdef CVODE26
+		DestroyMat(jac);
+#endif
+}
 
 int balDynamicalSystem::RHS (realtype t, N_Vector x, N_Vector xdot, void * data) {
 	return ! CV_SUCCESS;
@@ -44,7 +63,54 @@ int balDynamicalSystem::RHS (realtype t, N_Vector x, N_Vector xdot, void * data)
 
 int balDynamicalSystem::RHSWrapper (realtype t, N_Vector x, N_Vector xdot, void * sys) {
 	balDynamicalSystem * bds = (balDynamicalSystem *) sys;
-	return bds->RHS(t,x,xdot,(void *)bds->GetParameters());
+	if(! bds->IsExtended()) {
+		return bds->RHS(t,x,xdot,(void *)bds->GetParameters());
+	}
+
+	// the first n components of the vector field
+	bds->RHS(t,x,xdot,(void *)bds->GetParameters());
+
+	// the Jacobian matrix
+#ifdef CVODE25
+	balDynamicalSystem::JacobianWrapper(bds->n,bds->jac,t,x,NULL,(void *)bds,NULL,NULL,NULL);
+#endif
+#ifdef CVODE26
+	balDynamicalSystem::JacobianWrapper(bds->n,t,x,NULL,bds->jac,(void *)bds,NULL,NULL,NULL);
+#endif
+	/*
+	for(int i=0; i<bds->n; i++) {
+		for(int j=0; j<bds->n; j++)
+			printf("%f ", IJth(bds->jac,i,j));
+		printf("\n");
+	}
+	*/
+
+	realtype Y[bds->n][bds->n], F[bds->n][bds->n];
+	int i, j, k;
+
+	// extend
+	for(i=0, k=0; i<bds->n; i++) {
+		for(j=0; j<bds->n; j++, k++) {
+			Y[j][i] = Ith(x,3+k);
+		}
+	}
+	// multiply the matrices
+	for(i=0; i<bds->n; i++) {
+		for(j=0; j<bds->n; j++) {
+			F[i][j] = 0.;
+			for(k=0; k<bds->n; k++) {
+				F[i][j] += IJth(bds->jac,i,k)*Y[k][j];
+			}
+		}
+	}
+	// the last n*n components of the vector field
+	for(i=0, k=0; i<bds->n; i++) {
+		for(j=0; j<bds->n; j++,k++) {
+			Ith(xdot,3+k) = F[j][i];
+		}
+	}
+
+	return CV_SUCCESS;
 }
 
 #ifdef CVODE25
@@ -95,4 +161,30 @@ void balDynamicalSystem::SetParameters (balParameters * bp) throw (balException)
 balParameters * balDynamicalSystem::GetParameters () const {
 	return pars;
 }
+
+void balDynamicalSystem::SetDimension(int n_) {
+	if(n_ <= 0)
+		return;
+	n = n_;
+	nExt = n*(n+1);
+#ifdef CVODE25
+	if(jac != NULL)
+		destroyMat(jac);
+	jac = newDenseMat(n,n);
+#endif
+#ifdef CVODE26
+	if(jac != NULL)
+		DestroyMat(jac);
+	jac = NewDenseMat(n,n);
+#endif
+}
+
+int balDynamicalSystem::GetDimension() const {
+	return (ext ? nExt : n);
+}
+
+void balDynamicalSystem::Extend(bool extend) {
+	ext = extend;
+}
+
 

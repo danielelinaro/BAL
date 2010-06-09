@@ -643,6 +643,7 @@ static int pyBalODESolver_setattro(pyBalODESolver *self, PyObject *name, PyObjec
 	Py_INCREF(name);
 	char *n = PyString_AsString(name);
 
+	//printf("pyBalODESolver_settatro %s\n", n);
 	if (strcmp(n, "system") == 0) {
 		Py_DECREF(self->dynsys);
 		Py_INCREF(value);
