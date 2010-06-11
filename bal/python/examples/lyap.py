@@ -34,6 +34,7 @@ def lyapunov(dynsys,pars,tstart,tend,tstep,ic):
     lp = zeros(n)
     x[0:n] = ic
     x[n:] = list(reshape(eye(n),[n**2,1]).flatten())
+    dynsys.extended = 1
     solver = ODESolver(dynsys,pars)
     solver.x0 = list(x)
     solver.dt = tstep/5
@@ -86,21 +87,24 @@ par = Parameters(sys.npar)
 # chaos
 #par.setpars([2.96,3,0.01,4])
 # limit cycle
-par.setpars([4,5,0.01,4])
+#par.setpars([4,5,0.01,4])
 # equilibrium
 #par.setpars([4,1,0.01,4])
 
 solver = ODESolver(sys,par)
 solver.dt = 0.01
 solver.ttran = 1000
-solver.tstop = 5000
-solver.mode = 'trajectory'
-solver.x0 = [0,1,0,1,0,0,0,1,0,0,0,1]
-solver.run()
-s = solver.solution()
-figure()
-plot(s.data['x'][12::12],s.data['x'][14::12])
-show()
+solver.tstop = 2000
+solver.mode = 'trajectory + events'
+solver.x0 = [0,0,0]
 
-lp = lyapunov(sys,par,0,5000,1,[0,1,0])
-print 'Lyapunov exponents = ', lp
+par.setpars([2.96,3,0.01,4])
+par.bifpar(1,[3.42,3.72,301])
+x0 = [0,1,0]
+for p in par:
+    # lyapunov exponents
+    lp = lyapunov(sys,par,0,1000,5,x0)
+    # number of turns
+    solver.run()
+    s = solver.solution()
+    print p, lp, solver.nturns

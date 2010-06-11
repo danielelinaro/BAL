@@ -36,6 +36,7 @@ static PyObject * pyBalDynamicalSystem_new(PyTypeObject *type, PyObject *args, P
 static int pyBalDynamicalSystem_init(pyBalDynamicalSystem *self, PyObject *args, PyObject *kwds);
 static void pyBalDynamicalSystem_dealloc(pyBalDynamicalSystem *self);
 static PyObject * pyBalDynamicalSystem_getattro(pyBalDynamicalSystem *self, PyObject *name);
+static int pyBalDynamicalSystem_setattro(pyBalDynamicalSystem *self, PyObject *name, PyObject *value);
 static PyObject * pyBalDynamicalSystem_name(pyBalDynamicalSystem *self);
 static PyObject * pyBalDynamicalSystem_create(PyObject *self, PyObject *args);
 

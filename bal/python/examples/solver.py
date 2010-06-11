@@ -13,6 +13,7 @@ solver.x0 = [0,0,0]
 solver.dt = 0.01
 solver.ttran = 500.0
 solver.tstop = 2000.0
+solver.mode = 'trajectory + events'
 
 for p in par:
     solver.run()
@@ -21,6 +22,6 @@ for p in par:
     plot(s.data['x'][5::3],s.data['x'][3::3],'k')
     xlabel('t (a.u.)')
     ylabel('x (a.u.)')
-    title('I = '+str(p[1])+' '+str(s.parameters[1]))
+    title('I = '+str(p[1])+' '+str(s.parameters[1])+' # turns = '+str(solver.nturns))
     axis('tight')
     show()

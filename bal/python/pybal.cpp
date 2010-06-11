@@ -27,22 +27,6 @@ static void pyBalDynamicalSystem_dealloc(pyBalDynamicalSystem *self) {
 	self->ob_type->tp_free((PyObject *) self);
 }
 
-static PyObject * pyBalDynamicalSystem_getattro(pyBalDynamicalSystem *self, PyObject *name) {
-	Py_INCREF(name);
-	char *n = PyString_AsString(name);
-	PyObject *result = NULL;
-	if (strcmp(n, "ndim") == 0)
-		result = Py_BuildValue("i",self->dynsys->GetDimension());
-	else if(strcmp(n, "nev") == 0)
-		result = Py_BuildValue("i",self->dynsys->GetNumberOfEvents());
-	else if(strcmp(n, "npar") == 0)
-		result = Py_BuildValue("i",self->dynsys->GetNumberOfParameters());
-	else
-		result = PyObject_GenericGetAttr((PyObject*)self, name);
-	Py_DECREF(name);
-	return result;
-}
-
 static PyObject * pyBalDynamicalSystem_name(pyBalDynamicalSystem *self) {
 	return Py_BuildValue("s",self->dynsys->GetClassName());
 }
@@ -99,6 +83,46 @@ static PyObject * pyBalDynamicalSystem_create(PyObject *self, PyObject *args) {
 	return Py_BuildValue("i",0);
 }
 
+static PyObject * pyBalDynamicalSystem_getattro(pyBalDynamicalSystem *self, PyObject *name) {
+	Py_INCREF(name);
+	char *n = PyString_AsString(name);
+	PyObject *result = NULL;
+	if (strcmp(n, "ndim") == 0)
+		result = Py_BuildValue("i",self->dynsys->GetDimension());
+	else if(strcmp(n, "nev") == 0)
+		result = Py_BuildValue("i",self->dynsys->GetNumberOfEvents());
+	else if(strcmp(n, "npar") == 0)
+		result = Py_BuildValue("i",self->dynsys->GetNumberOfParameters());
+	else if (strcmp(n, "extended") == 0)
+		result = Py_BuildValue("i",self->dynsys->IsExtended() ? 1 : 0);
+	else
+		result = PyObject_GenericGetAttr((PyObject*)self, name);
+	Py_DECREF(name);
+	return result;
+}
+
+static int pyBalDynamicalSystem_setattro(pyBalDynamicalSystem *self, PyObject *name, PyObject *value) {
+	int err = 0;
+	Py_INCREF(name);
+	char *n = PyString_AsString(name);
+	
+	if (strcmp(n, "extended") == 0) {
+		int extend;
+		if(PyArg_Parse(value,"i",&extend)) {
+			self->dynsys->Extend(extend);
+		}
+		else {
+			PyErr_SetString(PyExc_ValueError,"Wrong value.");
+			err = -1;
+		}
+	}
+	else {
+		err = PyObject_GenericSetAttr((PyObject*)self, name, value);
+	}
+	Py_DECREF(name);
+	return err;
+}
+
 static PyMethodDef pyBalDynamicalSystem_methods[] = {
 	{"name", (PyCFunction) pyBalDynamicalSystem_name, METH_NOARGS, "Return the name of the class"},
 	{"create", (PyCFunction) pyBalDynamicalSystem_create, METH_VARARGS, "Create a particular dynamical system"},
@@ -124,7 +148,7 @@ static PyTypeObject pyBalDynamicalSystemType = {
 	0,									/* tp_call */
 	0,									/* tp_str */
 	(getattrofunc)pyBalDynamicalSystem_getattro,	/* tp_getattro  */
-	0,									/* tp_setattro */
+	(setattrofunc)pyBalDynamicalSystem_setattro,	/* tp_setattro  */
 	0,									/* tp_as_buffer */
 	Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,	/* tp_flags */
 	"Dynamical System object",			/* tp_doc */
@@ -630,6 +654,9 @@ static PyObject * pyBalODESolver_getattro(pyBalODESolver *self, PyObject *name) 
 	}
 	else if(strcmp(n, "intersections") == 0) {
 		result = Py_BuildValue("i",self->solver->GetMaxNumberOfIntersections());
+	}
+	else if(strcmp(n, "nturns") == 0) {
+		result = Py_BuildValue("i",self->solver->GetNumberOfTurns());
 	}
 	else {
 		result = PyObject_GenericGetAttr((PyObject*)self, name);
