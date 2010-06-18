@@ -154,6 +154,12 @@ class balBifurcationDiagram : public balObject {
 		 */
 		bool SetNumberOfThreads(int _nthreads);
 
+		/**
+		 * Gets the number of parallel threads launched to compute the
+		 * bifurcation diagrams.
+		 */
+		int GetNumberOfThreads() const;
+
 		bool SaveClassificationData(const char *filename) const;
 		double** GetClassificationData() const;
 

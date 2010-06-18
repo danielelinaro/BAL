@@ -51,6 +51,10 @@ bool balBifurcationDiagram::SetNumberOfThreads(int _nthreads) {
 	return true;
 }
 
+int balBifurcationDiagram::GetNumberOfThreads() const {
+	return nthreads;
+}
+
 balBifurcationDiagram::~balBifurcationDiagram() {
 	if(destroy_logger)
 		logger->Destroy();
@@ -143,6 +147,7 @@ double** balBifurcationDiagram::GetClassificationData() const {
 		for(j=0; j<npar+1; j++)
 			data[i][j] = (*it)[j];
 	}
+	return data;
 }
 
 void balBifurcationDiagram::ComputeDiagram() {

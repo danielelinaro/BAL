@@ -1,13 +1,15 @@
 #!/usr/bin/env python
 
-###
+### FUNCTIONS - START ###
+
 def printHelp(scriptname):
     print('\nUsage: ' + scriptname + ' [options]\n')
     print('\twhere options are:\n');
     print('\t\t-f --conf-file: parse the specified configuration file.\n')
     print('\t\t-h --help: print this help message.\n')
     print('\nAuthor: Daniele Linaro -- daniele.linaro@unige.it\n')
-###
+
+#### FUNCTIONS - END ####
 
 from sys import argv
 from os.path import isfile
@@ -73,6 +75,7 @@ else:
 
 solver.run()
 s = solver.solution()
+saveH5file([s],'pll.h5')
 
 from pylab import figure, plot, xlabel, ylabel, title, show, axis
 

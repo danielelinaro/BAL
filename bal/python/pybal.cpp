@@ -909,6 +909,336 @@ static PyObject * pyBalSolution_getattro(pyBalSolution *self, PyObject *name) {
 	return result;
 }
 
+/******************** pyBalBifurcationDiagram ********************/
+
+
+static PyObject * pyBalBifurcationDiagram_new(PyTypeObject *type, PyObject *args, PyObject *kwds) {
+	pyBalBifurcationDiagram *self;
+	self = (pyBalBifurcationDiagram *) type->tp_alloc(type,0);
+	self->diagram = NULL;
+	self->params = NULL;
+	self->dynsys = NULL;
+	return (PyObject *) self;
+}
+
+static int pyBalBifurcationDiagram_init(pyBalBifurcationDiagram *self, PyObject *args, PyObject *kwds) {
+	static char *kwlist[] = {"system","parameters",NULL};
+	PyObject *ds = NULL;
+	PyObject *p = NULL;
+	
+	if (! PyArg_ParseTupleAndKeywords(args, kwds, "OO", kwlist, &ds, &p))
+		return NULL;
+	
+	self->params = (pyBalParameters *) p;
+	
+	self->dynsys = (pyBalDynamicalSystem *) ds;
+	if(self->params->bifparams->GetNumber() != self->dynsys->dynsys->GetNumberOfParameters()) {
+		self->params = NULL;
+		self->dynsys = NULL;
+		return NULL;
+	}
+	self->dynsys->dynsys->SetParameters(self->params->bifparams);
+	double *x0 = new double[self->dynsys->dynsys->GetDimension()];
+	for(int i=0; i<self->dynsys->dynsys->GetDimension(); i++)
+		x0[i] = 0.0;
+	
+	self->diagram = balBifurcationDiagram::Create();
+	self->diagram->SetDynamicalSystem(self->dynsys->dynsys);
+	self->diagram->GetODESolver()->SetIntegrationMode(balEVENTS);
+	self->diagram->GetODESolver()->HaltAtEquilibrium(true);
+	self->diagram->GetODESolver()->HaltAtCycle(false);
+	self->diagram->GetODESolver()->SetTransientDuration(1e3);
+	self->diagram->GetODESolver()->SetFinalTime(1e4);
+	self->diagram->GetODESolver()->SetMaxNumberOfIntersections(200);
+	self->diagram->GetODESolver()->SetX0(x0);
+	self->diagram->RestartFromX0(true);
+	self->diagram->SetNumberOfThreads(2);
+	
+	delete x0;
+	return 0;
+}
+
+static void pyBalBifurcationDiagram_dealloc(pyBalBifurcationDiagram *self) {
+	if(self->diagram != NULL)
+		self->diagram->Destroy();
+	self->ob_type->tp_free((PyObject *) self);
+}
+
+static PyObject * pyBalBifurcationDiagram_getattro(pyBalBifurcationDiagram *self, PyObject *name) {
+	Py_INCREF(name);
+	char *n = PyString_AsString(name);
+	PyObject *result = NULL;
+		
+	//printf("pyBalBifurcationDiagram_gettatro %s\n", n);
+	if (strcmp(n, "system") == 0) {
+		Py_INCREF(self->dynsys);
+		result = (PyObject *) self->dynsys;
+	}
+	else if (strcmp(n, "parameters") == 0) {
+		Py_INCREF(self->params);
+		result = (PyObject *) self->params;
+	}
+	else if(strcmp(n, "dt") == 0) {
+		result = Py_BuildValue("d",self->diagram->GetODESolver()->GetTimeStep());
+	}
+	else if(strcmp(n, "tstop") == 0) {
+		result = Py_BuildValue("d",self->diagram->GetODESolver()->GetFinalTime());
+	}
+	else if(strcmp(n, "ttran") == 0) {
+		result = Py_BuildValue("d",self->diagram->GetODESolver()->GetTransientDuration());
+	}
+	else if(strcmp(n, "x0") == 0) {
+		int i, ndim = self->dynsys->dynsys->GetDimension();
+		N_Vector x0 = self->diagram->GetODESolver()->GetX0();
+		result = PyList_New(ndim);
+		for(i=0; i<ndim; i++)
+			PyList_SET_ITEM(result,i,Py_BuildValue("d",NV_Ith_S(x0,i)));
+	}
+	else if(strcmp(n, "mode") == 0) {
+		switch(self->diagram->GetODESolver()->GetIntegrationMode()) {
+			case balTRAJ:
+				result = Py_BuildValue("s","trajectory");
+				break;
+			case balEVENTS:
+				result = Py_BuildValue("s","events");
+				break;
+			case balBOTH:
+				result = Py_BuildValue("s","trajectory + events");
+				break;
+		}
+	}
+	else if(strcmp(n, "intersections") == 0) {
+		result = Py_BuildValue("i",self->diagram->GetODESolver()->GetMaxNumberOfIntersections());
+	}
+	else if(strcmp(n, "outfile") == 0) {
+		result = Py_BuildValue("s",self->diagram->GetFilename());
+	}
+	else if(strcmp(n, "resetX0") == 0) {
+		result = (self->diagram->RestartsFromX0() ? Py_True : Py_False);
+	}
+	else if(strcmp(n, "equilbreak") == 0) {
+		result = (self->diagram->GetODESolver()->HaltsAtEquilibrium() ? Py_True : Py_False);
+	}
+	else if(strcmp(n, "cyclebreak") == 0) {
+		result = (self->diagram->GetODESolver()->HaltsAtCycle() ? Py_True : Py_False);
+	}
+	else if(strcmp(n, "nthreads") == 0) {
+		result = Py_BuildValue("i",self->diagram->GetNumberOfThreads());
+	}
+	else {
+		result = PyObject_GenericGetAttr((PyObject*)self, name);
+	}
+	Py_DECREF(name);
+	return result;
+}
+
+static int pyBalBifurcationDiagram_setattro(pyBalBifurcationDiagram *self, PyObject *name, PyObject *value) {
+	int err = 0;
+	Py_INCREF(name);
+	char *n = PyString_AsString(name);
+	
+	//printf("pyBalBifurcationDiagram_settatro %s\n", n);
+	if (strcmp(n, "system") == 0) {
+		Py_DECREF(self->dynsys);
+		Py_INCREF(value);
+		self->dynsys = (pyBalDynamicalSystem *) value;
+		self->diagram->SetDynamicalSystem(self->dynsys->dynsys);
+	}
+	else if (strcmp(n, "parameters") == 0) {
+		Py_DECREF(self->params);
+		Py_INCREF(value);
+		self->params = (pyBalParameters *) value;
+		self->dynsys->dynsys->SetParameters(self->params->bifparams);
+	}
+	else if(strcmp(n, "dt") == 0) {
+		double dt = PyFloat_AsDouble(value);
+		if(dt > 0)
+			self->diagram->GetODESolver()->SetTimeStep(dt);
+		else
+			err = -1;
+	}
+	else if(strcmp(n, "tstop") == 0) {
+		double tstop = PyFloat_AsDouble(value);
+		if(tstop > 0)
+			self->diagram->GetODESolver()->SetFinalTime(tstop);
+		else
+			err = -1;
+	}
+	else if(strcmp(n, "ttran") == 0) {
+		double ttran = PyFloat_AsDouble(value);
+		if(ttran > 0)
+			self->diagram->GetODESolver()->SetTransientDuration(ttran);
+		else
+			err = -1;
+	}
+	else if(strcmp(n, "x0") == 0) {
+		int i, ndim = self->dynsys->dynsys->GetDimension();
+		double *x0 = new double[ndim];
+		for(i=0; i<ndim; i++)
+			x0[i] = PyFloat_AsDouble(PyList_GET_ITEM(value,i));
+		self->diagram->GetODESolver()->SetX0(x0);
+		delete x0;
+	}
+	else if(strcmp(n, "mode") == 0) {
+		Py_INCREF(value);
+		char *v = PyString_AsString(value);
+		if(strcmp(v, "trajectory") == 0)
+			self->diagram->GetODESolver()->SetIntegrationMode(balTRAJ);
+		else if(strcmp(v, "events") == 0)
+			self->diagram->GetODESolver()->SetIntegrationMode(balEVENTS);
+		else if(strcmp(v, "trajectory + events") == 0 || strcmp(v, "both") == 0)
+			self->diagram->GetODESolver()->SetIntegrationMode(balBOTH);
+		else
+			err = -1;
+		Py_DECREF(value);
+	}	
+	else if(strcmp(n, "intersections") == 0) {
+		self->diagram->GetODESolver()->SetMaxNumberOfIntersections(PyInt_AsLong(value));
+	}
+	else if(strcmp(n, "outfile") == 0) {
+		Py_INCREF(value);
+		self->diagram->SetFilename(PyString_AsString(value));
+	}
+	else if(strcmp(n, "resetX0") == 0) {
+		if(PyBool_Check(value))
+			self->diagram->RestartFromX0(value == Py_False ? false : true);
+		else if(PyInt_Check(value))
+			self->diagram->RestartFromX0(PyInt_AsLong(value) == 0 ? false : true);
+		else if(PyString_Check(value)) {
+			Py_INCREF(value);
+			char *n = PyString_AsString(value);
+			if(strcmp(n,"yes") == 0)
+				self->diagram->RestartFromX0(true);
+			else if(strcmp(n,"no") == 0)
+				self->diagram->RestartFromX0(false);
+			else
+				err = -1;
+			Py_DECREF(value);
+		}
+		else
+			err = -1;
+	}
+	else if(strcmp(n, "nthreads") == 0) {
+		self->diagram->SetNumberOfThreads(PyInt_AsLong(value));
+	}
+	else if(strcmp(n, "equilbreak") == 0) {
+		if(PyBool_Check(value))
+			self->diagram->GetODESolver()->HaltAtEquilibrium(value == Py_False ? false : true);
+		else if(PyInt_Check(value))
+			self->diagram->GetODESolver()->HaltAtEquilibrium(PyInt_AsLong(value) == 0 ? false : true);
+		else
+			err = -1;
+	}
+	else if(strcmp(n, "cyclebreak") == 0) {
+		if(PyBool_Check(value))
+			self->diagram->GetODESolver()->HaltAtCycle(value == Py_False ? false : true);
+		else if(PyInt_Check(value))
+			self->diagram->GetODESolver()->HaltAtCycle(PyInt_AsLong(value) == 0 ? false : true);
+		else
+			err = -1;
+	}
+	else {
+		err = -1;
+	}
+	Py_DECREF(name);
+	return 0;
+}
+
+static PyObject * pyBalBifurcationDiagram_compute(pyBalBifurcationDiagram *self) {
+	self->diagram->ComputeDiagram();
+	return Py_BuildValue("i",0);
+}
+
+static PyObject * pyBalBifurcationDiagram_classification(pyBalBifurcationDiagram *self, PyObject *args, PyObject *kwds) {
+	static char *kwlist[] = {"filename",NULL};
+	char *filename = NULL;
+	
+	if (! PyArg_ParseTupleAndKeywords(args, kwds, "|s", kwlist, &filename))
+		return NULL;
+
+	PyObject *result;
+
+	if(filename != NULL) {
+		result = (self->diagram->SaveClassificationData(filename) ? Py_True : Py_False);
+	}
+	else {
+		double **data = self->diagram->GetClassificationData();
+	
+		if(data == NULL) {
+			result = Py_None;
+		}
+		else {
+			int nrows, ncols, i, j;
+			PyObject *row;
+			nrows = self->params->bifparams->GetTotalNumberOfTuples();
+			ncols = self->params->bifparams->GetNumber() + 1;
+		
+			result = PyList_New((Py_ssize_t) nrows);
+			for(i=0; i<nrows; i++) {
+				row = PyList_New((Py_ssize_t) ncols);
+				for(j=0; j<ncols-1; j++)
+					PyList_SET_ITEM(row,j,Py_BuildValue("d",data[i][j]));
+				PyList_SET_ITEM(row,ncols-1,Py_BuildValue("i",(int)data[i][ncols-1]));
+				PyList_SET_ITEM(result,i,row);
+			}
+			for(i=0; i<nrows; i++)
+				delete data[i];
+			delete data;
+		}
+	}
+	return result;
+}
+
+static PyMethodDef pyBalBifurcationDiagram_methods[] = {
+	{"run", (PyCFunction) pyBalBifurcationDiagram_compute, METH_NOARGS, "Compute the bifurcation diagram"},
+	{"classification", (PyCFunction) pyBalBifurcationDiagram_classification, 
+		METH_VARARGS | METH_KEYWORDS, "Return or save to file the bifurcation diagram"},
+	{NULL}	/* Sentinel */
+};
+
+static PyTypeObject pyBalBifurcationDiagramType = {
+	PyObject_HEAD_INIT(NULL)
+	0,									/* ob_size */
+	"bal.BifurcationDiagram",			/* ob_name */
+	sizeof(pyBalBifurcationDiagram),	/* tp_basicsize */
+	0,									/* tp_itemsize */
+	(destructor)pyBalBifurcationDiagram_dealloc,/* tp_dealloc */
+	0,									/* tp_print */
+	0,									/* tp_getattr */
+	0,									/* tp_setattr */
+	0,									/* tp_compare */
+	0,									/* tp_repr */
+	0,									/* tp_as_number */
+	0,									/* tp_as_sequence */
+	0,									/* tp_as_mapping */
+	0,									/* tp_hash */
+	0,									/* tp_call */
+	0,									/* tp_str */
+	(getattrofunc)pyBalBifurcationDiagram_getattro,/* tp_getattro  */
+	(setattrofunc)pyBalBifurcationDiagram_setattro,/* tp_setattro  */
+	0,									/* tp_as_buffer */
+	Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,/* tp_flags */
+	"Bifurcation Diagram object",		/* tp_doc */
+	0,									/* tp_traverse */
+    0,									/* tp_clear */
+    0,									/* tp_richcompare */
+    0,									/* tp_weaklistoffset */
+    0,									/* tp_iter */
+    0,									/* tp_iternext */
+    pyBalBifurcationDiagram_methods,	/* tp_methods */
+    0,									/* tp_members */
+    0,									/* tp_getset */
+    0,									/* tp_base */
+    0,									/* tp_dict */
+    0,									/* tp_descr_get */
+    0,									/* tp_descr_set */
+    0,									/* tp_dictoffset */
+	(initproc)pyBalBifurcationDiagram_init,/* tp_init */
+    0,									/* tp_alloc */
+    pyBalBifurcationDiagram_new			/* tp_new */
+};
+
+
 /******************** Module stuff ********************/
 
 static PyMethodDef module_methods[] = {
@@ -936,6 +1266,8 @@ PyMODINIT_FUNC initbal(void) {
 		return;
 	if (PyType_Ready(&pyBalSolutionType) < 0)
 		return;
+	if (PyType_Ready(&pyBalBifurcationDiagramType) < 0)
+		return;
 
 	m = Py_InitModule3("bal", module_methods, "BAL module");
 	if (m == NULL)
@@ -949,4 +1281,6 @@ PyMODINIT_FUNC initbal(void) {
 	PyModule_AddObject(m, "ODESolver", (PyObject *) &pyBalODESolverType);
 	Py_INCREF(&pyBalSolutionType);
 	PyModule_AddObject(m, "Solution", (PyObject *) &pyBalSolutionType);
+	Py_INCREF(&pyBalBifurcationDiagramType);
+	PyModule_AddObject(m, "BifurcationDiagram", (PyObject *) &pyBalBifurcationDiagramType);
 }
