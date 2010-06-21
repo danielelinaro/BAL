@@ -67,8 +67,8 @@ def saveH5file(solutions,filename):
 	atom = tbl.Float32Atom()
 	# save all solutions
 	for k,s in enumerate(solutions):
-		# the letter p in the name means that the H5 file has been saved in Python
-		name = 'p' + str(k+1).zfill(6)
+		# the letter P in the name means that the H5 file has been saved in Python
+		name = 'P' + str(k+1).zfill(6)
 		m = len(s.data['t'])
 		n = len(s.data['x'])/m
 		node = fid.createCArray('/',name,atom,(m,n+2),filters=filter)

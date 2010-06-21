@@ -114,7 +114,7 @@ class balLogger : public balObject {
   }
   
  protected:
- balLogger() : opened(false), cols(-1), params(NULL) {}
+  balLogger() : opened(false), cols(-1), params(NULL) {}
   virtual ~balLogger() {}
   virtual bool OpenFile() { return false; }
   virtual bool CloseFile() { return false; }
@@ -141,7 +141,7 @@ class balH5Logger : public balLogger {
 				  boost::condition_variable * q_full);
   
  protected:
- balH5Logger() : h5_fid(-1), counter(-1) {}
+  balH5Logger();
   virtual ~balH5Logger();
   virtual bool OpenFile();
   virtual bool CloseFile();
@@ -150,11 +150,20 @@ class balH5Logger : public balLogger {
   
   bool SortAndWriteSolutionList(list <balSolution *> * sol_list);
   
+  // the handle of the file
   hid_t h5_fid;
+  // dataset creation property list
+  hid_t dcpl;
+  // chunk size
+  hsize_t chunk[2];
+  // whether data compression should be enabled (default: yes)
+  bool compressed;
+
   char datasetname[DATASETNAME_LENGTH];
   int counter;
 };
 
+/*
 class balASCIILogger : public balLogger {
  public:
   virtual const char * GetClassName () const { return "balASCIILogger"; }
@@ -162,16 +171,14 @@ class balASCIILogger : public balLogger {
   virtual void Destroy() { this->~balASCIILogger(); }
   
   virtual bool SaveBuffer(realtype * buffer, int rows);
-  /*
-    virtual bool SaveBufferThreaded(queue<balSolution *> *q,
-    boost::mutex * list_mutex,
-    boost::condition_variable *q_empty,
-    boost::condition_variable *q_full,
-    volatile bool *finished);
-  */
+  //virtual bool SaveBufferThreaded(queue<balSolution *> *q,
+  //boost::mutex * list_mutex,
+  //boost::condition_variable *q_empty,
+  //boost::condition_variable *q_full,
+  //volatile bool *finished);
   
  protected:
- balASCIILogger() : fp(NULL) {}
+  balASCIILogger() : fp(NULL) {}
   virtual ~balASCIILogger();
   virtual bool OpenFile();
   virtual bool CloseFile();
@@ -179,6 +186,7 @@ class balASCIILogger : public balLogger {
  private:
   FILE * fp;
 };
+*/
 
 
 #endif

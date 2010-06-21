@@ -47,7 +47,8 @@ int main(int argc, char *argv[]) {
 	logger->SetFilename("test.2.h5");
 	logger->SaveBuffer(buffer, 2);
 	logger->Destroy();
-	
+
+	/*
 	// TEST balASCIILogger
 	logger = balASCIILogger::Create();
 	logger->SetFilename("test.1.dat");
@@ -57,6 +58,7 @@ int main(int argc, char *argv[]) {
 	logger->SetFilename("test.2.dat");
 	logger->SaveBuffer(buffer, 2);
 	logger->Destroy();
+	*/
 
 	return 0;
 }

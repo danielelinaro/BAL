@@ -92,14 +92,14 @@ static void pyBalSolution_dealloc(pyBalSolution *self);
 static PyObject * pyBalSolution_getattro(pyBalSolution *self, PyObject *name);
 
 /******************** pyBalBifurcationDiagram ********************/
-	
+
 typedef struct {
 	PyObject_HEAD
-	balBifurcationDiagram *diagram;
+	balBifurcationDiagram * diagram;
 	pyBalDynamicalSystem * dynsys;
 	pyBalParameters *params;
 } pyBalBifurcationDiagram;
-	
+
 static PyObject * pyBalBifurcationDiagram_new(PyTypeObject *type, PyObject *args, PyObject *kwds);
 static int pyBalBifurcationDiagram_init(pyBalBifurcationDiagram *self, PyObject *args, PyObject *kwds);
 static void pyBalBifurcationDiagram_dealloc(pyBalBifurcationDiagram *self);
@@ -107,7 +107,7 @@ static PyObject * pyBalBifurcationDiagram_getattro(pyBalBifurcationDiagram *self
 static int pyBalBifurcationDiagram_setattro(pyBalBifurcationDiagram *self, PyObject *name, PyObject *value);
 static PyObject * pyBalBifurcationDiagram_compute(pyBalBifurcationDiagram *self);
 static PyObject * pyBalBifurcationDiagram_classification(pyBalBifurcationDiagram *self, PyObject *args, PyObject *kwds);
-
+	
 /******************** Module stuff ********************/
 
 #define BALLIB "libbal.0.0.0.dylib"
