@@ -495,7 +495,6 @@ void balODESolver::SkipTransient(bool *equilibrium, bool *error) {
   while (t < ttran) {
     flag = CVode (cvode_mem, ttran, x, &t, CV_NORMAL);
     if (flag < 0 && flag != CV_TOO_MUCH_WORK && (flag != CV_ILL_INPUT || mode == balTRAJ)) {
-      printf("flag is%s equal to CV_ILL_INPUT.\n", flag == CV_ILL_INPUT ? "" : " not");
       *error = true;
       break;
     }
@@ -648,7 +647,6 @@ bool balODESolver::SolveWithoutEvents() {
 	 * verified when the trajectory is on an equilibrium
 	 */
 	if(flag == CV_ILL_INPUT) {
-	  fprintf(stderr, "flag is CV_ILL_INPUT in SolveTrajectory...\n");
 	  if(CheckEquilibrium() == EQUIL_BREAK)
 	    break;
 	}
@@ -672,10 +670,9 @@ bool balODESolver::SolveWithoutEvents() {
   }
   /* if the point is an equilibrium, we change the label of the last row in
    * the integration buffer and stop the integration procedure */
-  if (eq || nturns == 0) {
+  if (eq || nturns == 0)
     ChangeCurrentLabel(balEQUIL);
-    return true;
-  }
+
   return true;
 }
 
@@ -817,16 +814,17 @@ bool balODESolver::SolveWithEvents() {
     ChangeCurrentLabel(balERROR);
     return false;
   }
+  
+  /* if we weren't able to detect a periodicity, there's a good chance 
+   * that the system be chaotic */
+  if (nturns == -1)
+    nturns = max_intersections;
+  
   /* if the point is an equilibrium, we change the label of the last row in
    * the integration buffer */
-  if (eq || nturns == 0) {
+  if (eq || nturns == 0)
     ChangeCurrentLabel(balEQUIL);
-    return true;
-  }
     
-  if (nturns == -1)
-    nturns = max_intersections;	// if we weren't able to detect a periodicity, there's a good chance that the system be chaotic
-  
   return true;
 }
 
