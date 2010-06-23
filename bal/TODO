@@ -13,8 +13,4 @@
 2) controllare codice di balBifurcationDiagram: quando si usa un thread
 solo sembra che ci sia qualche memory leak
 
-3) completare oggetti iniziati in interfaccia python
-
-4) aggiungere interfaccia python per balBifurcationDiagram
-
 

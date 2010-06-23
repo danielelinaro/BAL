@@ -31,36 +31,36 @@
 // TEST balBifurcationDiagram
 int main(int argc, char *argv[]) {
 
-	int steps[4] = {1,201,1,1};
-	realtype x0[3] = {0.5,0.5,0.5};
-	balBifurcationParameters * bp = balBifurcationParameters::Create();
-	bp->SetNumber(4);
-	bp->SetIthParameter(0,2.96);
-	bp->SetIthParameter(2,0.01);
-	bp->SetIthParameter(3,4.0);
-	bp->SetIthParameterLowerBound(1,2.5);
-	bp->SetIthParameterUpperBound(1,4.5);
-	bp->SetNumberOfSteps(steps);
-	balHindmarshRose * hr = balHindmarshRose::Create();
-	hr->SetParameters(bp);
-	balBifurcationDiagram * bifd = balBifurcationDiagram::Create();
-	bifd->SetDynamicalSystem(hr);
-	bifd->SetFilename("hr.h5");
-	bifd->GetODESolver()->SetIntegrationMode(balEVENTS);
-	bifd->GetODESolver()->HaltAtEquilibrium(true);
-	bifd->GetODESolver()->HaltAtCycle(false);
-	bifd->GetODESolver()->SetTransientDuration(1e3);
-	bifd->GetODESolver()->SetFinalTime(1e4);
-	bifd->GetODESolver()->SetMaxNumberOfIntersections(200);
-	bifd->GetODESolver()->SetX0(x0);
-
-	bifd->SetNumberOfThreads(2);
-	bifd->ComputeDiagram();
-	bifd->SaveClassificationData("hr.classified");
-	bifd->Destroy();
-	hr->Destroy();
-	bp->Destroy();
-
-	return 0;
+  int steps[4] = {1,501,1,1};
+  realtype x0[3] = {0.5,0.5,0.5};
+  balBifurcationParameters * bp = balBifurcationParameters::Create();
+  bp->SetNumber(4);
+  bp->SetIthParameter(0,2.96);
+  bp->SetIthParameter(2,0.01);
+  bp->SetIthParameter(3,4.0);
+  bp->SetIthParameterLowerBound(1,1);
+  bp->SetIthParameterUpperBound(1,6);
+  bp->SetNumberOfSteps(steps);
+  balHindmarshRose * hr = balHindmarshRose::Create();
+  hr->SetParameters(bp);
+  balBifurcationDiagram * bifd = balBifurcationDiagram::Create();
+  bifd->SetDynamicalSystem(hr);
+  bifd->SetFilename("hr.h5");
+  bifd->GetODESolver()->SetIntegrationMode(balEVENTS);
+  bifd->GetODESolver()->HaltAtEquilibrium(true);
+  bifd->GetODESolver()->HaltAtCycle(true);
+  bifd->GetODESolver()->SetTransientDuration(1e3);
+  bifd->GetODESolver()->SetFinalTime(5e3);
+  bifd->GetODESolver()->SetMaxNumberOfIntersections(200);
+  bifd->GetODESolver()->SetX0(x0);
+  
+  bifd->SetNumberOfThreads(4);
+  bifd->ComputeDiagram();
+  bifd->SaveClassificationData("hr.classified");
+  bifd->Destroy();
+  hr->Destroy();
+  bp->Destroy();
+  
+  return 0;
 }
 

@@ -81,6 +81,7 @@ class balBifurcationDiagram : public balObject {
 		void SetDynamicalSystem(balDynamicalSystem * sys);
 
 		/**
+		 * Gets the dynamical system to integrate.
 		 * @return The dynamical system used in the computation of the
 		 * bifurcation diagram.
 		 */
