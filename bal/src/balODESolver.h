@@ -186,8 +186,7 @@ class balODESolver : public balObject {
   void SetSolutionLength(int length);
   int CheckEquilibrium();
   int CheckCycle(int guess);
-  realtype EuclideanDistanceFromOrigin(N_Vector x, int length);
-  realtype EuclideanDistance(N_Vector x, N_Vector y, int length);
+  realtype EuclideanDistance(int length, N_Vector x, N_Vector y = NULL) const;
   
  private:
   /** Number of equations */

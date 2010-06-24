@@ -53,75 +53,77 @@
 #include "balParameters.h"
 
 class balDynamicalSystem : public balObject {
-	public:
-		virtual const char * GetClassName () const { return "balDynamicalSystem"; }
-		static balDynamicalSystem * Create () { return new balDynamicalSystem; }
-		virtual balDynamicalSystem * Copy () { return new	balDynamicalSystem(*this); }
-		virtual void Destroy () { this->~balDynamicalSystem(); }
-
-		virtual int RHS (realtype t, N_Vector x, N_Vector xdot, void * data);
-		static int RHSWrapper (realtype t, N_Vector x, N_Vector xdot, void * sys);
-
+ public:
+  virtual const char * GetClassName () const { return "balDynamicalSystem"; }
+  static balDynamicalSystem * Create () { return new balDynamicalSystem; }
+  virtual balDynamicalSystem * Copy () { return new	balDynamicalSystem(*this); }
+  virtual void Destroy () { this->~balDynamicalSystem(); }
+  
+  virtual int RHS (realtype t, N_Vector x, N_Vector xdot, void * data);
+  static int RHSWrapper (realtype t, N_Vector x, N_Vector xdot, void * sys);
+  
 #ifdef CVODE25
-		static int JacobianWrapper (long int N, DenseMat J, realtype t, N_Vector x, 
-													N_Vector fy, void *sys, N_Vector tmp1, N_Vector tmp2, N_Vector tmp3);
-		virtual int Jacobian (long int N, DenseMat J, realtype t, N_Vector x, 
-													N_Vector fy, void *jac_data, N_Vector tmp1, N_Vector tmp2, N_Vector tmp3);
+  static int JacobianWrapper (long int N, DenseMat J, realtype t, N_Vector x, 
+			      N_Vector fy, void *sys, N_Vector tmp1, N_Vector tmp2, N_Vector tmp3);
+  virtual int Jacobian (long int N, DenseMat J, realtype t, N_Vector x, 
+			N_Vector fy, void *jac_data, N_Vector tmp1, N_Vector tmp2, N_Vector tmp3);
 #endif
-
+  
 #ifdef CVODE26
-		static int JacobianWrapper (int N, realtype t, N_Vector x, N_Vector fy, 
-													DlsMat J, void *sys, N_Vector tmp1, N_Vector tmp2, N_Vector tmp3);
-		virtual int Jacobian (int N, realtype t, N_Vector x, N_Vector fy, 
-													DlsMat J, void *jac_data, N_Vector tmp1, N_Vector tmp2, N_Vector tmp3);
+  static int JacobianWrapper (int N, realtype t, N_Vector x, N_Vector fy, 
+			      DlsMat J, void *sys, N_Vector tmp1, N_Vector tmp2, N_Vector tmp3);
+  virtual int Jacobian (int N, realtype t, N_Vector x, N_Vector fy, 
+			DlsMat J, void *jac_data, N_Vector tmp1, N_Vector tmp2, N_Vector tmp3);
 #endif
-
-		static int EventsWrapper (realtype t, N_Vector x, realtype * event, void * sys);
-		virtual	int Events (realtype t, N_Vector x, realtype * event, void * data);
-
-		virtual void EventsConstraints (realtype t, N_Vector x, int * constraints, void * data);
-
-		virtual bool HasJacobian() const { return false; }
-		virtual bool HasEvents() const { return false; }
-		virtual bool HasEventsConstraints() const { return false; }
-
-		virtual void Reset() {}
-		virtual void ManageEvents(realtype t, N_Vector X, int * events, int * constraints = NULL) {}
-
-		int GetNumberOfEvents() const { return nev; }
-		int GetDimension() const;
-		int GetNumberOfParameters() const { return p; }
-		void SetParameters(balParameters *) throw(balException);
-		balParameters * GetParameters() const;
-
-		void Extend(bool extend);
-		bool IsExtended() const { return ext; }
-
-	protected:
-		balDynamicalSystem();
-		balDynamicalSystem(const balDynamicalSystem& system);
-		virtual ~balDynamicalSystem();
-		void SetDimension(int n_);
-		void SetNumberOfParameters(int p_) { if(p_ >= 0) p = p_; }
-		void SetNumberOfEvents(int nev_) { if(nev_ >= 0) nev = nev_; }
-
-	private:
-		int n;
-		int p;
-		int nev;
-
-		int nExt;
-		bool ext;
-
+  
+  static int EventsWrapper (realtype t, N_Vector x, realtype * event, void * sys);
+  virtual	int Events (realtype t, N_Vector x, realtype * event, void * data);
+  
+  virtual void EventsConstraints (realtype t, N_Vector x, int * constraints, void * data);
+  
+  virtual bool HasJacobian() const { return false; }
+  virtual bool HasEvents() const { return false; }
+  virtual bool HasEventsConstraints() const { return false; }
+  
+  virtual void Reset() {}
+  virtual bool SpecialOptions(void *opt) { 
+    printf("balDynamicalSystem::SpecialOptions\n");
+    return false;
+  }
+  virtual void ManageEvents(realtype t, N_Vector X, int * events, int * constraints = NULL) {}
+  
+  int GetNumberOfEvents() const { return nev; }
+  int GetDimension() const;
+  int GetNumberOfParameters() const { return p; }
+  void SetParameters(balParameters *) throw(balException);
+  balParameters * GetParameters() const;
+  
+  void Extend(bool extend);
+  bool IsExtended() const { return ext; }
+  
+ protected:
+  balDynamicalSystem();
+  balDynamicalSystem(const balDynamicalSystem& system);
+  virtual ~balDynamicalSystem();
+  void SetDimension(int n_);
+  void SetNumberOfParameters(int p_) { if(p_ >= 0) p = p_; }
+  void SetNumberOfEvents(int nev_) { if(nev_ >= 0) nev = nev_; }
+  
+ private:
+  int n;
+  int p;
+  int nev;
+  
+  int nExt;
+  bool ext;
+  
 #ifdef CVODE25
-		DenseMat jac;
+  DenseMat jac;
 #endif
 #ifdef CVODE26
-		DlsMat jac;
+  DlsMat jac;
 #endif
-		balParameters * pars;
+  balParameters * pars;
 };
 
 #endif
-
-

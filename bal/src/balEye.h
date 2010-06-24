@@ -1,7 +1,7 @@
 /*=========================================================================
  *
  *   Program:   Bifurcation Analysis Library
- *   Module:    balHindmarshRose.h
+ *   Module:    balEye.h
  *
  *   Copyright (C) 2009 Daniele Linaro
  *
@@ -20,57 +20,76 @@
  *
  *=========================================================================*/
 
-#ifndef _BALHINDMARSHROSE_
-#define _BALHINDMARSHROSE_
+// .NAME balEye
+// 
+// .SECTION Description
+//
+// .SECTION See also
+// balDynamicalSystem balInterp1D balInterp2D
 
+#ifndef _BALEYE_
+#define _BALEYE_
+
+#include <cmath>
+#include <cstdio>
+#include <cstring>
+
+#include <sundials/sundials_types.h>
+#include <nvector/nvector_serial.h>
+#include <sundials/sundials_dense.h>
+#ifdef CVODE26
+#include <sundials/sundials_direct.h>
+#endif
+#include <cvode/cvode.h>
+
+#include "balCommon.h"
 #include "balObject.h"
 #include "balParameters.h"
 #include "balDynamicalSystem.h"
-#include <cvode/cvode.h>
+#include "balInterp2D.h"
 
-#define		xrest  (-1.6)
-
-class balHindmarshRose : public balDynamicalSystem {
+class balEye : public balDynamicalSystem {
  public:
-  virtual const char * GetClassName () const { return "balHindmarshRose"; }
-  static balHindmarshRose * Create () { return new balHindmarshRose; }
-  virtual balDynamicalSystem * Copy() { return new balHindmarshRose(*this); }
-  virtual void Destroy () { this->~balHindmarshRose(); }
+  virtual const char * GetClassName () const { return "balEye"; }
+  static balEye * Create () { return new balEye; }
+  virtual balDynamicalSystem * Copy() { return new balEye(*this); }
+  virtual void Destroy () { this->~balEye(); }
   
   int RHS (realtype t, N_Vector x, N_Vector xdot, void * data);
-#ifdef CVODE25
-  int Jacobian (long int N, DenseMat J, realtype t, N_Vector x, N_Vector fy, 
-		void *jac_data, N_Vector tmp1, N_Vector tmp2, N_Vector tmp3);
-#endif
-#ifdef CVODE26
-  int Jacobian (int N, realtype t, N_Vector x, N_Vector fy, DlsMat J, 
-		void *jac_data, N_Vector tmp1, N_Vector tmp2, N_Vector tmp3);
-#endif
   int Events (realtype t, N_Vector x, realtype * event, void * data);
-  void EventsConstraints (realtype t, N_Vector x, int * constraints, void * data);
   
-  bool HasJacobian() const { return true; }
   bool HasEvents() const { return true; }
-  bool HasEventsConstraints() const { return true; }
-  
+  bool SpecialOptions(void *opt);
+  bool ReadVectorField(const char *filename);
+
  protected:
-  balHindmarshRose();
-  balHindmarshRose(const balHindmarshRose& hr);
-  virtual ~balHindmarshRose();
+  balEye();
+  balEye(const balEye& hr);
+  virtual ~balEye();
   
  private:
+  void DeleteVectorField();
+  void AllocateVectorField();
+
   N_Vector xderiv;
-  //const realtype xrest;
+
+  int nx, ny;
+  double *x, *y, **u, **v;
+  bool alloc_mem;
+
+  balBilinearInterp2D *u_interp, *v_interp;
 };
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-balDynamicalSystem* balHindmarshRoseFactory();
+balDynamicalSystem* balEyeFactory();
 	
 #ifdef __cplusplus
 }
 #endif
 
 #endif
+
+

@@ -43,14 +43,14 @@
 #define IJth(A,i,j) DENSE_ELEM(A,i,j)
 
 /* colors */
-#define ESC				''
-#define RED				"[31m"
-#define GREEN			"[32m"
-#define YELLOW		"[33m"
-#define BLUE			"[34m"
-#define MAGENTA		"[35m"
-#define CYAN			"[36m"
-#define NORMAL		"[00m"
+#define ESC ''
+#define RED "[31m"
+#define GREEN "[32m"
+#define YELLOW "[33m"
+#define BLUE "[34m"
+#define MAGENTA "[35m"
+#define CYAN "[36m"
+#define NORMAL "[00m"
 
 #define PI				(3.141592653589793)
 

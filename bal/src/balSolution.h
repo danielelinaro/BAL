@@ -28,61 +28,61 @@
 #include "balParameters.h"
 
 class balSolution : public balObject {
-public:
-	/** Returns the name of the class. */
-	virtual const char * GetClassName() const { return "balSolution" ; }
-	/** Creates a new balSolution. */
-	static balSolution * Create() { return new balSolution; }
-	/** Copies a balSolution */
-	static balSolution * Copy(balSolution * solution) { return new balSolution(*solution); }
-	/** Destroys a balSolution. */
-	virtual void Destroy() { this->~balSolution(); }
-	/** Checks whether this object is of a particular type. */
-	virtual bool IsA(const char * name) const { return (strcmp(name, this->GetClassName()) == 0); }
-	
-	int GetRows() const { return rows; }
-	int GetColumns() const { return columns; }
-	void GetSize(int * r, int * c) const {
-		*r = rows;
-		*c= columns;
-	}
-	void SetSize(int r, int c);
-
-	balParameters * GetParameters() const { return parameters; }
-	void SetParameters(balParameters * p);
-
-	realtype * GetData() { return buffer; }	
-	void SetData(int r, int c, realtype * data);
-
-	int GetNumberOfTurns() { return nturns; }
-	void SetNumberOfTurns(int _nturns) { nturns = _nturns; }
-
-	//realtype& operator[](unsigned long index);
-	
-protected:
-	/* Protected destructor of the class. */
-	virtual ~balSolution();
-	balSolution();
-	balSolution(const balSolution & solution);
-	
-private:
-	balParameters * parameters;
-	realtype * buffer;
-	int rows, columns;
-	int nturns;
+ public:
+  /** Returns the name of the class. */
+  virtual const char * GetClassName() const { return "balSolution" ; }
+  /** Creates a new balSolution. */
+  static balSolution * Create() { return new balSolution; }
+  /** Copies a balSolution */
+  static balSolution * Copy(balSolution * solution) { return new balSolution(*solution); }
+  /** Destroys a balSolution. */
+  virtual void Destroy() { this->~balSolution(); }
+  /** Checks whether this object is of a particular type. */
+  virtual bool IsA(const char * name) const { return (strcmp(name, this->GetClassName()) == 0); }
+  
+  int GetRows() const { return rows; }
+  int GetColumns() const { return columns; }
+  void GetSize(int * r, int * c) const {
+    *r = rows;
+    *c= columns;
+  }
+  void SetSize(int r, int c);
+  
+  balParameters * GetParameters() const { return parameters; }
+  void SetParameters(balParameters * p);
+  
+  realtype * GetData() { return buffer; }	
+  void SetData(int r, int c, realtype * data);
+  
+  int GetNumberOfTurns() { return nturns; }
+  void SetNumberOfTurns(int _nturns) { nturns = _nturns; }
+  
+  //realtype& operator[](unsigned long index);
+  
+ protected:
+  /* Protected destructor of the class. */
+  virtual ~balSolution();
+  balSolution();
+  balSolution(const balSolution & solution);
+  
+ private:
+  balParameters * parameters;
+  realtype * buffer;
+  int rows, columns;
+  int nturns;
 };
 
 /** Used to compare two balSolution objects when sorting a list */
 struct balSolutionComparer {
-	bool operator() (balSolution * sol1, balSolution * sol2) {
-		
-		for (int i = 0; i < sol1->GetParameters()->GetNumber(); i++) {
-			if (sol1->GetParameters()->At(i) < sol2->GetParameters()->At(i))
-				return true;
-		}
-		
-		return false;
-	}
+  bool operator() (balSolution * sol1, balSolution * sol2) {
+    
+    for (int i = 0; i < sol1->GetParameters()->GetNumber(); i++) {
+      if (sol1->GetParameters()->At(i) < sol2->GetParameters()->At(i))
+	return true;
+    }
+    
+    return false;
+  }
 };
 
 

@@ -116,6 +116,18 @@ static int pyBalDynamicalSystem_setattro(pyBalDynamicalSystem *self, PyObject *n
 			err = -1;
 		}
 	}
+	else if (strcmp(n, "options") == 0) {
+		if(PyString_Check(value)) {
+			char *opt = PyString_AsString(value);
+			printf("options = %s\n", opt);
+			self->dynsys->SpecialOptions((void *) opt);
+		}
+		else {
+			printf("Unknown option...\n");
+			PyErr_SetString(PyExc_ValueError,"Wrong option.");
+			err = -1;
+		}
+	}
 	else {
 		err = PyObject_GenericSetAttr((PyObject*)self, name, value);
 	}

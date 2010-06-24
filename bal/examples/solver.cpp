@@ -30,42 +30,42 @@ using namespace std;
 // TEST balODESolver
 int main(int argc, char *argv[]) {
 	
-	// parameters
-	balParameters * pars = balParameters::Create();
-	pars->SetNumber(4);
-	pars->At(0) = 3.0;
-	pars->At(1) = 5.0;
-	pars->At(2) = 0.01;
-	pars->At(3) = 4.0;
-	
-	// HindmarshRose
-	balHindmarshRose *hr = balHindmarshRose::Create();
-	hr->SetParameters(pars);
-
-	balODESolver * solver = balODESolver::Create();
-	solver->SetDynamicalSystem(hr);
-	solver->SetTransientDuration(0.0);
-	solver->SetFinalTime(1000.0);
-	solver->HaltAtEquilibrium(true);
-	solver->SetIntegrationMode(balTRAJ);
-	printf("Computing the whole trajectory... ");
-	solver->Solve();
-	printf("done.\n");
-	solver->SetIntegrationMode(balEVENTS);
-	printf("Computing only the events... ");
-	solver->Solve();
-	printf("done.\n");
-	solver->SetIntegrationMode(balBOTH);
-	printf("Computing trajectory and events... ");
-	solver->Solve();
-	printf("done.\n");
-	pars->At(1) = 1.0;
-	solver->SetIntegrationMode(balTRAJ);
-	printf("Computing the whole trajectory and stopping at an equilibrium point... ");
-	solver->Solve();
-	printf("done.\n");
-	solver->Destroy();
-
-	return 0;
+  // parameters
+  balParameters * pars = balParameters::Create();
+  pars->SetNumber(4);
+  pars->At(0) = 3.0;
+  pars->At(1) = 5.0;
+  pars->At(2) = 0.01;
+  pars->At(3) = 4.0;
+  
+  // HindmarshRose
+  balHindmarshRose *hr = balHindmarshRose::Create();
+  hr->SetParameters(pars);
+  
+  balODESolver * solver = balODESolver::Create();
+  solver->SetDynamicalSystem(hr);
+  solver->SetTransientDuration(0.0);
+  solver->SetFinalTime(1000.0);
+  solver->HaltAtEquilibrium(true);
+  solver->SetIntegrationMode(balTRAJ);
+  printf("Computing the whole trajectory... ");
+  solver->Solve();
+  printf("done.\n");
+  solver->SetIntegrationMode(balEVENTS);
+  printf("Computing only the events... ");
+  solver->Solve();
+  printf("done.\n");
+  solver->SetIntegrationMode(balBOTH);
+  printf("Computing trajectory and events... ");
+  solver->Solve();
+  printf("done.\n");
+  pars->At(1) = 1.0;
+  solver->SetIntegrationMode(balTRAJ);
+  printf("Computing the whole trajectory and stopping at an equilibrium point... ");
+  solver->Solve();
+  printf("done.\n");
+  solver->Destroy();
+  
+  return 0;
 }
 

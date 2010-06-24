@@ -36,30 +36,35 @@
 using namespace std;
 
 class balBilinearInterp2D : public balObject {
+  
+ public:
+  /** Returns the name of the class. */
+  virtual const char * GetClassName() const { return "balBilinearInterp2D" ; }
+  /** Destroys a balBilinInterp2D. */
+  virtual void Destroy() { this->~balBilinearInterp2D(); }
+  /** Creates a balBilinInterp2D. */
+  static balBilinearInterp2D * Create(double *x1v, double *x2v, double **yy, int mm, int nn) {
+    return new balBilinearInterp2D(x1v,x2v,yy,mm,nn);
+  }
 
-	public:
-		/** Returns the name of the class. */
-		virtual const char * GetClassName() const { return "balBilinInterp2D" ; }
-		/** Destroys a balBilinInterp2D. */
-		virtual void Destroy() { this->~balBilinearInterp2D(); }
+  double interp(double x1p, double x2p);
+  
+ protected:
+   balBilinearInterp2D(double *x1v, double *x2v, double **yy, int mm, int nn)
+     : m(mm), n(nn), y(yy) { 
+     x1terp = balLinearInterp1D::Create(x1v,x1v,m);
+     x2terp = balLinearInterp1D::Create(x2v,x2v,n);
+   }
 
-		double interp(double x1p, double x2p);
-
-	protected:
-		balBilinearInterp2D(double *x1v, double *x2v, double **ym, int mm, int nn)
-			: m(mm), n(nn), y(ym) { 
-				x1terp = balLinearInterp1D::Create(x1v,x1v,m);
-				x2terp = balLinearInterp1D::Create(x2v,x2v,n);
-		}
-		~balBilinearInterp2D() {
-			x1terp->Destroy();
-			x2terp->Destroy();
-		}
-
-	private:
-		int m, n;
-		double **y;
-		balLinearInterp1D *x1terp, *x2terp;
+   ~balBilinearInterp2D() {
+     x1terp->Destroy();
+     x2terp->Destroy();
+   }
+  
+ private:
+  int m, n;
+  double **y;
+  balLinearInterp1D *x1terp, *x2terp;
 };
 
 

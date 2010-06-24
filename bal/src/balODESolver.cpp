@@ -498,14 +498,11 @@ void balODESolver::SkipTransient(bool *equilibrium, bool *error) {
       *error = true;
       break;
     }
-    dynsys->RHS(t, x, xdot, params);
-    if(EuclideanDistanceFromOrigin(xdot,neq) < equilibrium_tolerance) {
-      nturns = 0;
+    flag = CheckEquilibrium();
+    if(flag != EQUIL_FALSE)
       *equilibrium = true;
-      if(halt_at_equilibrium) {
-	break;
-      }
-    }
+    if(flag == EQUIL_BREAK)
+      break;
   }
   // if it's an equilibrium point, the label is changed at the end...
   StoreRecordInBuffer(balTRAN_END);
@@ -513,7 +510,7 @@ void balODESolver::SkipTransient(bool *equilibrium, bool *error) {
 
 int balODESolver::CheckEquilibrium() {
   dynsys->RHS (t, x, xdot, params);
-  if(EuclideanDistanceFromOrigin(xdot,neq) < equilibrium_tolerance) {
+  if(EuclideanDistance(neq,xdot) < equilibrium_tolerance) {
     nturns = 0;
     if(halt_at_equilibrium) {
       ChangeCurrentLabel(balEQUIL);
@@ -525,7 +522,7 @@ int balODESolver::CheckEquilibrium() {
 }
 
 int balODESolver::CheckCycle(int guess) {
-  if(EuclideanDistance(x,x_inters,neq) < cycle_tolerance) {
+  if(EuclideanDistance(neq,x,x_inters) < cycle_tolerance) {
     if(guess > 0) {
       nturns = guess;
       if(halt_at_cycle)
@@ -542,18 +539,15 @@ void balODESolver::SetSolutionLength(int length) {
   }
 }
 
-realtype balODESolver::EuclideanDistanceFromOrigin(N_Vector x, int length) {
+realtype balODESolver::EuclideanDistance(int length, N_Vector x, N_Vector y) const {
   realtype dst = 0.0;
-  for(int i=0; i<length; i++) {
-    dst += Ith(x,i) * Ith(x,i);
+  if(y != NULL) {
+    for(int i=0; i<length; i++)
+      dst += (Ith(x,i) - Ith(y,i)) * (Ith(x,i) - Ith(y,i));
   }
-  return sqrt(dst);
-}
- 
-realtype balODESolver::EuclideanDistance(N_Vector x, N_Vector y, int length) {
-  realtype dst = 0.0;
-  for(int i=0; i<length; i++) {
-    dst += (Ith(x,i) - Ith(y,i)) * (Ith(x,i) - Ith(y,i));
+  else {
+    for(int i=0; i<length; i++)
+      dst += Ith(x,i) * Ith(x,i);
   }
   return sqrt(dst);
 }

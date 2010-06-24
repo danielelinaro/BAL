@@ -13,4 +13,7 @@
 2) controllare codice di balBifurcationDiagram: quando si usa un thread
 solo sembra che ci sia qualche memory leak
 
+3) in balODESolver modificare la deallocazione della memoria basata solo sulla verifica "if (x != NULL)"
+
+4) completare le options di getattro per pyBalDynamicalSystem
 
