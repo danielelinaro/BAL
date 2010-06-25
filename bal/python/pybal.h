@@ -110,8 +110,9 @@ static PyObject * pyBalBifurcationDiagram_classification(pyBalBifurcationDiagram
 	
 /******************** Module stuff ********************/
 
-#define BALLIB "libbal.0.0.0.dylib"
-#define BALLIBEXT "libbalext.so"
+//#define BALLIB "libbal.0.0.0.dylib"
+#define BALLIB "libbal.dylib"
+#define BALLIBEXT "libbalext.dylib"
 extern void * ballib;
 extern void * ballibext;
 

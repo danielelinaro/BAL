@@ -32,6 +32,7 @@
 
 #include <cmath>
 #include <cstdio>
+#include <cstdlib>
 #include <cstring>
 
 #include <sundials/sundials_types.h>

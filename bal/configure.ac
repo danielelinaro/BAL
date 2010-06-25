@@ -8,6 +8,9 @@ AC_CONFIG_SRCDIR([src/balObject.h])
 AM_INIT_AUTOMAKE([-Wall -Werror foreign])
 LT_INIT
 
+# operating system's information
+AC_CANONICAL_HOST
+
 # required programs
 AC_PROG_AWK
 AC_PROG_CXX
@@ -83,5 +86,16 @@ AC_ARG_WITH([examples],
  	    [with_examples=yes],[echo "WARNING: not building the examples."])
 AM_CONDITIONAL([EXAMPLES],[test "$with_examples" == "yes"])
 
+echo "$host_os"
+case "$host_os" in
+  darwin*)
+		EXTENSION="dylib"
+    ;;
+  linux*)
+		EXTENSION="so"
+    ;;
+esac
+AC_SUBST([EXTENSION])
+		
 AC_OUTPUT
 

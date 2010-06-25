@@ -1,4 +1,5 @@
-AM_CPPFLAGS = "@CVODEVERSION@" 
+
+AM_CPPFLAGS = "@CVODEVERSION@"
 
 lib_LTLIBRARIES = libbal.la
 libbal_la_SOURCES = balBifurcationDiagram.cpp balBifurcationDiagram.h balBifurcationParameters.cpp balBifurcationParameters.h \
