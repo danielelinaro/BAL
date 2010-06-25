@@ -1,7 +1,7 @@
 /*=========================================================================
  *
  *   Program:   Bifurcation Analysis Library
- *   Module:    bifdiag.cpp
+ *   Module:    basin.cpp
  *
  *   Copyright (C) 2009 Daniele Linaro
  *
@@ -21,47 +21,53 @@
  *=========================================================================*/
 
 #include <cstdio>
+#include <cstdlib>
 #include <nvector/nvector_serial.h>
 #include "balObject.h"
 #include "balDynamicalSystem.h"
 #include "balHindmarshRose.h"
 #include "balODESolver.h"
 #include "balBifurcationDiagram.h"
-#include "balBifurcationParameters.h"
+#include "balParameters.h"
 
 // TEST balBifurcationDiagram
 int main(int argc, char *argv[]) {
 
-  int steps[4] = {1,51,1,1};
-  realtype x0[3] = {0.5,0.5,0.5};
-  balBifurcationParameters * bp = balBifurcationParameters::Create();
-  bp->SetNumber(4);
-  bp->SetIthParameter(0,2.96);
-  bp->SetIthParameter(2,0.01);
-  bp->SetIthParameter(3,4.0);
-  bp->SetIthParameterLowerBound(1,1);
-  bp->SetIthParameterUpperBound(1,6);
-  bp->SetNumberOfSteps(steps);
+  balParameters * par = balParameters::Create();
+  par->SetNumber(4);
+  par->At(0) = 2.96;
+  par->At(1) = 3;
+  par->At(2) = 0.01;
+  par->At(3) = 4.0;
+
   balHindmarshRose * hr = balHindmarshRose::Create();
-  hr->SetParameters(bp);
+  hr->SetParameters(par);
+
   balBifurcationDiagram * bifd = balBifurcationDiagram::Create();
   bifd->SetDynamicalSystem(hr);
-  bifd->SetFilename("hr.h5");
-  bifd->GetODESolver()->SetIntegrationMode(balEVENTS);
+  bifd->SetFilename("hr-basin.h5");
+  bifd->GetODESolver()->SetIntegrationMode(balTRAJ);
   bifd->GetODESolver()->HaltAtEquilibrium(true);
-  bifd->GetODESolver()->HaltAtCycle(true);
-  bifd->GetODESolver()->SetTransientDuration(1e3);
-  bifd->GetODESolver()->SetFinalTime(5e3);
-  bifd->GetODESolver()->SetMaxNumberOfIntersections(200);
-  bifd->GetODESolver()->SetX0(x0);
+  bifd->GetODESolver()->HaltAtCycle(false);
+  bifd->GetODESolver()->SetTransientDuration(0e3);
+  bifd->GetODESolver()->SetFinalTime(1e3);
+  //bifd->GetODESolver()->SetMaxNumberOfIntersections(200);
 
   bifd->SetNumberOfThreads(argc > 1 ? atoi(argv[1]) : 2);
-  bifd->ComputeDiagram();
-  bifd->SaveClassificationData("hr.classified");
 
+  int nX0 = 100;
+  double **X0 = new double*[nX0];
+  for(int i=0; i<nX0; i++) {
+    X0[i] = new double[3];
+    for(int j=0; j<3; j++)
+      X0[i][j] = -1 + 2*((double) random()/RAND_MAX);
+  }
+  bifd->SetMode(balIC);
+  bifd->SetInitialConditions(nX0,X0);
+  bifd->ComputeDiagram();
   bifd->Destroy();
   hr->Destroy();
-  bp->Destroy();
+  par->Destroy();
   
   return 0;
 }

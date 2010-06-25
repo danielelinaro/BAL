@@ -53,184 +53,199 @@
 #include <boost/thread/condition.hpp>
 #include <boost/ref.hpp>
 
-
 using std::list;
 
 void ResetColours(int d);
+
+enum { balPARAMS, balIC };
 
 /**
  * \class balBifurcationDiagram
  * \brief Calculates brute-force bifurcation diagrams.
  */
 class balBifurcationDiagram : public balObject {
-	public:
-		/** Returns the name of the class. */
-		virtual const char * GetClassName() const { return "balBifurcationDiagram" ; }
-		/** Creates a new balBifurcationDiagram. */
-		static balBifurcationDiagram * Create() { return new balBifurcationDiagram; }
-		/** Destroys a balBifurcationDiagram. */
-		virtual void Destroy() { this->~balBifurcationDiagram(); }
-	
-		/** 
-		 * Sets the dynamical system to integrate. balBifurcationDiagram
-		 * assumes that the dynamical contain an instance of balBifurcationParameters, 
-		 * instead of the simpler balParameters.
-		 * @param sys A dynamical system: any instance of a class inherited
-		 * from balDynamicalSystem.
-		 */
-		void SetDynamicalSystem(balDynamicalSystem * sys);
+ public:
+  /** Returns the name of the class. */
+  virtual const char * GetClassName() const { return "balBifurcationDiagram" ; }
+  /** Creates a new balBifurcationDiagram. */
+  static balBifurcationDiagram * Create() { return new balBifurcationDiagram; }
+  /** Destroys a balBifurcationDiagram. */
+  virtual void Destroy() { this->~balBifurcationDiagram(); }
+  
+  /** 
+   * Sets the dynamical system to integrate. balBifurcationDiagram
+   * assumes that the dynamical contain an instance of balBifurcationParameters, 
+   * instead of the simpler balParameters.
+   * @param sys A dynamical system: any instance of a class inherited
+   * from balDynamicalSystem.
+   */
+  void SetDynamicalSystem(balDynamicalSystem * sys);
+  
+  /**
+   * Gets the dynamical system to integrate.
+   * @return The dynamical system used in the computation of the
+   * bifurcation diagram.
+   */
+  balDynamicalSystem * GetDynamicalSystem() const;
+  
+  /**
+   * Sets the logger used for saving integration data to file. A logger
+   * is automatically instantiated when a balBifurcationDiagram is
+   * created. This method should be used only if the user wants to use a
+   * different kind of logger (such as one, for example, that saves data
+   * in a particular format). The default logger uses H5 files.
+   * @param log An instance of one of the classes inherited by balLogger.
+   */
+  void SetLogger(balLogger * log);
+  
+  /**
+   * @return The logger used for saving data to file.
+   */
+  balLogger * GetLogger() const;
+  
+  /**
+   * Sets the ODESolver used to integrate the dynamical system. An ODE
+   * solver is automatically instantiated when a balBifurcationDiagram is
+   * created. This method should be called only if the user has developed
+   * their own ODE solver.
+   * \param sol An instance of an ODE solver.
+   */
+  void SetODESolver(balODESolver * sol);
+  
+  /**
+   * This method returns a pointer to the ODE solver used to integrate
+   * the system. It is useful to set parameters of the ODE solver.
+   * @return The ODE solver used to integrate the system.
+   */
+  balODESolver * GetODESolver() const;
+  
+  /**
+   * Sets the name of the file where data will be saved.
+   * @param filename File where the bifurcation diagram will be saved.
+   */
+  void SetFilename(const char * filename);
+  
+  /**
+   * @return The name of the file where data is saved.
+   */
+  const char * GetFilename();
+  
+  /**
+   * Performs the actual computation of the brute-force bifurcation
+   * diagram.
+   */
+  void ComputeDiagram();
+  
+  /**
+   * Asks whether each new integration is restarted from the original
+   * initial conditions.
+   */
+  bool RestartsFromX0() const { return restart_from_x0; }
+  
+  /**
+   * Sets whether each new integration should restart or not from the
+   * original initial conditions.
+   */
+  void RestartFromX0(bool restart) { restart_from_x0 = restart; }
+  
+  /**
+   * Sets the number of parallel threads launched to compute the
+   * bifurcation diagrams. The ideal value for _nthreads is equal to the
+   * number of cores of the processor. The default value is 2 (who
+   * doesn't own a dual-core these days?!?).
+   */
+  void SetNumberOfThreads(int _nthreads);
+  
+  /**
+   * Gets the number of parallel threads launched to compute the
+   * bifurcation diagrams.
+   */
+  int GetNumberOfThreads() const;
+  
+  bool SaveClassificationData(const char *filename) const;
+  double** GetClassificationData() const;
 
-		/**
-		 * Gets the dynamical system to integrate.
-		 * @return The dynamical system used in the computation of the
-		 * bifurcation diagram.
-		 */
-		balDynamicalSystem * GetDynamicalSystem() const;
+  bool SetMode(int _mode);
+  void SetInitialConditions(int nx0, double **x0);
+  
+ protected:
+  balBifurcationDiagram();
+  virtual ~balBifurcationDiagram();
+  
+ private:
+  
+  void ComputeDiagramSingleThread();
+  void ComputeDiagramMultiThread();
+  void IntegrateAndEnqueue(balODESolver *sol);
+  double* BuildClassificationEntry(balSolution *sol);
+  
+  
+  /** The ODE solver used to integrate the system */
+  balODESolver * solver;
+  /** The dynamical system to integrate */
+  balDynamicalSystem * system;
+  /** The parameters of the dynamical system */
+  balParameters * parameters;
+  /**
+   * The object used to save data to a file: by default H5 file logging
+   * is used, i.e., logger is an instance of the balH5Logger class: 
+   * if the user wants to use another logger, they should provide it 
+   * by using the SetLogger member.
+   */
+  balLogger * logger;
+  /** Tells whether the logger should be deleted when a new one is set. */
+  bool destroy_logger;
+  /** Tells whether the solver should be deleted when a new one is set. */
+  bool destroy_solver;
+  
+  /** The number of dimensions of the system. */
+  int ndim;
+  /** The total number of parameters of the system. */
+  int npar;
+  /** The number of parameters to be varied for the bifurcation diagram. */
+  int n_var_par;
+  /** The mode of computation of the diagram. */
+  int mode;
 
-		/**
-		 * Sets the logger used for saving integration data to file. A logger
-		 * is automatically instantiated when a balBifurcationDiagram is
-		 * created. This method should be used only if the user wants to use a
-		 * different kind of logger (such as one, for example, that saves data
-		 * in a particular format). The default logger uses H5 files.
-		 * @param log An instance of one of the classes inherited by balLogger.
-		 */
-		void SetLogger(balLogger * log);
+  int nX0;
+  double **X0;
 
-		/**
-		 * @return The logger used for saving data to file.
-		 */
-		balLogger * GetLogger() const;
+  /** Tells wheter each integration should be restarted from the initial
+   * condition set by the user (true, default value) or from the final value of the
+   * previous integration (false) */
+  bool restart_from_x0;
+  
+  /**
+   * A list containing the classification of the bifurcation diagram in
+   * terms of number of turns of the solution. Each entry contains
+   * (n+1) values, where n is the number of parameters of the system.
+   * The first n values are the values of the parameters, the last value
+   * is the number of turns of the limit cycle. The value '0' corresponds
+   * to an equilibrium solution.
+   */
+  list<double *> *classification;
+  bool destroy_classification;
 
-		/**
-		 * Sets the ODESolver used to integrate the dynamical system. An ODE
-		 * solver is automatically instantiated when a balBifurcationDiagram is
-		 * created. This method should be called only if the user has developed
-		 * their own ODE solver.
-		 * \param sol An instance of an ODE solver.
-		 */
-		void SetODESolver(balODESolver * sol);
+  /*** multithreading stuff ***/
+  list<balSolution *> solution_list;
+  boost::thread * logger_thread;
+  boost::mutex list_mutex;
+  boost::condition_variable q_empty;
+  boost::condition_variable q_full;
 
-		/**
-		 * This method returns a pointer to the ODE solver used to integrate
-		 * the system. It is useful to set parameters of the ODE solver.
-		 * @return The ODE solver used to integrate the system.
-		 */
-		balODESolver * GetODESolver() const;
-
-		/**
-		 * Sets the name of the file where data will be saved.
-		 * @param filename File where the bifurcation diagram will be saved.
-		 */
-		void SetFilename(const char * filename);
-
-		/**
-		 * @return The name of the file where data is saved.
-		 */
-		const char * GetFilename();
-
-		/**
-		 * Performs the actual computation of the brute-force bifurcation
-		 * diagram.
-		 */
-		void ComputeDiagram();
-
-		/**
-		 * Asks whether each new integration is restarted from the original
-		 * initial conditions.
-		 */
-		bool RestartsFromX0() const { return restart_from_x0; }
-
-		/**
-		 * Sets whether each new integration should restart or not from the
-		 * original initial conditions.
-		 */
-		void RestartFromX0(bool restart) { restart_from_x0 = restart; }
-	
-		/**
-		 * Sets the number of parallel threads launched to compute the
-		 * bifurcation diagrams. The ideal value for _nthreads is equal to the
-		 * number of cores of the processor. The default value is 2 (who
-		 * doesn't own a dual-core these days?!?).
-		 */
-		bool SetNumberOfThreads(int _nthreads);
-
-		/**
-		 * Gets the number of parallel threads launched to compute the
-		 * bifurcation diagrams.
-		 */
-		int GetNumberOfThreads() const;
-
-		bool SaveClassificationData(const char *filename) const;
-		double** GetClassificationData() const;
-
-	protected:
-		balBifurcationDiagram();
-		virtual ~balBifurcationDiagram();
-
-	private:
-	
-		void ComputeDiagramSingleThreaded();
-		void ComputeDiagramMultiThreaded();
-		void IntegrateAndEnqueue(balODESolver *sol);
-		double* BuildClassificationEntry(balSolution *sol);
-		
-		
-		/** The ODE solver used to integrate the system */
-		balODESolver * solver;
-		/** The dynamical system to integrate */
-		balDynamicalSystem * system;
-		/** The parameters of the dynamical system */
-		balParameters * parameters;
-		/** The object used to save data to a file: by default H5 file logging
-		 * is used, i.e., logger is an instance of the balH5Logger class: 
-		 * if the user wants to use another logger, they should provide it 
-		 * by using the SetLogger member. */
-		balLogger * logger;
-		/** Tells whether the logger should be deleted when a new one is set. */
-		bool destroy_logger;
-		/** Tells whether the solver should be deleted when a new one is set. */
-		bool destroy_solver;
-
-		/** The total number of parameters of the system. */
-		int npar;
-		/** The number of parameters to be varied for the bifurcation diagram. */
-		int n_var_par;
-
-		/** Tells wheter each integration should be restarted from the initial
-		 * condition set by the user (true, default value) or from the final value of the
-		 * previous integration (false) */
-		bool restart_from_x0;
-
-		/**
-		 * A list containing the classification of the bifurcation diagram in
-		 * terms of number of turns of the solution. Each entry contains
-		 * (n+1) values, where n is the number of parameters of the system.
-		 * The first n values are the values of the parameters, the last value
-		 * is the number of turns of the limit cycle. The value '0' corresponds
-		 * to an equilibrium solution.
-		 */
-		list<double *> *classification;
-
-		/*** multithreading stuff ***/
-		list<balSolution *> solution_list;
-		boost::thread * logger_thread;
-		boost::mutex list_mutex;
-		boost::condition_variable q_empty;
-		boost::condition_variable q_full;
-	
-		int nthreads;
+  /** The number of threads that will be created to perform the integrations. */
+  int nthreads;
 };
 
 /** Used to compare two arrays of double values when sorting a list */
 struct balDoubleArrayComparer {
-	bool operator() (double *array1, double *array2, int sz) {
-		for (int i=0; i<sz; i++) {
-			if (array1[i] < array2[i])
-				return true;
-		}
-		return false;
-	}
+  bool operator() (double *array1, double *array2, int sz) {
+    for (int i=0; i<sz; i++) {
+      if (array1[i] < array2[i])
+	return true;
+    }
+    return false;
+  }
 };
 
 #endif
