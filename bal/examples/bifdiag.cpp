@@ -32,7 +32,7 @@
 // TEST balBifurcationDiagram
 int main(int argc, char *argv[]) {
 
-  int steps[4] = {1,51,1,1};
+  int steps[4] = {1,501,1,1};
   realtype x0[3] = {0.5,0.5,0.5};
   balBifurcationParameters * bp = balBifurcationParameters::Create();
   bp->SetNumber(4);
@@ -54,6 +54,7 @@ int main(int argc, char *argv[]) {
   bifd->GetODESolver()->SetFinalTime(5e3);
   bifd->GetODESolver()->SetMaxNumberOfIntersections(200);
   bifd->GetODESolver()->SetX0(x0);
+	//bifd->GetODESolver()->IsStiff(true);
 
   bifd->SetNumberOfThreads(argc > 1 ? atoi(argv[1]) : 2);
   bifd->ComputeDiagram();

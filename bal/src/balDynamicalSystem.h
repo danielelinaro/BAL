@@ -86,10 +86,7 @@ class balDynamicalSystem : public balObject {
   virtual bool HasEventsConstraints() const { return false; }
   
   virtual void Reset() {}
-  virtual bool SpecialOptions(void *opt) { 
-    printf("balDynamicalSystem::SpecialOptions\n");
-    return false;
-  }
+  virtual bool SpecialOptions(void *opt);
   virtual void ManageEvents(realtype t, N_Vector X, int * events, int * constraints = NULL) {}
   
   int GetNumberOfEvents() const { return nev; }
@@ -99,7 +96,7 @@ class balDynamicalSystem : public balObject {
   balParameters * GetParameters() const;
   
   void Extend(bool extend);
-  bool IsExtended() const { return ext; }
+  bool IsExtended() const;
   
  protected:
   balDynamicalSystem();
@@ -117,6 +114,8 @@ class balDynamicalSystem : public balObject {
   int nExt;
   bool ext;
   
+  bool _dealloc;
+
 #ifdef CVODE25
   DenseMat jac;
 #endif

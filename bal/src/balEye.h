@@ -76,7 +76,7 @@ class balEye : public balDynamicalSystem {
 
   int nx, ny;
   double *x, *y, **u, **v;
-  bool alloc_mem;
+  bool _dealloc;
 
   balBilinearInterp2D *u_interp, *v_interp;
 };

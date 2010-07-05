@@ -6,14 +6,12 @@
 		       	   To-do list
 
 
-1) sistemare script python in fase di build
-	a) sostituire directory in cui si trova CVode
-	b) sostituire nome corretto della libreria dinamica
+1) in balODESolver modificare la deallocazione della memoria basata solo sulla verifica "if (x != NULL)"
 
-2) controllare codice di balBifurcationDiagram: quando si usa un thread
-solo sembra che ci sia qualche memory leak
+2) verificare quali altre classi hanno lo stesso problema del punto (1) e correggere
 
-3) in balODESolver modificare la deallocazione della memoria basata solo sulla verifica "if (x != NULL)"
+3) capire perche' su Ubuntu gli esempi crashano se non si da' il comando
+export MALLOC_CHECK_=0
 
-4) completare le options di getattro per pyBalDynamicalSystem
+4) completare le options di getattro per pyBalDynamicalSystem (SpecialOptions)
 

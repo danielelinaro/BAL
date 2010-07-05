@@ -146,6 +146,7 @@ class balODESolver : public balObject {
   void SetAbsoluteTolerance (realtype atol);
   integration_mode GetIntegrationMode () const;
   void SetIntegrationMode (integration_mode m);
+  void IsStiff(bool stiffness);
   int GetMaxNumberOfIntersections() const;
   void SetMaxNumberOfIntersections(int intersections);
   void HaltAtEquilibrium(bool halt);
@@ -223,7 +224,9 @@ class balODESolver : public balObject {
   
   /** Integration mode (step by step or event-driven */
   integration_mode mode; // SG
-  
+  /** Indicates whether we are solving a stiff or non-stiff system (the former one is the default */
+  bool stiff; // S
+
   /** The memory for CVode */
   void *cvode_mem;
   

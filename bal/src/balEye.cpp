@@ -30,7 +30,7 @@ balEye::balEye() {
   SetNumberOfParameters(0);
   SetNumberOfEvents(GetDimension());
   xderiv = N_VNew_Serial(GetDimension());
-  alloc_mem = false;
+  _dealloc = false;
   nx = ny = -1;
   x = y = NULL;
   u = v = NULL;
@@ -41,8 +41,8 @@ balEye::balEye(const balEye& eye) : balDynamicalSystem( eye ) {
   xderiv = N_VNew_Serial(eye.GetDimension());
   for(int i = 0; i < eye.GetDimension(); i++)
     Ith(xderiv,i)=Ith(eye.xderiv,i);
-  alloc_mem = eye.alloc_mem;
-  if(alloc_mem) {
+  _dealloc = eye._dealloc;
+  if(_dealloc) {
     int i, j;
     nx = eye.nx;
     ny = eye.ny;
@@ -75,7 +75,7 @@ bool balEye::SpecialOptions(void *opt) {
 }
 
 void balEye::DeleteVectorField() {
-  if(alloc_mem) {
+  if(_dealloc) {
     delete x;
     delete y;
     for(int i=0; i<nx; i++) {
@@ -86,7 +86,7 @@ void balEye::DeleteVectorField() {
     delete v;
     u_interp->Destroy();
     v_interp->Destroy();
-    alloc_mem = false;
+    _dealloc = false;
   }
 }
 
@@ -100,7 +100,7 @@ void balEye::AllocateVectorField() {
     u[i] = new double[ny];
     v[i] = new double[ny];
   }
-  alloc_mem = true;
+  _dealloc = true;
 }
 
 bool balEye::ReadVectorField(const char *filename) {

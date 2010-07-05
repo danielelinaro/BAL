@@ -33,6 +33,7 @@ balODESolver::balODESolver() {
   reltol = RTOL;
   abstol = ATOL;
   mode = balTRAJ;
+  stiff = true;
   t = 0.0;
   tstep = STEP;
   ttran = T_TRAN;
@@ -69,6 +70,7 @@ balODESolver::balODESolver(const balODESolver& solver) {
   reltol = solver.GetRelativeTolerance();
   abstol = solver.GetAbsoluteTolerance();
   mode = solver.GetIntegrationMode();
+  stiff = solver.stiff;
   t = 0.0;
   tstep = solver.GetTimeStep();
   ttran = solver.GetTransientDuration();
@@ -244,6 +246,10 @@ void balODESolver::SetIntegrationMode (integration_mode m) {
   }
 }
 
+void balODESolver::IsStiff(bool stiffness) {
+  stiff = stiffness;
+}
+
 int balODESolver::GetMaxNumberOfIntersections() const {
   return max_intersections;
 }
@@ -343,7 +349,11 @@ bool balODESolver::Setup() {
     CVodeFree (&cvode_mem);
   }
   
-  cvode_mem = CVodeCreate (CV_BDF, CV_NEWTON);
+  if(stiff)
+    cvode_mem = CVodeCreate (CV_BDF, CV_NEWTON);
+  else
+    cvode_mem = CVodeCreate (CV_ADAMS, CV_FUNCTIONAL);
+
   if (cvode_mem == NULL) {
     fprintf (stderr, "error on CVodeCreate.\n");
     return false;

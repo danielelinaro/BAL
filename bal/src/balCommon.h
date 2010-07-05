@@ -28,8 +28,6 @@
 #ifndef _BALCOMMON_
 #define _BALCOMMON_
 
-//#define CVODE26
-
 #include <sundials/sundials_types.h>
 #include <sundials/sundials_dense.h>
 #ifdef CVODE26
@@ -59,15 +57,15 @@
 #include <exception>
 
 class balException : public std::exception {
-	public:
-		balException(const char* description = NULL) : errorDescription(description) {}
-		virtual const char* what() const throw() {
-			if(errorDescription == NULL)
-				return "balException";
-			return errorDescription;
-		}
-	private:
-		const char* errorDescription;
+ public:
+ balException(const char* description = NULL) : errorDescription(description) {}
+  virtual const char* what() const throw() {
+    if(errorDescription == NULL)
+      return "balException";
+    return errorDescription;
+  }
+ private:
+  const char* errorDescription;
 };
 
 #endif

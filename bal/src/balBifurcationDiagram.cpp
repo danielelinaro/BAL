@@ -118,7 +118,7 @@ double* balBifurcationDiagram::BuildClassificationEntry(balSolution *sol) {
 }
 
 bool balBifurcationDiagram::SaveClassificationData(const char *filename) const {
-  if(classification == NULL)
+  if(!destroy_classification)
     return false;
   
   //classification->sort(balDoubleArrayComparer());
@@ -142,7 +142,7 @@ bool balBifurcationDiagram::SaveClassificationData(const char *filename) const {
 }
 
 double** balBifurcationDiagram::GetClassificationData() const {
-  if(classification == NULL)
+  if(!destroy_classification)
     return NULL;
   
   //classification->sort(balDoubleArrayComparer());

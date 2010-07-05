@@ -28,7 +28,7 @@
 #include "balDynamicalSystem.h"
 #include <cvode/cvode.h>
 
-#define		xrest  (-1.6)
+#define xrest  (-1.6)
 
 class balHindmarshRose : public balDynamicalSystem {
  public:
@@ -60,7 +60,6 @@ class balHindmarshRose : public balDynamicalSystem {
   
  private:
   N_Vector xderiv;
-  //const realtype xrest;
 };
 
 #ifdef __cplusplus

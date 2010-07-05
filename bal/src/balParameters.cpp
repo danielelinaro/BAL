@@ -22,38 +22,47 @@
 
 #include "balParameters.h"
 
+balParameters::balParameters() {
+  p = 0;
+  pars = NULL;
+  _dealloc = false;
+}
+
 balParameters::balParameters(const balParameters& params) {
-	p = 0;
-	pars = NULL;
-	SetNumber(params.GetNumber());
-	for(int i=0; i<p; i++)
-		pars[i] = params.pars[i];
+  p = 0;
+  pars = NULL;
+  _dealloc = false;
+  SetNumber(params.GetNumber());
+  for(int i=0; i<p; i++)
+    pars[i] = params.pars[i];
 }
 
 void balParameters::SetNumber (int numpars) {
-	if(numpars > 0) {
-		p = numpars;
-		if(pars != NULL)
-			delete pars;
-		pars = new double[p];
-		for(int i=0; i<p; i++) pars[i] = 0.0;
-	}
+  if(numpars > 0) {
+    p = numpars;
+    if(_dealloc)
+      delete pars;
+    pars = new double[p];
+    _dealloc = true;
+    for(int i=0; i<p; i++)
+      pars[i] = 0.0;
+  }
 }
 
 int balParameters::GetNumber () const {
-	return p;
+  return p;
 }
 
 double & balParameters::At (int k) {
-	return pars[k];
+  return pars[k];
 }
 
 double * balParameters::GetParameters () const {
-	return pars;
+  return pars;
 }
 
 void balParameters::CopyValues(balParameters* _par){
-	for (int i = 0; i < _par->GetNumber(); i++)
-		pars[i] = _par->At(i);
+  for (int i = 0; i < _par->GetNumber(); i++)
+    pars[i] = _par->At(i);
 }
 

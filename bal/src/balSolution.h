@@ -57,8 +57,6 @@ class balSolution : public balObject {
   int GetNumberOfTurns() { return nturns; }
   void SetNumberOfTurns(int _nturns) { nturns = _nturns; }
   
-  //realtype& operator[](unsigned long index);
-  
  protected:
   /* Protected destructor of the class. */
   virtual ~balSolution();

@@ -31,43 +31,44 @@ using namespace std;
 // TEST balODESolver
 int main(int argc, char *argv[]) {
 	
-	// parameters
-	balParameters * pars = balParameters::Create();
-	pars->SetNumber(3);
-	pars->At(0) = 10.0;
-	pars->At(1) = 28.0;
-	pars->At(2) = 8./3.;
-	
-	// Lorenz
-	balLorenz *lor = balLorenz::Create();
-	lor->SetParameters(pars);
-
-	double x0[12] = {0,1,0,1,0,0,0,1,0,0,0,1};
-	balODESolver * solver = balODESolver::Create();
-	solver->SetDynamicalSystem(lor);
-	solver->SetTransientDuration(0.0);
-	solver->SetFinalTime(100.0);
-	solver->SetTimeStep(0.001);
-	solver->SetIntegrationMode(balTRAJ);
-	solver->SetX0(x0);
-	solver->Solve();
-
-	balSolution *sol = solver->GetSolution();
-	int r,c,i,j;
-	double *buffer;
-	sol->GetSize(&r,&c);
-	buffer = sol->GetData();
-	for(i=0; i<r; i++) {
-		for(j=0; j<c-1; j++)
-			printf("%f ", buffer[i*c+j]);
-		printf("%d\n", (int) buffer[i*c+j]);
-	}
-
-	sol->Destroy();
-	solver->Destroy();
-	lor->Destroy();
-	pars->Destroy();
-
-	return 0;
+  // parameters
+  balParameters * pars = balParameters::Create();
+  pars->SetNumber(3);
+  pars->At(0) = 10.0;
+  pars->At(1) = 28.0;
+  pars->At(2) = 8./3.;
+  
+  // Lorenz
+  balLorenz *lor = balLorenz::Create();
+  lor->SetParameters(pars);
+  lor->Extend(true);
+  
+  double x0[12] = {0,1,0,1,0,0,0,1,0,0,0,1};
+  balODESolver * solver = balODESolver::Create();
+  solver->SetDynamicalSystem(lor);
+  solver->SetTransientDuration(0.0);
+  solver->SetFinalTime(100.0);
+  solver->SetTimeStep(0.001);
+  solver->SetIntegrationMode(balTRAJ);
+  solver->SetX0(x0);
+  solver->Solve();
+  
+  balSolution *sol = solver->GetSolution();
+  int r,c,i,j;
+  double *buffer;
+  sol->GetSize(&r,&c);
+  buffer = sol->GetData();
+  for(i=0; i<r; i++) {
+    for(j=0; j<c-1; j++)
+      printf("%f ", buffer[i*c+j]);
+    printf("%d\n", (int) buffer[i*c+j]);
+  }
+  
+  sol->Destroy();
+  solver->Destroy();
+  lor->Destroy();
+  pars->Destroy();
+  
+  return 0;
 }
 

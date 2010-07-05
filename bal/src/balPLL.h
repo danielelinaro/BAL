@@ -31,81 +31,81 @@
 //#define WITHPHIERR
 
 class balPLL : public balDynamicalSystem {
-	public:
-		virtual const char * GetClassName () const { return "balPLL"; }
-		static balPLL * Create () { return new balPLL; }
-		virtual void Destroy () { this->~balPLL(); }
-
-		int RHS (realtype t, N_Vector X, N_Vector Xdot, void * data);
+ public:
+  virtual const char * GetClassName () const { return "balPLL"; }
+  static balPLL * Create () { return new balPLL; }
+  virtual void Destroy () { this->~balPLL(); }
+  
+  int RHS (realtype t, N_Vector X, N_Vector Xdot, void * data);
 #ifdef CVODE25
-		int Jacobian (long int N, DenseMat J, realtype t, N_Vector x, N_Vector fy, 
-				void *jac_data, N_Vector tmp1, N_Vector tmp2, N_Vector tmp3);
+  int Jacobian (long int N, DenseMat J, realtype t, N_Vector x, N_Vector fy, 
+		void *jac_data, N_Vector tmp1, N_Vector tmp2, N_Vector tmp3);
 #endif
 #ifdef CVODE26
-		int Jacobian (int N, realtype t, N_Vector x, N_Vector fy, DlsMat J, 
-				void *jac_data, N_Vector tmp1, N_Vector tmp2, N_Vector tmp3);
+  int Jacobian (int N, realtype t, N_Vector x, N_Vector fy, DlsMat J, 
+		void *jac_data, N_Vector tmp1, N_Vector tmp2, N_Vector tmp3);
 #endif
-		int Events (realtype t, N_Vector X, realtype * event, void * data);
-		void EventsConstraints (realtype t, N_Vector X, int * constraints, void * data);
-
-		bool HasJacobian() const { return false; }
-		bool HasEvents() const { return true; }
-		bool HasEventsConstraints() const { return true; }
-
-		void Reset();
-		void ManageEvents(realtype t, N_Vector x, int * events, int * constraints = NULL);
-
-		static const int npar;
-		static const char * parname[14];
-
-	protected:
-		balPLL();
-		virtual ~balPLL();
-
-	private:
-		const realtype pi;
-
-		int n;
+  int Events (realtype t, N_Vector X, realtype * event, void * data);
+  void EventsConstraints (realtype t, N_Vector X, int * constraints, void * data);
+  
+  bool HasJacobian() const { return false; }
+  bool HasEvents() const { return true; }
+  bool HasEventsConstraints() const { return true; }
+  
+  void Reset();
+  void ManageEvents(realtype t, N_Vector x, int * events, int * constraints = NULL);
+  
+  static const int npar;
+  static const char * parname[14];
+  
+ protected:
+  balPLL();
+  virtual ~balPLL();
+  
+ private:
+  const realtype pi;
+  
+  int n;
 #ifndef WITHPHIERR
-		bool zu, zd;
+  bool zu, zd;
 #else
-		bool S;
+  bool S;
 #endif
-
+  
 #ifndef WITHPHIERR
-		// variable to be reset at every new integration
-		bool wait_reset;
+  // variable to be reset at every new integration
+  bool wait_reset;
 #endif
-
-		/*************************************************/
-		/****** CIRCUIT PARAMETERS WITHOUT THE VCO *******/
-		/*************************************************/
-		realtype C0;			// the state variable w is associated to C0
-		realtype C1, R1;	// make up the filter, and the state variable r is associated to C1
-		realtype Vdd;			// supply voltage
-		realtype Aud;			// current in the charge-pump
-		realtype fREF, T;	// frequency (and corresponding period) of the square wave input to one of the flip-flops
-		realtype treset;	// time at which both Zu and Zd are equal to 1
-		realtype dt;			// interval after which the circuit is reset (i.e., treset+dt)
-
-
-		/*****************************/
-		/******* VCO PARAMETERS ******/
-		/*****************************/
-
-		/***** VCO modelled as a polar oscillator *****/
-		// variable parameters
-		realtype omega0, rhoap, rho0;
-		realtype k0, Krho, KVCOa, KVCOb, KVCOc, Kap, alpha;
-		realtype tuning_coeff;
-
-		// coefficient of division of the frequency divider
-		int N;
+  
+  /*************************************************/
+  /****** CIRCUIT PARAMETERS WITHOUT THE VCO *******/
+  /*************************************************/
+  realtype C0;			// the state variable w is associated to C0
+  realtype C1, R1;	// make up the filter, and the state variable r is associated to C1
+  realtype Vdd;			// supply voltage
+  realtype Aud;			// current in the charge-pump
+  realtype fREF, T;	// frequency (and corresponding period) of the square wave input to one of the flip-flops
+  realtype treset;	// time at which both Zu and Zd are equal to 1
+  realtype dt;			// interval after which the circuit is reset (i.e., treset+dt)
+  
+  
+  /*****************************/
+  /******* VCO PARAMETERS ******/
+  /*****************************/
+  
+  /***** VCO modelled as a polar oscillator *****/
+  // variable parameters
+  realtype omega0, rhoap, rho0;
+  realtype k0, Krho, KVCOa, KVCOb, KVCOc, Kap, alpha;
+  realtype tuning_coeff;
+  
+  // coefficient of division of the frequency divider
+  int N;
 #ifndef WITHPHIERR
-		// output of the frequency divider
-		int divout;
-		// counter
-		int cnt;
+  // output of the frequency divider
+  int divout;
+  // counter
+  int cnt;
 #endif
 };
 

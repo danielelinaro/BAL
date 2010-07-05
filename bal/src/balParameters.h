@@ -42,35 +42,36 @@
 using namespace std;
 
 class balParameters : public balObject {
-	public:
-		virtual const char * GetClassName () const { return "balParameters"; }
-		static balParameters * Create () { return new balParameters; }
-		static balParameters * Copy (balParameters * params) { return new balParameters(*params); }
-		virtual void Destroy () { this->~balParameters(); }
-		virtual void SetNumber (int);
-		int GetNumber () const;
-
-		double & At (int k);
-		double * GetParameters() const;
-		
-		void CopyValues(balParameters* _par);
-
-		friend ostream & operator<< (ostream & out, const balParameters & bp) {
-			out << "(";
-			for(int i=0; i<bp.p-1; i++)
-				out << bp.pars[i] << ",";
-			out << bp.pars[bp.p-1] << ")";
-			return out;
-		}
-
-	protected:
-		balParameters () : p(0), pars(NULL) {}
-		balParameters (const balParameters & param);
-		virtual ~balParameters () { if (pars != NULL) delete pars; }
-
-	private:
-		int p;
-		double * pars;
+ public:
+  virtual const char * GetClassName () const { return "balParameters"; }
+  static balParameters * Create () { return new balParameters; }
+  static balParameters * Copy (balParameters * params) { return new balParameters(*params); }
+  virtual void Destroy () { this->~balParameters(); }
+  virtual void SetNumber (int);
+  int GetNumber () const;
+  
+  double & At (int k);
+  double * GetParameters() const;
+  
+  void CopyValues(balParameters* _par);
+  
+  friend ostream & operator<< (ostream & out, const balParameters & bp) {
+    out << "(";
+    for(int i=0; i<bp.p-1; i++)
+      out << bp.pars[i] << ",";
+    out << bp.pars[bp.p-1] << ")";
+    return out;
+  }
+  
+ protected:
+  balParameters ();
+  balParameters (const balParameters & param);
+  virtual ~balParameters () { if (pars != NULL) delete pars; }
+  
+ private:
+  int p;
+  double * pars;
+  bool _dealloc;
 };
 
 #endif

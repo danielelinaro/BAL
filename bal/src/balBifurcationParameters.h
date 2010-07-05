@@ -55,55 +55,58 @@
  * \see balParameters balBifurcationDiagram balDynamicalSystem
  */
 class balBifurcationParameters : public balParameters {
-	public:
-		virtual const char * GetClassName () const { return "balBifurcationParameters"; }
-		static balBifurcationParameters * Create () { return new balBifurcationParameters; }
-		virtual void Destroy () { this->~balBifurcationParameters(); }
-	
-		virtual void SetNumber(int n);
+ public:
+  virtual const char * GetClassName () const { return "balBifurcationParameters"; }
+  static balBifurcationParameters * Create () { return new balBifurcationParameters; }
+  virtual void Destroy () { this->~balBifurcationParameters(); }
+  
+  virtual void SetNumber(int n);
+  
+  bool SetIthParameterLowerBound(int i, double p);
+  bool SetIthParameter(int i, double p);
+  bool SetIthParameterUpperBound(int i, double p);
+  void SetParameterBounds(balParameters * lower, balParameters * upper);
+  double GetIthParameterUpperBound(int i) throw(balException);
+  double GetIthParameter(int i) throw(balException);
+  double GetIthParameterLowerBound(int i) throw(balException);
+  
+  bool SetNumberOfSteps(int i, int s);
+  void SetNumberOfSteps(const int * s);
+  int GetNumberOfSteps(int i) const;
+  
+  inline void Reset() { Setup(); }
+  int GetTotalNumberOfTuples() const { return total; }
+  
+  bool Next();
+  bool HasTuples() const;
+  bool HasNext() const;
+  bool IsFirst() const;
+  bool IsLast() const;
+  
+ protected:
+  balBifurcationParameters();
+  ~balBifurcationParameters();
+  void Setup();
+  
+ private:
+  /** The lower bounds of the parameters. */
+  balParameters * plower;
+  /** The upper bounds of the parameters. */
+  balParameters * pupper;
+  /** The parameter steps for every parameter. */
+  double * steps;
+  /** The number of steps associated with every parameter. */
+  int * nsteps;
+  /** The current steps associated with every parameter. */
+  int * isteps;
+  /** The total number of steps, i.e. the product of the values contained
+   * in nsteps. */
+  int total;
+  /** The current parameters' tuple. */
+  int count;
 
-		bool SetIthParameterLowerBound(int i, double p);
-		bool SetIthParameter(int i, double p);
-		bool SetIthParameterUpperBound(int i, double p);
-		void SetParameterBounds(balParameters * lower, balParameters * upper);
-		double GetIthParameterUpperBound(int i) throw(balException);
-		double GetIthParameter(int i) throw(balException);
-		double GetIthParameterLowerBound(int i) throw(balException);
-
-		bool SetNumberOfSteps(int i, int s);
-		void SetNumberOfSteps(const int * s);
-		int GetNumberOfSteps(int i) const;
-
-		inline void Reset() { Setup(); }
-		int GetTotalNumberOfTuples() const { return total; }
-
-		bool Next();
-		bool HasTuples() const;
-		bool HasNext() const;
-		bool IsFirst() const;
-		bool IsLast() const;
-
-	protected:
-		balBifurcationParameters();
-		~balBifurcationParameters();
-		void Setup();
-
-	private:
-		/** The lower bounds of the parameters. */
-		balParameters * plower;
-		/** The upper bounds of the parameters. */
-		balParameters * pupper;
-		/** The parameter steps for every parameter. */
-		double * steps;
-		/** The number of steps associated with every parameter. */
-		int * nsteps;
-		/** The current steps associated with every parameter. */
-		int * isteps;
-		/** The total number of steps, i.e. the product of the values contained
-		 * in nsteps. */
-		int total;
-		/** The current parameters' tuple. */
-		int count;
+  /** Tells whether memory has been allocated or not */
+  bool _dealloc;
 };
 
 #endif

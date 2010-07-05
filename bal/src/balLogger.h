@@ -65,9 +65,6 @@
 
 #define FILENAME_LENGTH (200)
 #define DATASETNAME_LENGTH (10)
-#define FORMAT "%15.6e "
-#define NEWLINE "\n"
-
 
 using std::list;
 
@@ -162,31 +159,6 @@ class balH5Logger : public balLogger {
   char datasetname[DATASETNAME_LENGTH];
   int counter;
 };
-
-/*
-class balASCIILogger : public balLogger {
- public:
-  virtual const char * GetClassName () const { return "balASCIILogger"; }
-  static balASCIILogger * Create() { return new balASCIILogger; }
-  virtual void Destroy() { this->~balASCIILogger(); }
-  
-  virtual bool SaveBuffer(realtype * buffer, int rows);
-  //virtual bool SaveBufferThreaded(queue<balSolution *> *q,
-  //boost::mutex * list_mutex,
-  //boost::condition_variable *q_empty,
-  //boost::condition_variable *q_full,
-  //volatile bool *finished);
-  
- protected:
-  balASCIILogger() : fp(NULL) {}
-  virtual ~balASCIILogger();
-  virtual bool OpenFile();
-  virtual bool CloseFile();
-  
- private:
-  FILE * fp;
-};
-*/
 
 
 #endif

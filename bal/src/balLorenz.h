@@ -29,35 +29,29 @@
 #include <cvode/cvode.h>
 
 class balLorenz : public balDynamicalSystem {
-	public:
-		virtual const char * GetClassName () const { return "balLorenz"; }
-		static balLorenz * Create () { return new balLorenz; }
-		virtual balDynamicalSystem * Copy() { return new balLorenz(*this); }
-		virtual void Destroy () { this->~balLorenz(); }
-
-		int RHS (realtype t, N_Vector x, N_Vector xdot, void * data);
+ public:
+  virtual const char * GetClassName () const { return "balLorenz"; }
+  static balLorenz * Create () { return new balLorenz; }
+  virtual balDynamicalSystem * Copy() { return new balLorenz(*this); }
+  virtual void Destroy () { this->~balLorenz(); }
+  
+  int RHS (realtype t, N_Vector x, N_Vector xdot, void * data);
 #ifdef CVODE25
-		int Jacobian (long int N, DenseMat J, realtype t, N_Vector x, N_Vector fy, 
-				void *jac_data, N_Vector tmp1, N_Vector tmp2, N_Vector tmp3);
+  int Jacobian (long int N, DenseMat J, realtype t, N_Vector x, N_Vector fy, 
+		void *jac_data, N_Vector tmp1, N_Vector tmp2, N_Vector tmp3);
 #endif
 #ifdef CVODE26
-		int Jacobian (int N, realtype t, N_Vector x, N_Vector fy, DlsMat J, 
-				void *jac_data, N_Vector tmp1, N_Vector tmp2, N_Vector tmp3);
+  int Jacobian (int N, realtype t, N_Vector x, N_Vector fy, DlsMat J, 
+		void *jac_data, N_Vector tmp1, N_Vector tmp2, N_Vector tmp3);
 #endif
-		//int Events (realtype t, N_Vector x, realtype * event, void * data);
-		//void EventsConstraints (realtype t, N_Vector x, int * constraints, void * data);
 
-		bool HasJacobian() const { return (IsExtended() ? false : true); }
-		//bool HasEvents() const { return true; }
-		//bool HasEventsConstraints() const { return true; }
+  bool HasJacobian() const { return (IsExtended() ? false : true); }
 
-	protected:
-		balLorenz();
-		balLorenz(const balLorenz& lor);
-		virtual ~balLorenz();
-
-	private:
-		//N_Vector xderiv;
+ protected:
+  balLorenz();
+  balLorenz(const balLorenz& lor);
+  virtual ~balLorenz();
+  
 };
 
 #ifdef __cplusplus
