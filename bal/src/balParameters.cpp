@@ -37,6 +37,27 @@ balParameters::balParameters(const balParameters& params) {
     pars[i] = params.pars[i];
 }
 
+balParameters::~balParameters () {
+  if (_dealloc)
+    delete pars;
+}
+
+const char * balParameters::GetClassName () const {
+  return "balParameters";
+}
+
+balParameters * balParameters::Create () {
+     return new balParameters;
+}
+
+balParameters * balParameters::Copy (balParameters * params) {
+  return new balParameters(*params);
+}
+
+void balParameters::Destroy () {
+  delete this;
+}
+
 void balParameters::SetNumber (int numpars) {
   if(numpars > 0) {
     p = numpars;
@@ -64,5 +85,13 @@ double * balParameters::GetParameters () const {
 void balParameters::CopyValues(balParameters* _par){
   for (int i = 0; i < _par->GetNumber(); i++)
     pars[i] = _par->At(i);
+}
+
+ostream& operator<< (ostream& out, const balParameters& bp) {
+  out << "(";
+  for(int i=0; i<bp.p-1; i++)
+    out << bp.pars[i] << ",";
+  out << bp.pars[bp.p-1] << ")";
+  return out;
 }
 

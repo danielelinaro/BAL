@@ -30,32 +30,29 @@
 class balSolution : public balObject {
  public:
   /** Returns the name of the class. */
-  virtual const char * GetClassName() const { return "balSolution" ; }
+  virtual const char * GetClassName() const;
   /** Creates a new balSolution. */
-  static balSolution * Create() { return new balSolution; }
+  static balSolution * Create();
   /** Copies a balSolution */
-  static balSolution * Copy(balSolution * solution) { return new balSolution(*solution); }
+  static balSolution * Copy(balSolution * solution);
   /** Destroys a balSolution. */
-  virtual void Destroy() { delete this; }
+  virtual void Destroy();
   /** Checks whether this object is of a particular type. */
-  virtual bool IsA(const char * name) const { return (strcmp(name, this->GetClassName()) == 0); }
+  virtual bool IsA(const char * name) const;
   
-  int GetRows() const { return rows; }
-  int GetColumns() const { return columns; }
-  void GetSize(int * r, int * c) const {
-    *r = rows;
-    *c= columns;
-  }
+  int GetRows() const;
+  int GetColumns() const;
+  void GetSize(int * r, int * c) const;
   void SetSize(int r, int c);
   
-  balParameters * GetParameters() const { return parameters; }
+  balParameters * GetParameters() const;
   void SetParameters(balParameters * p);
   
-  realtype * GetData() { return buffer; }	
+  realtype * GetData();	
   void SetData(int r, int c, realtype * data);
   
-  int GetNumberOfTurns() { return nturns; }
-  void SetNumberOfTurns(int _nturns) { nturns = _nturns; }
+  int GetNumberOfTurns();
+  void SetNumberOfTurns(int _nturns);
   
  protected:
   /* Protected destructor of the class. */

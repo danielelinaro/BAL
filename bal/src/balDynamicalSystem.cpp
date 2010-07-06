@@ -59,26 +59,49 @@ balDynamicalSystem::~balDynamicalSystem() {
 #endif
 }
 
+const char * balDynamicalSystem::GetClassName () const {
+  return "balDynamicalSystem";
+}
+
+balDynamicalSystem * balDynamicalSystem::Create () { 
+  return new balDynamicalSystem;
+}
+
+balDynamicalSystem * balDynamicalSystem::Copy () {
+  return new balDynamicalSystem(*this);
+}
+
+void balDynamicalSystem::Destroy () {
+  delete this;
+}
+
 int balDynamicalSystem::RHS (realtype t, N_Vector x, N_Vector xdot, void * data) {
   return ! CV_SUCCESS;
 }
 
 int balDynamicalSystem::RHSWrapper (realtype t, N_Vector x, N_Vector xdot, void * sys) {
   balDynamicalSystem * bds = (balDynamicalSystem *) sys;
-  if(! bds->IsExtended()) {
-    return bds->RHS(t,x,xdot,(void *)bds->GetParameters());
+
+  // the first n components of the vector field
+  int flag = bds->RHS(t,x,xdot,(void *)bds->GetParameters());
+
+  if(! bds->IsExtended() || flag != CV_SUCCESS) {
+    return flag;
   }
   
-  // the first n components of the vector field
-  bds->RHS(t,x,xdot,(void *)bds->GetParameters());
   
   // the Jacobian matrix
+  if(bds->HasJacobian()) {
 #ifdef CVODE25
-  balDynamicalSystem::JacobianWrapper(bds->n,bds->jac,t,x,NULL,(void *)bds,NULL,NULL,NULL);
+    balDynamicalSystem::JacobianWrapper(bds->n,bds->jac,t,x,NULL,(void *)bds,NULL,NULL,NULL);
 #endif
 #ifdef CVODE26
-  balDynamicalSystem::JacobianWrapper(bds->n,t,x,NULL,bds->jac,(void *)bds,NULL,NULL,NULL);
+    balDynamicalSystem::JacobianWrapper(bds->n,t,x,NULL,bds->jac,(void *)bds,NULL,NULL,NULL);
 #endif
+  }
+  else {
+    balDynamicalSystem::JacobianFiniteDifferences(bds->n,t,x,bds->jac,(void *)bds);
+  }
 
   realtype Y[bds->n][bds->n], F[bds->n][bds->n];
   int i, j, k;
@@ -133,6 +156,39 @@ int balDynamicalSystem::JacobianWrapper (int N, realtype t, N_Vector x, N_Vector
 #endif
 }
 
+#ifdef CVODE25
+int balDynamicalSystem::JacobianFiniteDifferences (long int N, realtype t, N_Vector x,
+						   DenseMat J, void *sys) {
+#endif
+#ifdef CVODE26
+int balDynamicalSystem::JacobianFiniteDifferences (long int N, realtype t, N_Vector x,
+						   DlsMat J, void *sys) {
+#endif
+  balDynamicalSystem * bds = (balDynamicalSystem *) sys;
+  N_Vector ref, perturb;
+  double eps = 1e-8;
+  int i, j;
+
+  ref = N_VNew_Serial(N);
+  perturb = N_VNew_Serial(N);
+
+  bds->RHS(t,x,ref,(void *)bds->GetParameters());
+
+  for(j=0; j<N; j++) {
+    Ith(x,j) = Ith(x,j) + eps;
+    bds->RHS(t,x,perturb,(void *)bds->GetParameters());
+    for(i=0; i<N; i++)
+      IJth(J,i,j) = (Ith(perturb,i)-Ith(ref,i)) / eps;
+    Ith(x,j) = Ith(x,j) - eps;
+  }
+
+  N_VDestroy_Serial(perturb);
+  N_VDestroy_Serial(ref);
+
+  return CV_SUCCESS;
+}
+  
+
 int balDynamicalSystem::Events (realtype t, N_Vector x, realtype * event, void * data) {
   return ! CV_SUCCESS;
 }
@@ -142,7 +198,8 @@ int balDynamicalSystem::EventsWrapper (realtype t, N_Vector x, realtype * event,
   return bds->Events(t,x,event,(void *)bds->GetParameters());
 }
 
-void balDynamicalSystem::EventsConstraints (realtype t, N_Vector x, int * constraints, void * data) {}
+void balDynamicalSystem::EventsConstraints (realtype t, N_Vector x, int * constraints, void * data) {
+}
 
 void balDynamicalSystem::SetParameters (balParameters * bp) throw (balException) {
   if(bp->GetNumber() != GetNumberOfParameters())
@@ -185,4 +242,40 @@ bool balDynamicalSystem::IsExtended() const {
 
 bool balDynamicalSystem::SpecialOptions(void *opt) {
   return false;
+}
+
+bool balDynamicalSystem::HasJacobian() const {
+  return false;
+}
+  
+bool balDynamicalSystem::HasEvents() const {
+  return false;
+}
+
+bool balDynamicalSystem::HasEventsConstraints() const {
+  return false;
+}
+  
+void balDynamicalSystem::Reset() {
+}
+
+void balDynamicalSystem::ManageEvents(realtype t, N_Vector X, int * events, int * constraints) {
+}
+  
+int balDynamicalSystem::GetNumberOfEvents() const {
+  return nev;
+}
+
+int balDynamicalSystem::GetNumberOfParameters() const {
+  return p;
+}
+  
+void balDynamicalSystem::SetNumberOfParameters(int p_) {
+  if(p_ >= 0)
+    p = p_;
+}
+
+void balDynamicalSystem::SetNumberOfEvents(int nev_) {
+  if(nev_ >= 0)
+    nev = nev_;
 }

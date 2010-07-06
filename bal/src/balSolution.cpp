@@ -23,44 +23,83 @@
 #include "balSolution.h"
 
 balSolution::balSolution() {
-	rows = columns = 0;
-	buffer = NULL;
-	parameters = NULL;
+  rows = columns = 0;
+  buffer = NULL;
+  parameters = NULL;
 }
 
 balSolution::balSolution(const balSolution& solution) {
-	balSolution();
-	solution.GetSize(&rows,&columns);
-	SetSize(rows,columns);
-	memcpy(buffer,solution.buffer,rows*columns*sizeof(realtype));
-	nturns = solution.nturns;
+  balSolution();
+  solution.GetSize(&rows,&columns);
+  SetSize(rows,columns);
+  memcpy(buffer,solution.buffer,rows*columns*sizeof(realtype));
+  nturns = solution.nturns;
 }
 
 balSolution::~balSolution() {
-	if(buffer != NULL) delete buffer;
-	if(parameters != NULL) parameters->Destroy();
+  if(buffer != NULL) delete buffer;
+  if(parameters != NULL) parameters->Destroy();
+}
+
+const char * balSolution::GetClassName() const {
+  return "balSolution";
+}
+
+balSolution * balSolution::Create() {
+  return new balSolution;
+}
+
+balSolution * balSolution::Copy(balSolution * solution) {
+  return new balSolution(*solution);
+}
+
+void balSolution::Destroy() {
+  delete this;
+}
+
+int balSolution::GetRows() const {
+  return rows;
+}
+
+int balSolution::GetColumns() const {
+  return columns;
 }
 
 void balSolution::SetSize(int r, int c) {
-	if(buffer != NULL) delete buffer;
-	rows = r;
-	columns = c;
-	buffer = new realtype[rows*columns];
+  if(buffer != NULL) delete buffer;
+  rows = r;
+  columns = c;
+  buffer = new realtype[rows*columns];
+}
+
+void balSolution::GetSize(int * r, int * c) const {
+  *r = rows;
+  *c= columns;
 }
 
 void balSolution::SetData(int r, int c, realtype * data) {
-	SetSize(r,c);
-	memcpy(buffer,data,rows*columns*sizeof(realtype));
+  SetSize(r,c);
+  memcpy(buffer,data,rows*columns*sizeof(realtype));
 }
+
+realtype * balSolution::GetData() {
+  return buffer;
+}	
 
 void balSolution::SetParameters(balParameters * p) {
-	if(parameters != NULL) parameters->Destroy();
-	parameters = balParameters::Copy(p);
+  if(parameters != NULL) parameters->Destroy();
+  parameters = balParameters::Copy(p);
 }
 
-/*
-realtype& balSolution::operator[](unsigned long index) {
-	return buffer[index];
+balParameters * balSolution::GetParameters() const {
+  return parameters;
 }
-*/
+
+void balSolution::SetNumberOfTurns(int _nturns) {
+  nturns = _nturns;
+}
+  
+int balSolution::GetNumberOfTurns() {
+  return nturns;
+}
 

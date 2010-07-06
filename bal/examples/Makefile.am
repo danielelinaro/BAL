@@ -1,7 +1,7 @@
 
 LDADD = ../src/libbal.la
 
-AM_CPPFLAGS = -I$(srcdir)/../src -I.
+AM_CPPFLAGS = "@CVODEVERSION@" -I$(srcdir)/../src -I.
 
 if EXAMPLES
 noinst_PROGRAMS = obj params loggers dynsys bifparams solver bifdiag interp pll lorenz eye basin

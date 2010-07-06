@@ -43,10 +43,10 @@ using namespace std;
 
 class balParameters : public balObject {
  public:
-  virtual const char * GetClassName () const { return "balParameters"; }
-  static balParameters * Create () { return new balParameters; }
-  static balParameters * Copy (balParameters * params) { return new balParameters(*params); }
-  virtual void Destroy () { delete this; }
+  virtual const char * GetClassName () const;
+  static balParameters * Create ();
+  static balParameters * Copy (balParameters * params);
+  virtual void Destroy ();
   virtual void SetNumber (int);
   int GetNumber () const;
   
@@ -55,24 +55,20 @@ class balParameters : public balObject {
   
   void CopyValues(balParameters* _par);
   
-  friend ostream & operator<< (ostream & out, const balParameters & bp) {
-    out << "(";
-    for(int i=0; i<bp.p-1; i++)
-      out << bp.pars[i] << ",";
-    out << bp.pars[bp.p-1] << ")";
-    return out;
-  }
+  friend ostream & operator<< (ostream & out, const balParameters & bp);
   
  protected:
   balParameters ();
   balParameters (const balParameters & param);
-  virtual ~balParameters () { if (pars != NULL) delete pars; }
+  virtual ~balParameters ();
   
  private:
   int p;
   double * pars;
   bool _dealloc;
 };
+
+ostream & operator<< (ostream & out, const balParameters & bp);
 
 #endif
 

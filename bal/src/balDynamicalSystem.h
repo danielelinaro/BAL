@@ -54,10 +54,10 @@
 
 class balDynamicalSystem : public balObject {
  public:
-  virtual const char * GetClassName () const { return "balDynamicalSystem"; }
-  static balDynamicalSystem * Create () { return new balDynamicalSystem; }
-  virtual balDynamicalSystem * Copy () { return new	balDynamicalSystem(*this); }
-  virtual void Destroy () { delete this; }
+  virtual const char * GetClassName () const;
+  static balDynamicalSystem * Create ();
+  virtual balDynamicalSystem * Copy ();
+  virtual void Destroy ();
   
   virtual int RHS (realtype t, N_Vector x, N_Vector xdot, void * data);
   static int RHSWrapper (realtype t, N_Vector x, N_Vector xdot, void * sys);
@@ -65,6 +65,8 @@ class balDynamicalSystem : public balObject {
 #ifdef CVODE25
   static int JacobianWrapper (long int N, DenseMat J, realtype t, N_Vector x, 
 			      N_Vector fy, void *sys, N_Vector tmp1, N_Vector tmp2, N_Vector tmp3);
+  static int JacobianFiniteDifferences (long int N, realtype t, N_Vector x,
+					DenseMat J, void *sys);
   virtual int Jacobian (long int N, DenseMat J, realtype t, N_Vector x, 
 			N_Vector fy, void *jac_data, N_Vector tmp1, N_Vector tmp2, N_Vector tmp3);
 #endif
@@ -72,6 +74,8 @@ class balDynamicalSystem : public balObject {
 #ifdef CVODE26
   static int JacobianWrapper (int N, realtype t, N_Vector x, N_Vector fy, 
 			      DlsMat J, void *sys, N_Vector tmp1, N_Vector tmp2, N_Vector tmp3);
+  static int JacobianFiniteDifferences (long int N, realtype t, N_Vector x,
+					DlsMat J, void *sys);
   virtual int Jacobian (int N, realtype t, N_Vector x, N_Vector fy, 
 			DlsMat J, void *jac_data, N_Vector tmp1, N_Vector tmp2, N_Vector tmp3);
 #endif
@@ -81,17 +85,17 @@ class balDynamicalSystem : public balObject {
   
   virtual void EventsConstraints (realtype t, N_Vector x, int * constraints, void * data);
   
-  virtual bool HasJacobian() const { return false; }
-  virtual bool HasEvents() const { return false; }
-  virtual bool HasEventsConstraints() const { return false; }
+  virtual bool HasJacobian() const;
+  virtual bool HasEvents() const;
+  virtual bool HasEventsConstraints() const;
   
-  virtual void Reset() {}
+  virtual void Reset();
   virtual bool SpecialOptions(void *opt);
-  virtual void ManageEvents(realtype t, N_Vector X, int * events, int * constraints = NULL) {}
+  virtual void ManageEvents(realtype t, N_Vector X, int * events, int * constraints = NULL);
   
-  int GetNumberOfEvents() const { return nev; }
+  int GetNumberOfEvents() const;
   int GetDimension() const;
-  int GetNumberOfParameters() const { return p; }
+  int GetNumberOfParameters() const;
   void SetParameters(balParameters *) throw(balException);
   balParameters * GetParameters() const;
   
@@ -103,8 +107,8 @@ class balDynamicalSystem : public balObject {
   balDynamicalSystem(const balDynamicalSystem& system);
   virtual ~balDynamicalSystem();
   void SetDimension(int n_);
-  void SetNumberOfParameters(int p_) { if(p_ >= 0) p = p_; }
-  void SetNumberOfEvents(int nev_) { if(nev_ >= 0) nev = nev_; }
+  void SetNumberOfParameters(int p_);
+  void SetNumberOfEvents(int nev_);
   
  private:
   int n;
