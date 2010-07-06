@@ -70,7 +70,7 @@ class balBifurcationDiagram : public balObject {
   /** Creates a new balBifurcationDiagram. */
   static balBifurcationDiagram * Create() { return new balBifurcationDiagram; }
   /** Destroys a balBifurcationDiagram. */
-  virtual void Destroy() { this->~balBifurcationDiagram(); }
+  virtual void Destroy() { delete this; }
   
   /** 
    * Sets the dynamical system to integrate. balBifurcationDiagram

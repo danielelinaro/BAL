@@ -10,7 +10,7 @@ class balHeartNeuron : public balDynamicalSystem {
  public:
   virtual const char * GetClassName () const { return "balHeartNeuron"; }
   static balHeartNeuron * Create () { return new balHeartNeuron; }
-  virtual void Destroy () { this->~balHeartNeuron(); }
+  virtual void Destroy () { delete this; }
   
   int RHS (realtype t, N_Vector x, N_Vector xdot, void * data);
 #ifdef CVODE25

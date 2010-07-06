@@ -43,7 +43,7 @@ class balBaseInterp1D : public balObject {
   /** Returns the name of the class. */
   virtual const char * GetClassName() const { return "balBaseInterp1D" ; }
   /** Destroys a balBaseInterp1D. */
-  virtual void Destroy() { this->~balBaseInterp1D(); }
+  virtual void Destroy() { delete this; }
   
   double interp(double x) {
     int jlo = cor ? hunt(x) : locate(x);

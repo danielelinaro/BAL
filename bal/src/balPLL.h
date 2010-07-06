@@ -34,7 +34,7 @@ class balPLL : public balDynamicalSystem {
  public:
   virtual const char * GetClassName () const { return "balPLL"; }
   static balPLL * Create () { return new balPLL; }
-  virtual void Destroy () { this->~balPLL(); }
+  virtual void Destroy () { delete this; }
   
   int RHS (realtype t, N_Vector X, N_Vector Xdot, void * data);
 #ifdef CVODE25

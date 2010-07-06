@@ -58,7 +58,7 @@ class balBifurcationParameters : public balParameters {
  public:
   virtual const char * GetClassName () const { return "balBifurcationParameters"; }
   static balBifurcationParameters * Create () { return new balBifurcationParameters; }
-  virtual void Destroy () { this->~balBifurcationParameters(); }
+  virtual void Destroy () { delete this; }
   
   virtual void SetNumber(int n);
   

@@ -54,7 +54,7 @@ class balEye : public balDynamicalSystem {
   virtual const char * GetClassName () const { return "balEye"; }
   static balEye * Create () { return new balEye; }
   virtual balDynamicalSystem * Copy() { return new balEye(*this); }
-  virtual void Destroy () { this->~balEye(); }
+  virtual void Destroy () { delete this; }
   
   int RHS (realtype t, N_Vector x, N_Vector xdot, void * data);
   int Events (realtype t, N_Vector x, realtype * event, void * data);

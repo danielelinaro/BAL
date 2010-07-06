@@ -36,7 +36,7 @@ class balSolution : public balObject {
   /** Copies a balSolution */
   static balSolution * Copy(balSolution * solution) { return new balSolution(*solution); }
   /** Destroys a balSolution. */
-  virtual void Destroy() { this->~balSolution(); }
+  virtual void Destroy() { delete this; }
   /** Checks whether this object is of a particular type. */
   virtual bool IsA(const char * name) const { return (strcmp(name, this->GetClassName()) == 0); }
   

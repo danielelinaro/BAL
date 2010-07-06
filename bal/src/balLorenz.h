@@ -33,7 +33,7 @@ class balLorenz : public balDynamicalSystem {
   virtual const char * GetClassName () const { return "balLorenz"; }
   static balLorenz * Create () { return new balLorenz; }
   virtual balDynamicalSystem * Copy() { return new balLorenz(*this); }
-  virtual void Destroy () { this->~balLorenz(); }
+  virtual void Destroy () { delete this; }
   
   int RHS (realtype t, N_Vector x, N_Vector xdot, void * data);
 #ifdef CVODE25

@@ -72,7 +72,7 @@ class balLogger : public balObject {
  public:
   virtual const char * GetClassName () const { return "balLogger"; }
   static balLogger * Create() { return new balLogger; }
-  virtual void Destroy() { this->~balLogger(); }
+  virtual void Destroy() { delete this; }
   
   virtual bool SetFilename(const char * fname, bool open = false);
   const char * GetFilename() const { return filename; }

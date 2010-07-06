@@ -1,9 +1,9 @@
 /*=========================================================================
  *
  *   Program:   Bifurcation Analysis Library
- *   Module:    obj.cpp
+ *   Module:    balObject.cpp
  *
- *   Copyright (C) 2009 Daniele Linaro
+ *   Copyright (C) 2010 Daniele Linaro
  *
  *   This program is free software: you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -20,25 +20,26 @@
  *
  *=========================================================================*/
 
-#include <iostream>
 #include "balObject.h"
-using namespace std;
 
-// TEST balObject
-int main(int argc, char *argv[]) {
-  bool flag;
-  const char name[] = "balObject";
-  balObject *obj = balObject::Create();
-
-  if(argc > 1)
-    flag = obj->IsA(argv[1]);
-  else
-    flag = obj->IsA(name);
-
-  cout << obj->GetClassName() << endl;
-  cout << "I am " << (flag ? "" : "not ") << "a " << (argc>1 ? argv[1] : name) << "." << endl;
-  obj->Destroy();
-  
-  return 0;
+balObject::balObject() {
 }
 
+balObject::~balObject() {
+}
+
+balObject* balObject::Create() {
+  return new balObject;
+}
+
+void balObject::Destroy() {
+  delete this;
+}
+
+const char* balObject::GetClassName() const {
+  return "balObject";
+}
+
+bool balObject::IsA(const char * name) const {
+  return (strcmp(name, this->GetClassName()) == 0);
+}

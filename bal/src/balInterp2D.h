@@ -41,7 +41,7 @@ class balBilinearInterp2D : public balObject {
   /** Returns the name of the class. */
   virtual const char * GetClassName() const { return "balBilinearInterp2D" ; }
   /** Destroys a balBilinInterp2D. */
-  virtual void Destroy() { this->~balBilinearInterp2D(); }
+  virtual void Destroy() { delete this; }
   /** Creates a balBilinInterp2D. */
   static balBilinearInterp2D * Create(double *x1v, double *x2v, double **yy, int mm, int nn) {
     return new balBilinearInterp2D(x1v,x2v,yy,mm,nn);

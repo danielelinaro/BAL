@@ -46,6 +46,7 @@
 #ifndef _BALOBJECT_
 #define _BALOBJECT_
 
+#include <cstdio>
 #include <cstring>
 
 /**
@@ -53,18 +54,28 @@
  *  \brief Base class for all BAL objects.
  */
 class balObject {
-	public:
-		/** Returns the name of the class. */
-		virtual const char * GetClassName() const { return "balObject" ; }
-		/** Creates a new balObject. */
-		static balObject * Create() { return new balObject; }
-		/** Destroys a balObject. */
-		virtual void Destroy() { this->~balObject(); }
-		/** Checks whether this object is of a particular type. */
-		virtual bool IsA(const char * name) const { return (strcmp(name, this->GetClassName()) == 0); }
-	protected:
-		/* Protected destructor of the class. */
-		virtual ~balObject() {}
+
+ public:
+
+  /** Returns the name of the class. */
+  virtual const char * GetClassName() const;
+
+  /** Creates a new balObject. */
+  static balObject * Create();
+
+  /** Destroys a balObject. */
+  virtual void Destroy();
+
+  /** Checks whether this object is of a particular type. */
+  virtual bool IsA(const char * name) const;
+
+ protected:
+
+  /** Protected constructor of the class. */
+  balObject();
+
+  /** Protected destructor of the class. */
+  virtual ~balObject();
 };
 
 #endif

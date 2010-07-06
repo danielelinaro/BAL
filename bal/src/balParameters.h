@@ -46,7 +46,7 @@ class balParameters : public balObject {
   virtual const char * GetClassName () const { return "balParameters"; }
   static balParameters * Create () { return new balParameters; }
   static balParameters * Copy (balParameters * params) { return new balParameters(*params); }
-  virtual void Destroy () { this->~balParameters(); }
+  virtual void Destroy () { delete this; }
   virtual void SetNumber (int);
   int GetNumber () const;
   

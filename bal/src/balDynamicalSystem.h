@@ -57,7 +57,7 @@ class balDynamicalSystem : public balObject {
   virtual const char * GetClassName () const { return "balDynamicalSystem"; }
   static balDynamicalSystem * Create () { return new balDynamicalSystem; }
   virtual balDynamicalSystem * Copy () { return new	balDynamicalSystem(*this); }
-  virtual void Destroy () { this->~balDynamicalSystem(); }
+  virtual void Destroy () { delete this; }
   
   virtual int RHS (realtype t, N_Vector x, N_Vector xdot, void * data);
   static int RHSWrapper (realtype t, N_Vector x, N_Vector xdot, void * sys);

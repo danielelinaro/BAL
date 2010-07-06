@@ -35,7 +35,7 @@ class balHindmarshRose : public balDynamicalSystem {
   virtual const char * GetClassName () const { return "balHindmarshRose"; }
   static balHindmarshRose * Create () { return new balHindmarshRose; }
   virtual balDynamicalSystem * Copy() { return new balHindmarshRose(*this); }
-  virtual void Destroy () { this->~balHindmarshRose(); }
+  virtual void Destroy () { delete this; }
   
   int RHS (realtype t, N_Vector x, N_Vector xdot, void * data);
 #ifdef CVODE25

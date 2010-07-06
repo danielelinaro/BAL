@@ -121,7 +121,7 @@ class balODESolver : public balObject {
   /** Creates a copy of balODESolver. */
   static balODESolver * Copy (balODESolver * solver) { return new balODESolver(*solver); }
   /** Destroys a balODESolver. */
-  virtual void Destroy() { this->~balODESolver(); }
+  virtual void Destroy() { delete this; }
   
   realtype * GetBuffer() const;
   int GetBufferSize() const;
