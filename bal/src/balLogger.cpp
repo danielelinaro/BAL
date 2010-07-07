@@ -20,6 +20,11 @@
  *
  *=========================================================================*/
 
+/** 
+ * \file balLogger.cpp
+ * \brief Implementation of classes balLogger and balH5Logger
+ */
+
 #include "balLogger.h"
 
 ///// BALLOGGER /////

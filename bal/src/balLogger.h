@@ -20,27 +20,24 @@
  *
  *=========================================================================*/
 
-// .NAME balLogger - base class (balLogger) and inherited classes
-// (balH5Logger and balASCIILogger) for saving integration data to files.
-// 
-// .SECTION Description
-// balLogger and its inherited classes are used for saving data to files.
-// More specifically, data is assumed to be a matrix of realtype values,
-// where every row has the following structure:
-//
-// TIME X1 X2 ... Xi ... Xn LABEL
-//
-// Here TIME represents the instant of time at which data is recorded, Xi
-// represent the value of the i-th state variable and LABEL is an
-// additional field that gives information on the type of record, i.e.
-// whether it is a normal integration step or it is an intersection with a
-// Poincare' section. For more details on this aspect and for the possible
-// values of the label column, see the documentation of the class
-// balSolver.
-//
-// .SECTION See also
-// balSolver
-//
+/** 
+ * \file balLogger.h
+ * \brief Definition of classes balLogger and balH5Logger
+ *
+ * balLogger and its inherited classes are used for saving data to files.
+ * More specifically, data is assumed to be a matrix of realtype values,
+ * where every row has the following structure:
+ *
+ * TIME X1 X2 ... Xi ... Xn LABEL
+ *
+ * Here TIME represents the instant of time at which data is recorded, Xi
+ * represent the value of the i-th state variable and LABEL is an
+ * additional field that gives information on the type of record, i.e.
+ * whether it is a normal integration step or it is an intersection with a
+ * Poincare' section. For more details on this aspect and for the possible
+ * values of the label column, see the documentation of the class
+ * balSolver.
+ */
 
 #ifndef _BALLOGGER_
 #define _BALLOGGER_
@@ -68,6 +65,11 @@
 
 using std::list;
 
+/**
+ * \class balLogger 
+ * \brief Base class for saving integration data to file 
+ * \sa balODESolver
+ */
 class balLogger : public balObject {
  public:
   virtual const char * GetClassName () const { return "balLogger"; }
@@ -125,6 +127,11 @@ class balLogger : public balObject {
   balParameters * params;
 };
 
+/**
+ * \class balH5Logger 
+ * \brief Class for saving integration data to H5 (compressed) files
+ * \sa balLogger balODESolver
+ */
 class balH5Logger : public balLogger {
  public:
   virtual const char * GetClassName () const { return "balH5Logger"; }

@@ -22,7 +22,18 @@
 
 /**
  * \file balCommon.h
- * \brief Header file with common definitions to other bal classes.
+ * \brief Header file with common definitions for other bal classes.
+ */
+
+/**
+ * \mainpage A Bifurcation Analysis Library (BAL)
+ * \author Daniele Linaro <daniele.linaro@unige.it>
+ * \version 0.9.1
+ * \date 2009 - 2010
+ *
+ * This library aims to provide an easy way to compute brute-force
+ * bifurcation diagrams of (autonomous) dynamical systems described 
+ * by sets of ordinary differential equations (ODE's).
  */
 
 #ifndef _BALCOMMON_
@@ -56,6 +67,10 @@
 
 #include <exception>
 
+/**
+ * \class balException
+ * \brief Class that implements the exceptions thrown by the BAL library
+ */
 class balException : public std::exception {
  public:
  balException(const char* description = NULL) : errorDescription(description) {}

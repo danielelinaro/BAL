@@ -19,6 +19,12 @@
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  *=========================================================================*/
+
+/** 
+ * \file balPLL.cpp
+ * \brief Implementation of the class balPLL
+ */
+
 #include "balPLL.h"
 
 const int balPLL::npar = 14;

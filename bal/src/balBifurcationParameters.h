@@ -20,17 +20,16 @@
  *
  *=========================================================================*/
 
-/**
- * \file balBifurcationParameters.h
- * \brief Class for storing the tuples of parameters required in the
- * computation of a bifurcation diagram.
- */
-
 #ifndef _BALBIFURCATIONPARAMETERS_
 #define _BALBIFURCATIONPARAMETERS_
 
 #include "balParameters.h"
 #include "balCommon.h"
+
+/** 
+ * \file balBifurcationParameters.h
+ * \brief Definition of the class balBifurcationParameters
+ */
 
 /**
  * \class balBifurcationParameters
@@ -52,13 +51,13 @@
  * tuple of parameters, so that a balDynamicalSystem can use an instance of
  * balBifurcationParameters as if it were of type balParameters.
  *
- * \see balParameters balBifurcationDiagram balDynamicalSystem
+ * \sa balParameters balBifurcationDiagram balDynamicalSystem
  */
 class balBifurcationParameters : public balParameters {
  public:
-  virtual const char * GetClassName () const { return "balBifurcationParameters"; }
-  static balBifurcationParameters * Create () { return new balBifurcationParameters; }
-  virtual void Destroy () { delete this; }
+  virtual const char * GetClassName () const;
+  static balBifurcationParameters * Create ();
+  virtual void Destroy ();
   
   virtual void SetNumber(int n);
   
@@ -74,8 +73,8 @@ class balBifurcationParameters : public balParameters {
   void SetNumberOfSteps(const int * s);
   int GetNumberOfSteps(int i) const;
   
-  inline void Reset() { Setup(); }
-  int GetTotalNumberOfTuples() const { return total; }
+  void Reset();
+  int GetTotalNumberOfTuples() const;
   
   bool Next();
   bool HasTuples() const;

@@ -20,19 +20,10 @@
  *
  *=========================================================================*/
 
-// .NAME balDynamicalSystem - base class to represent dynamical systems.
-// 
-// .SECTION Description
-// balDynamicalSystem is the base class for all dynamical systems that are
-// to be integrated using the Bifurcation Analysis Library. Every class
-// that is inherited from balDynamicalSystem must have at least the RHS
-// method (implementing the vector field of a dynamical system) and
-// possibly a method that implements the Jacobian matrix of the system,
-// even though this is not strictly necessary for the integration of the
-// model.
-//
-// .SECTION See also
-// balParameters
+/** 
+ * \file balDynamicalSystem.h
+ * \brief Definition of the class balDynamicalSystem
+ */
 
 #ifndef _BALDYNAMICALSYSTEM_
 #define _BALDYNAMICALSYSTEM_
@@ -52,6 +43,20 @@
 #include "balObject.h"
 #include "balParameters.h"
 
+/** 
+ * \class balDynamicalSystem
+ * \brief Base class to represent dynamical systems.
+ * 
+ * balDynamicalSystem is the base class for all dynamical systems that are
+ * to be integrated using the Bifurcation Analysis Library. Every class
+ * that is inherited from balDynamicalSystem must have at least the RHS
+ * method (implementing the vector field of a dynamical system) and
+ * possibly a method that implements the Jacobian matrix of the system,
+ * even though this is not strictly necessary for the integration of the
+ * model.
+ *
+ * \sa balParameters
+ */
 class balDynamicalSystem : public balObject {
  public:
   virtual const char * GetClassName () const;

@@ -20,6 +20,11 @@
  *
  *=========================================================================*/
 
+/** 
+ * \file balDynamicalSystem.cpp
+ * \brief Implementation of the class balDynamicalSystem
+ */
+
 #include "balDynamicalSystem.h"
 
 balDynamicalSystem::balDynamicalSystem() {

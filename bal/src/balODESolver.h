@@ -20,6 +20,12 @@
  *
  *=========================================================================*/
 
+/** 
+ * \file balODESolver.h
+ * \brief Definition of the class balODESolver
+ */
+
+
 #ifndef _BALODESOLVER_
 #define _BALODESOLVER_
 
@@ -111,6 +117,12 @@ typedef enum
 enum { EQUIL_FALSE, EQUIL_TRUE, EQUIL_BREAK };
 enum { CYCLE_FALSE, CYCLE_TRUE, CYCLE_BREAK };
 
+/**
+ * \class balODESolver
+ * \brief Class for integration of dynamical systems
+ * 
+ * \sa balDynamicalSystem balBifurcationParameters balSolution
+ */
 class balODESolver : public balObject {
 
  public:

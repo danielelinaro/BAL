@@ -20,6 +20,11 @@
  *
  *=========================================================================*/
 
+/** 
+ * \file balParameters.cpp
+ * \brief Implementation of the class balParameters
+ */
+
 #include "balParameters.h"
 
 balParameters::balParameters() {

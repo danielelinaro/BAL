@@ -22,14 +22,7 @@
 
 /**
  * \file balBifurcationDiagram.h
- * \brief Class to calculate brute-force bifurcation diagrams.
- *
- * This class is used to compute brute-force bifurcation diagrams: it
- * manages 4 different kind of objects: a balDynamicalSystem that defines
- * the RHS function of the system to integrate, a balODESolver that
- * performs the actual integration, a balLogger to store data to file and a
- * balBifurcationParameters that is mainly used to iterate over all the
- * combinations of parameters that the user is interested to simulate.
+ * \brief Definition of the class balBifurcationDiagram.
  */
 
 #ifndef _BALBIFURCATIONDIAGRAM_
@@ -61,7 +54,16 @@ enum { balPARAMS, balIC };
 
 /**
  * \class balBifurcationDiagram
- * \brief Calculates brute-force bifurcation diagrams.
+ * \brief Class to calculate brute-force bifurcation diagrams.
+ *
+ * This class is used to compute brute-force bifurcation diagrams: it
+ * manages 4 different kind of objects: a balDynamicalSystem that defines
+ * the RHS function of the system to integrate, a balODESolver that
+ * performs the actual integration, a balLogger to store data to file and a
+ * balBifurcationParameters that is mainly used to iterate over all the
+ * combinations of parameters that the user is interested to simulate.
+ *
+ * \sa balDynamicalSystem balBifurcationParameters balODESolver
  */
 class balBifurcationDiagram : public balObject {
  public:
@@ -237,7 +239,10 @@ class balBifurcationDiagram : public balObject {
   int nthreads;
 };
 
-/** Used to compare two arrays of double values when sorting a list */
+/**
+ * \struct balDoubleArrayComparer
+ * \brief Object used to compare two arrays of double values when sorting a list
+ */ 
 struct balDoubleArrayComparer {
   bool operator() (double *array1, double *array2, int sz) {
     for (int i=0; i<sz; i++) {

@@ -19,6 +19,12 @@
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  *=========================================================================*/
+
+/** 
+ * \file balEye.cpp
+ * \brief Implementation of the class balEye
+ */
+
 #include "balEye.h"
 
 balDynamicalSystem* balEyeFactory() {
@@ -67,6 +73,26 @@ balEye::balEye(const balEye& eye) : balDynamicalSystem( eye ) {
 balEye::~balEye() {
   N_VDestroy_Serial(xderiv);
   DeleteVectorField();
+}
+
+balEye * balEye::Create () {
+  return new balEye;
+}
+
+void balEye::Destroy () {
+  delete this;
+}
+
+balDynamicalSystem * balEye::Copy() {
+  return new balEye(*this);
+}
+  
+const char * balEye::GetClassName () const { 
+  return "balEye";
+}
+
+bool balEye::HasEvents() const {
+  return true;
 }
 
 bool balEye::SpecialOptions(void *opt) {

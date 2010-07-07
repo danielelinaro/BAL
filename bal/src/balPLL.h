@@ -20,6 +20,11 @@
  *
  *=========================================================================*/
 
+/** 
+ * \file balPLL.h
+ * \brief Definition of the class balPLL
+ */
+
 #ifndef _BALPLL_
 #define _BALPLL_
 
@@ -30,6 +35,15 @@
 
 //#define WITHPHIERR
 
+/**
+ * \class balPLL
+ * \brief Implementation of a dynamical system that describes a
+ * Phase-Locked Loop
+ *
+ * This PLL is modelled as a switch system.
+ *
+ * \sa balDynamicalSystem
+ */
 class balPLL : public balDynamicalSystem {
  public:
   virtual const char * GetClassName () const { return "balPLL"; }

@@ -20,6 +20,11 @@
  *
  *=========================================================================*/
 
+/** 
+ * \file balLorenz.h
+ * \brief Definition of the class balLorenz
+ */
+
 #ifndef _BALHINDMARSHROSE_
 #define _BALHINDMARSHROSE_
 
@@ -28,6 +33,11 @@
 #include "balDynamicalSystem.h"
 #include <cvode/cvode.h>
 
+/**
+ * \class balLorenz
+ * \brief Implementation of Lorenz dynamical system
+ * \sa balDynamicalSystem
+ */
 class balLorenz : public balDynamicalSystem {
  public:
   virtual const char * GetClassName () const { return "balLorenz"; }

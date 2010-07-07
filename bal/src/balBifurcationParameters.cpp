@@ -20,6 +20,11 @@
  *
  *=========================================================================*/
 
+/** 
+ * \file balBifurcationParameters.cpp
+ * \brief Implementation of the class balBifurcationParameters
+ */
+
 #include "balBifurcationParameters.h"
 
 balBifurcationParameters::balBifurcationParameters() {
@@ -39,6 +44,18 @@ balBifurcationParameters::~balBifurcationParameters() {
     delete isteps;
     delete steps;
   }
+}
+
+balBifurcationParameters * balBifurcationParameters::Create () {
+  return new balBifurcationParameters;
+}
+
+void balBifurcationParameters::Destroy () {
+  delete this;
+}
+
+const char * balBifurcationParameters::GetClassName () const {
+  return "balBifurcationParameters";
 }
 
 void balBifurcationParameters::SetNumber(int n) {
@@ -138,6 +155,14 @@ int balBifurcationParameters::GetNumberOfSteps(int i) const {
   if(i>=0 && i<plower->GetNumber())
     return nsteps[i];
   return -1;
+}
+
+int balBifurcationParameters::GetTotalNumberOfTuples() const {
+  return total;
+}
+
+void balBifurcationParameters::Reset() {
+  Setup();
 }
 
 void balBifurcationParameters::Setup() {

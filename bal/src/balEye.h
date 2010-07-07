@@ -20,12 +20,10 @@
  *
  *=========================================================================*/
 
-// .NAME balEye
-// 
-// .SECTION Description
-//
-// .SECTION See also
-// balDynamicalSystem balInterp1D balInterp2D
+/** 
+ * \file balEye.h
+ * \brief Definition of the class balEye
+ */
 
 #ifndef _BALEYE_
 #define _BALEYE_
@@ -49,23 +47,30 @@
 #include "balDynamicalSystem.h"
 #include "balInterp2D.h"
 
+/**
+ * \class balEye
+ * \brief Implementation of a dynamical system that represents the flow
+ * of particles inside the human eye
+ * 
+ * \sa balDynamicalSystem
+ */
 class balEye : public balDynamicalSystem {
  public:
-  virtual const char * GetClassName () const { return "balEye"; }
-  static balEye * Create () { return new balEye; }
-  virtual balDynamicalSystem * Copy() { return new balEye(*this); }
-  virtual void Destroy () { delete this; }
+  virtual const char * GetClassName () const;
+  static balEye * Create ();
+  virtual balDynamicalSystem * Copy();
+  virtual void Destroy ();
   
   int RHS (realtype t, N_Vector x, N_Vector xdot, void * data);
   int Events (realtype t, N_Vector x, realtype * event, void * data);
   
-  bool HasEvents() const { return true; }
+  bool HasEvents() const;
   bool SpecialOptions(void *opt);
   bool ReadVectorField(const char *filename);
 
  protected:
   balEye();
-  balEye(const balEye& hr);
+  balEye(const balEye& eye);
   virtual ~balEye();
   
  private:

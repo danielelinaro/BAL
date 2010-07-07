@@ -1,16 +1,50 @@
-#ifndef _BALHeartNeuron_
-#define _BALHeartNeuron_
+/*=========================================================================
+ *
+ *   Program:   Bifurcation Analysis Library
+ *   Module:    balHeartNeuron.h
+ *
+ *   Copyright (C) 2009 Daniele Linaro
+ *
+ *   This program is free software: you can redistribute it and/or modify
+ *   it under the terms of the GNU General Public License as published by
+ *   the Free Software Foundation, either version 3 of the License, or
+ *   (at your option) any later version.
+ *   
+ *   This program is distributed in the hope that it will be useful,
+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *   GNU General Public License for more details.
+ *   
+ *   You should have received a copy of the GNU General Public License
+ *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ *=========================================================================*/
+
+/** 
+ * \file balHeartNeuron.h
+ * \brief Definition of the class balHeartNeuron
+ */
+
+#ifndef _BALHEARTNEURON_
+#define _BALHEARTNEURON_
 
 #include "balObject.h"
 #include "balParameters.h"
 #include "balDynamicalSystem.h"
 #include <cvode/cvode.h>
 
+/**
+ * \class balHeartNeuron
+ * \brief Implementation of a dynamical system that describes a heart
+ * neuron model
+ * 
+ * \sa balDynamicalSystem balHindmarshRose
+ */
 class balHeartNeuron : public balDynamicalSystem {
  public:
-  virtual const char * GetClassName () const { return "balHeartNeuron"; }
-  static balHeartNeuron * Create () { return new balHeartNeuron; }
-  virtual void Destroy () { delete this; }
+  virtual const char * GetClassName () const;
+  static balHeartNeuron * Create ();
+  virtual void Destroy ();
   
   int RHS (realtype t, N_Vector x, N_Vector xdot, void * data);
 #ifdef CVODE25
@@ -24,15 +58,15 @@ class balHeartNeuron : public balDynamicalSystem {
   int Events (realtype t, N_Vector x, realtype * event, void * data);
   void EventsConstraints (realtype t, N_Vector x, int * constraints, void * data);
   
-  bool HasJacobian() const { return false; }
-  bool HasEvents() const { return true; }
-  bool HasEventsConstraints() const { return true; }
+  bool HasJacobian() const;
+  bool HasEvents() const;
+  bool HasEventsConstraints() const;
   
-  static realtype BoltzmannF(realtype a, realtype b, realtype V) {
+  inline static realtype BoltzmannF(realtype a, realtype b, realtype V) {
     return 1./(1. + exp(a*(b + V)));
   }
   
-  static realtype BoltzmannDFDV(realtype a, realtype b, realtype V) {
+  inline static realtype BoltzmannDFDV(realtype a, realtype b, realtype V) {
     realtype e = exp(a*(b+V));
     return - (a*e) / ((1.+e)*(1.+e));			
   }

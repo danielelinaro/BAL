@@ -1,3 +1,30 @@
+/*=========================================================================
+ *
+ *   Program:   Bifurcation Analysis Library
+ *   Module:    balHeartNeuron.cpp
+ *
+ *   Copyright (C) 2009 Daniele Linaro
+ *
+ *   This program is free software: you can redistribute it and/or modify
+ *   it under the terms of the GNU General Public License as published by
+ *   the Free Software Foundation, either version 3 of the License, or
+ *   (at your option) any later version.
+ *   
+ *   This program is distributed in the hope that it will be useful,
+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *   GNU General Public License for more details.
+ *   
+ *   You should have received a copy of the GNU General Public License
+ *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ *=========================================================================*/
+
+/** 
+ * \file balHeartNeuron.cpp
+ * \brief Implementation of the class balHeartNeuron
+ */
+
 #include "balHeartNeuron.h"
 
 balDynamicalSystem* balHeartNeuronFactory() {
@@ -22,6 +49,30 @@ balHeartNeuron::~balHeartNeuron(){
   N_VDestroy_Serial(xderiv);
 }
 
+balHeartNeuron * balHeartNeuron::Create () {
+    return new balHeartNeuron;
+}
+
+void balHeartNeuron::Destroy () {
+  delete this;
+}
+
+const char * balHeartNeuron::GetClassName () const {
+  return "balHeartNeuron";
+}
+
+bool balHeartNeuron::HasJacobian() const {
+  return false;
+}
+
+bool balHeartNeuron::HasEvents() const {
+  return true;
+}
+
+bool balHeartNeuron::HasEventsConstraints() const {
+  return true; 
+}
+  
 int balHeartNeuron::RHS(realtype t, N_Vector x, N_Vector xdot, void * data){
   realtype VK2shift,Iapp,tauK2;
   realtype V,hNa,mK2;

@@ -22,8 +22,7 @@
 
 /**
  *  \file balInterp1D.h
- *  \brief Classes for one dimensional interpolation.
- *  
+ *  \brief Definition of classes balBaseInterp1D, balLinearInterp1D, balPolyInterp1D and balSplineInterp1D. 
  */
 
 #ifndef _BALINTERP1D_
@@ -37,6 +36,10 @@ using namespace std;
 #define MIN(a,b) ((a) < (b) ? (a) : (b))
 #define MAX(a,b) ((a) > (b) ? (a) : (b))
 
+/**
+ * \class balBaseInterp1D 
+ * \brief Base class for one dimensional interpolation.
+ */
 class balBaseInterp1D : public balObject {
 		
  public:
@@ -85,6 +88,11 @@ class balBaseInterp1D : public balObject {
 };
 
 
+/**
+ * \class balLinearInterp1D 
+ * \brief Class for one dimensional linear interpolation.
+ * \sa balBaseInterp1D
+ */
 class balLinearInterp1D : public balBaseInterp1D {
  public:
   /** Returns the name of the class. */
@@ -108,6 +116,11 @@ class balLinearInterp1D : public balBaseInterp1D {
   }
 };
 
+/**
+ * \class balPolyInterp1D 
+ * \brief Class for one dimensional polynomial interpolation.
+ * \sa balBaseInterp1D
+ */
 class balPolyInterp1D : public balBaseInterp1D {
  public:
   /** Returns the name of the class. */
@@ -130,6 +143,11 @@ class balPolyInterp1D : public balBaseInterp1D {
   double dy;
 };
 
+/**
+ * \class balSplineInterp1D 
+ * \brief Class for one dimensional interpolation using splines.
+ * \sa balBaseInterp1D
+ */
 class balSplineInterp1D : public balBaseInterp1D {
  public:
   /** Returns the name of the class. */

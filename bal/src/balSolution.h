@@ -20,6 +20,11 @@
  *
  *=========================================================================*/
 
+/** 
+ * \file balSolution.h
+ * \brief Definition of the class balSolution
+ */
+
 #ifndef _BALSOLUTION_
 #define _BALSOLUTION_
 
@@ -27,6 +32,12 @@
 #include "balCommon.h"
 #include "balParameters.h"
 
+/**
+ * \class balSolution
+ * \brief Class that contains the result of an integration of a dynamical
+ * system
+ * \sa balDynamicalSystem balParameters balODESolver
+ */
 class balSolution : public balObject {
  public:
   /** Returns the name of the class. */
@@ -37,8 +48,6 @@ class balSolution : public balObject {
   static balSolution * Copy(balSolution * solution);
   /** Destroys a balSolution. */
   virtual void Destroy();
-  /** Checks whether this object is of a particular type. */
-  virtual bool IsA(const char * name) const;
   
   int GetRows() const;
   int GetColumns() const;
@@ -67,7 +76,11 @@ class balSolution : public balObject {
   int nturns;
 };
 
-/** Used to compare two balSolution objects when sorting a list */
+/**
+ * \struct balSolutionComparer
+ * \brief Object used to compare two balSolution objects when sorting a list
+ * \sa balSolution
+ */
 struct balSolutionComparer {
   bool operator() (balSolution * sol1, balSolution * sol2) {
     

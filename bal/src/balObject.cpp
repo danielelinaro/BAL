@@ -20,6 +20,11 @@
  *
  *=========================================================================*/
 
+/** 
+ * \file balObject.cpp 
+ * \brief Implementation of the class balObject
+ */
+
 #include "balObject.h"
 
 balObject::balObject() {
@@ -43,3 +48,4 @@ const char* balObject::GetClassName() const {
 bool balObject::IsA(const char * name) const {
   return (strcmp(name, this->GetClassName()) == 0);
 }
+

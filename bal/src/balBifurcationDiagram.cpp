@@ -20,6 +20,11 @@
  *
  *=========================================================================*/
 
+/** 
+ * \file balBifurcationDiagram.cpp
+ * \brief Implementation of the class balBifurcationDiagram
+ */
+
 #include "balBifurcationDiagram.h"
 
 void ResetColours(int d) {

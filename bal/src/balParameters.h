@@ -20,19 +20,10 @@
  *
  *=========================================================================*/
 
-// .NAME balParameters - base class for objects that contain parameters of
-// a dynamical system.
-// 
-// .SECTION Description
-// balParameters is the (general-purpose) base class to represent
-// parameters of a dynamical system. It simply contains an array that
-// represents the parameters of a system.  
-// This class can be inherited to contain more sophisticated definition of
-// parameters.
-//
-// .SECTION See also
-// balDynamicalSystem
-//
+/** 
+ * \file balParameters.h
+ * \brief Definition of the class balParameters
+ */
 
 #ifndef _BALPARAMETERS_
 #define _BALPARAMETERS_
@@ -41,6 +32,19 @@
 #include <fstream>
 using namespace std;
 
+/**
+ * \class balParameters 
+ * \brief Base class for objects that contain parameters of
+ * a dynamical system.
+ * 
+ * balParameters is the (general-purpose) base class to represent
+ * parameters of a dynamical system. It simply contains an array that
+ * represents the parameters of a system.  
+ * This class can be inherited to contain more sophisticated definition of
+ * parameters.
+ *
+ * \sa balDynamicalSystem
+ */
 class balParameters : public balObject {
  public:
   virtual const char * GetClassName () const;

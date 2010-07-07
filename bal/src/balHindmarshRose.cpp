@@ -19,6 +19,12 @@
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  *=========================================================================*/
+
+/** 
+ * \file balHindmarshRose.cpp
+ * \brief Implementation of the class balHindmarshRose
+ */
+
 #include "balHindmarshRose.h"
 
 balDynamicalSystem* balHindmarshRoseFactory() {

@@ -20,6 +20,11 @@
  *
  *=========================================================================*/
 
+/** 
+ * \file balSolution.cpp
+ * \brief Implementation of the class balSolution
+ */
+
 #include "balSolution.h"
 
 balSolution::balSolution() {

@@ -20,27 +20,9 @@
  *
  *=========================================================================*/
 
-/**
- * \mainpage A Bifurcation Analysis Library (BAL)
- *
- * This library aims to provide an easy way to compute brute-force
- * bifurcation diagrams of (autonomous) dynamical systems described 
- * by sets of ordinary differential equations (ODE's).
- */
-
-/**
- *  \file balObject.h
- *  \brief Base class for all BAL objects.
- *  
- *  balObject is the base class for all objects in the Bifurcation Analysis
- *  Library. Every object in the library should be a subclass of balObject.
- *  Constructor and destructor of the subclasses of balObject
- *  should be protected, so that only Create() and Destroy() actually
- *  call them.
- *  Note: Objects of subclasses of balObjects should always be
- *  created with the Create() method and deleted with the Destroy()
- *  method. They cannot be allocated off the stack (i.e., automatic
- *  objects) because the constructor is a protected method.
+/** 
+ * \file balObject.h 
+ * \brief Definition of the class balObject
  */
 
 #ifndef _BALOBJECT_
@@ -52,6 +34,16 @@
 /**
  *  \class balObject
  *  \brief Base class for all BAL objects.
+ *  
+ *  balObject is the base class for all objects in the Bifurcation Analysis
+ *  Library. Every object in the library should be a subclass of balObject.
+ *  Constructor and destructor of the subclasses of balObject
+ *  should be protected, so that only Create() and Destroy() actually
+ *  call them.
+ *  Note: Objects of subclasses of balObjects should always be
+ *  created with the Create() method and deleted with the Destroy()
+ *  method. They cannot be allocated off the stack (i.e., automatic
+ *  objects) because the constructor is a protected method.
  */
 class balObject {
 

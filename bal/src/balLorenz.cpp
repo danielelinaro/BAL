@@ -19,6 +19,12 @@
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  *=========================================================================*/
+
+/** 
+ * \file balLorenz.cpp
+ * \brief Implementation of the class balLorenz
+ */
+
 #include "balLorenz.h"
 
 balDynamicalSystem* balLorenzFactory() {

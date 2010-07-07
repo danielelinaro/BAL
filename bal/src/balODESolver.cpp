@@ -20,6 +20,11 @@
  *
  *=========================================================================*/
 
+/** 
+ * \file balODESolver.cpp
+ * \brief Implementation of the class balODESolver
+ */
+
 #include "balODESolver.h"
 
 balODESolver::balODESolver() {

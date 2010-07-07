@@ -22,8 +22,7 @@
 
 /**
  *  \file balInterp2D.h
- *  \brief Classes for two dimensional interpolation.
- *  
+ *  \brief Definition of the class balBilinearInterp2D 
  */
 
 #ifndef _BALINTERP2D_
@@ -35,6 +34,11 @@
 #include "balInterp1D.h"
 using namespace std;
 
+/**
+ * \class balBilinearInterp2D 
+ * \brief Class for two dimensional bilinear interpolation.
+ * \sa balBaseInterp1D balLinearInterp1D
+ */
 class balBilinearInterp2D : public balObject {
   
  public:

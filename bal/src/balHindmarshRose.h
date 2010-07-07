@@ -20,6 +20,11 @@
  *
  *=========================================================================*/
 
+/** 
+ * \file balHindmarshRose.h
+ * \brief Definition of the class balHindmarshRose
+ */
+
 #ifndef _BALHINDMARSHROSE_
 #define _BALHINDMARSHROSE_
 
@@ -30,6 +35,13 @@
 
 #define xrest  (-1.6)
 
+/**
+ * \class balHindmarshRose
+ * \brief Implementation of a dynamical system that describes a the
+ * Hindmarsh-Rose neuron model
+ * 
+ * \sa balDynamicalSystem
+ */
 class balHindmarshRose : public balDynamicalSystem {
  public:
   virtual const char * GetClassName () const { return "balHindmarshRose"; }
