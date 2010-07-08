@@ -21,6 +21,7 @@
  *=========================================================================*/
 
 #include <cstdio>
+#include <cstdlib>
 #include <iostream>
 #include <nvector/nvector_serial.h>
 #include "balObject.h"
