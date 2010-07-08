@@ -35,6 +35,18 @@ void ResetColours(int d) {
   exit(1);
 }
 
+const char * balBifurcationDiagram::GetClassName() const {
+  return "balBifurcationDiagram";
+}
+
+balBifurcationDiagram * balBifurcationDiagram::Create() {
+  return new balBifurcationDiagram;
+}
+
+void balBifurcationDiagram::Destroy() {
+  delete this;
+}
+
 balBifurcationDiagram::balBifurcationDiagram() {
   logger = balH5Logger::Create();
   destroy_logger = true;
@@ -169,6 +181,14 @@ void balBifurcationDiagram::SetInitialConditions(int nx0, double **x0) {
     nX0 = nx0;
     X0 = x0;
   }
+}
+
+bool balBifurcationDiagram::RestartsFromX0() const {
+  return restart_from_x0;
+}
+
+void balBifurcationDiagram::RestartFromX0(bool restart) {
+  restart_from_x0 = restart;
 }
 
 bool balBifurcationDiagram::SetMode(int _mode) {

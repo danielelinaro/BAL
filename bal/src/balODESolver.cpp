@@ -27,6 +27,22 @@
 
 #include "balODESolver.h"
 
+const char * balODESolver::GetClassName() const {
+  return "balODESolver";
+}
+
+balODESolver * balODESolver::Create() {
+  return new balODESolver;
+}
+
+balODESolver * balODESolver::Copy (balODESolver * solver) {
+  return new balODESolver(*solver);
+}
+
+void balODESolver::Destroy() {
+  delete this;
+}
+
 balODESolver::balODESolver() {
   neq = npar = nev = 0;
   buffer = NULL;

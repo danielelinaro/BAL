@@ -72,52 +72,38 @@ using std::list;
  */
 class balLogger : public balObject {
  public:
-  virtual const char * GetClassName () const { return "balLogger"; }
-  static balLogger * Create() { return new balLogger; }
-  virtual void Destroy() { delete this; }
+  virtual const char * GetClassName () const;
+  static balLogger * Create();
+  virtual void Destroy();
   
   virtual bool SetFilename(const char * fname, bool open = false);
-  const char * GetFilename() const { return filename; }
-  void SetParameters(balParameters * p) { params = p; }
-  balParameters * GetParameters() const { return params; }
-  void SetNumberOfColumns(int c) { cols = c; }
-  int GetNumberOfColumns() const { return cols; }
-  bool IsFileOpen() const { return opened; }
+  const char * GetFilename() const;
+  void SetParameters(balParameters * p);
+  balParameters * GetParameters() const;
+  void SetNumberOfColumns(int c);
+  int GetNumberOfColumns() const;
+  bool IsFileOpen() const;
   
-  virtual bool SaveBuffer(realtype * buffer, int rows) { 
-    if(!IsFileOpen()) 
-      OpenFile(); 
-    return false; 
-  }
+  virtual bool SaveBuffer(realtype * buffer, int rows);
   
   virtual bool SaveBufferThreaded(list <balSolution *> * sol_list,
 				  boost::mutex * list_mutex,
 				  boost::condition_variable * q_empty,
-				  boost::condition_variable * q_full) {
-    if(!IsFileOpen()) 
-      OpenFile();
-    return false; 
-  }
+				  boost::condition_variable * q_full);
   
-  virtual bool SaveSolution(balSolution * solution) { 
-    SetNumberOfColumns(solution->GetColumns());
-    SetParameters(solution->GetParameters());
-    return SaveBuffer(solution->GetData(), solution->GetRows()); 
-  }
+  virtual bool SaveSolution(balSolution * solution);
   
   virtual bool SaveSolutionThreaded(list <balSolution *> * sol_list,
 				    boost::mutex * list_mutex,
 				    boost::condition_variable * q_empty,
-				    boost::condition_variable * q_full) {
-    return SaveBufferThreaded(sol_list,list_mutex,q_empty,q_full); 
-  }
+				    boost::condition_variable * q_full);
   
  protected:
-  balLogger() : opened(false), cols(-1), params(NULL) {}
-  virtual ~balLogger() {}
-  virtual bool OpenFile() { return false; }
-  virtual bool CloseFile() { return false; }
-  void IsFileOpen(bool open) { opened = open; }
+  balLogger();
+  virtual ~balLogger();
+  virtual bool OpenFile();
+  virtual bool CloseFile();
+  void IsFileOpen(bool open);
   
  private:
   /** Tells whether the logging file is open or not */
@@ -134,9 +120,9 @@ class balLogger : public balObject {
  */
 class balH5Logger : public balLogger {
  public:
-  virtual const char * GetClassName () const { return "balH5Logger"; }
-  static balH5Logger * Create() { return new balH5Logger; }
-  virtual void Destroy() { this->~balH5Logger(); }
+  virtual const char * GetClassName () const;
+  static balH5Logger * Create();
+  virtual void Destroy();
   
   virtual bool SaveBuffer(realtype * buffer, int rows);
   virtual bool SaveBufferThreaded(list <balSolution *> * sol_list,

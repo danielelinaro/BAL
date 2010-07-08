@@ -46,9 +46,9 @@
  */
 class balPLL : public balDynamicalSystem {
  public:
-  virtual const char * GetClassName () const { return "balPLL"; }
-  static balPLL * Create () { return new balPLL; }
-  virtual void Destroy () { delete this; }
+  virtual const char * GetClassName () const;
+  static balPLL * Create ();
+  virtual void Destroy ();
   
   int RHS (realtype t, N_Vector X, N_Vector Xdot, void * data);
 #ifdef CVODE25
@@ -62,9 +62,9 @@ class balPLL : public balDynamicalSystem {
   int Events (realtype t, N_Vector X, realtype * event, void * data);
   void EventsConstraints (realtype t, N_Vector X, int * constraints, void * data);
   
-  bool HasJacobian() const { return false; }
-  bool HasEvents() const { return true; }
-  bool HasEventsConstraints() const { return true; }
+  bool HasJacobian() const;
+  bool HasEvents() const;
+  bool HasEventsConstraints() const;
   
   void Reset();
   void ManageEvents(realtype t, N_Vector x, int * events, int * constraints = NULL);

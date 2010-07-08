@@ -44,14 +44,11 @@ class balBaseInterp1D : public balObject {
 		
  public:
   /** Returns the name of the class. */
-  virtual const char * GetClassName() const { return "balBaseInterp1D" ; }
+  virtual const char * GetClassName() const;
   /** Destroys a balBaseInterp1D. */
-  virtual void Destroy() { delete this; }
+  virtual void Destroy();
   
-  double interp(double x) {
-    int jlo = cor ? hunt(x) : locate(x);
-    return rawinterp(jlo,x);
-  }
+  double interp(double x);
   
   /**
    * Given a value x, return a value j such that x is (insofar as possible) centered in the subrange 
@@ -74,11 +71,8 @@ class balBaseInterp1D : public balObject {
   int hunt(const double x);
   
  protected:
- balBaseInterp1D(double * x, const double *y, int length, int m)
-   : n(length), mm(m), jsav(0), cor(0), xx(&x[0]), yy(y) { 
-    dj = MIN(1, (int)pow((double)n,0.25));
-  }
-  ~balBaseInterp1D() {}
+  balBaseInterp1D(double * x, const double *y, int length, int m);
+  ~balBaseInterp1D();
   
   virtual double rawinterp(int jlo, double x) = 0;
   
@@ -96,24 +90,17 @@ class balBaseInterp1D : public balObject {
 class balLinearInterp1D : public balBaseInterp1D {
  public:
   /** Returns the name of the class. */
-  virtual const char * GetClassName() const { return "balLinearInterp1D" ; }
+  virtual const char * GetClassName() const;
   /** Destroys a balLinearInterp1D. */
-  virtual void Destroy() { this->~balLinearInterp1D(); }
+  virtual void Destroy();
   /** Creates a balLinearInterp1D */
-  static balLinearInterp1D * Create(double * xv, double * yv, int length) {
-    return new balLinearInterp1D(xv,yv,length);
-  }
+  static balLinearInterp1D * Create(double * xv, double * yv, int length);
   
  protected:
- balLinearInterp1D(double * xv, double * yv, int length) :
-  balBaseInterp1D(xv,yv,length,2) {}
-  ~balLinearInterp1D() {}
+  balLinearInterp1D(double * xv, double * yv, int length);
+  ~balLinearInterp1D();
   
-  virtual double rawinterp(int j, double x) {
-    if (xx[j]==xx[j+1]) 
-      return yy[j];
-    return yy[j] + ((x-xx[j])/(xx[j+1]-xx[j]))*(yy[j+1]-yy[j]);
-  }
+  virtual double rawinterp(int j, double x);
 };
 
 /**
@@ -124,18 +111,15 @@ class balLinearInterp1D : public balBaseInterp1D {
 class balPolyInterp1D : public balBaseInterp1D {
  public:
   /** Returns the name of the class. */
-  virtual const char * GetClassName() const { return "balPolyInterp1D" ; }
+  virtual const char * GetClassName() const;
   /** Destroys a balPolyInterp1D. */
-  virtual void Destroy() { this->~balPolyInterp1D(); }
+  virtual void Destroy();
   /** Creates a balLinearInterp1D */
-  static balPolyInterp1D * Create(double * xv, double * yv, int length, int m) {
-    return new balPolyInterp1D(xv,yv,length,m);
-  }
+  static balPolyInterp1D * Create(double * xv, double * yv, int length, int m);
   
  protected:
- balPolyInterp1D(double * xv, double * yv, int length, int m) :
-  balBaseInterp1D(xv,yv,length,m), dy(0.0) {}
-  ~balPolyInterp1D() {}
+  balPolyInterp1D(double * xv, double * yv, int length, int m);
+  ~balPolyInterp1D();
   
   virtual double rawinterp(int j, double x);
   
@@ -151,21 +135,15 @@ class balPolyInterp1D : public balBaseInterp1D {
 class balSplineInterp1D : public balBaseInterp1D {
  public:
   /** Returns the name of the class. */
-  virtual const char * GetClassName() const { return "balSplineInterp1D" ; }
+  virtual const char * GetClassName() const;
   /** Destroys a balSplineInterp1D. */
-  virtual void Destroy() { this->~balSplineInterp1D(); }
+  virtual void Destroy();
   /** Creates a balLinearInterp1D */
-  static balSplineInterp1D * Create(double * xv, double * yv, int length, double yp1=1.e99, double ypn=1.e99) {
-    return new balSplineInterp1D(xv,yv,length,yp1,ypn);
-  }
+  static balSplineInterp1D * Create(double * xv, double * yv, int length, double yp1=1.e99, double ypn=1.e99);
   
  protected:
- balSplineInterp1D(double * xv, double * yv, int length, double yp1, double ypn) :
-  balBaseInterp1D(xv,yv,length,2) {
-    y2 = new double[length];
-    sety2(xv,yv,yp1,ypn);
-  }
-  ~balSplineInterp1D() { delete y2; }
+  balSplineInterp1D(double * xv, double * yv, int length, double yp1, double ypn);
+  ~balSplineInterp1D();
   
   void sety2(double *xv, double *yv, double yp1, double ypn);
   virtual double rawinterp(int j, double x);

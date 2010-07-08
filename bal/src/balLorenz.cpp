@@ -41,6 +41,26 @@ balLorenz::balLorenz(const balLorenz& lor) : balDynamicalSystem(lor) {}
 
 balLorenz::~balLorenz() {}
 
+const char * balLorenz::GetClassName () const {
+  return "balLorenz";
+}
+
+balLorenz * balLorenz::Create () {
+  return new balLorenz;
+}
+
+balDynamicalSystem * balLorenz::Copy() {
+  return new balLorenz(*this);
+}
+
+void balLorenz::Destroy() {
+  delete this;
+}
+
+bool balLorenz::HasJacobian() const {
+  return (IsExtended() ? false : true);
+}
+
 int balLorenz::RHS (realtype t, N_Vector x, N_Vector xdot, void * data) {
   // the state of the system
   realtype x1, x2, x3;

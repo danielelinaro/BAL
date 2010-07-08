@@ -44,10 +44,10 @@
  */
 class balHindmarshRose : public balDynamicalSystem {
  public:
-  virtual const char * GetClassName () const { return "balHindmarshRose"; }
-  static balHindmarshRose * Create () { return new balHindmarshRose; }
-  virtual balDynamicalSystem * Copy() { return new balHindmarshRose(*this); }
-  virtual void Destroy () { delete this; }
+  virtual const char * GetClassName () const;
+  static balHindmarshRose * Create ();
+  virtual balDynamicalSystem * Copy();
+  virtual void Destroy ();
   
   int RHS (realtype t, N_Vector x, N_Vector xdot, void * data);
 #ifdef CVODE25
@@ -61,9 +61,9 @@ class balHindmarshRose : public balDynamicalSystem {
   int Events (realtype t, N_Vector x, realtype * event, void * data);
   void EventsConstraints (realtype t, N_Vector x, int * constraints, void * data);
   
-  bool HasJacobian() const { return true; }
-  bool HasEvents() const { return true; }
-  bool HasEventsConstraints() const { return true; }
+  bool HasJacobian() const;
+  bool HasEvents() const;
+  bool HasEventsConstraints() const;
   
  protected:
   balHindmarshRose();

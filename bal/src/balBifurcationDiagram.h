@@ -9,12 +9,12 @@
  *   it under the terms of the GNU General Public License as published by
  *   the Free Software Foundation, either version 3 of the License, or
  *   (at your option) any later version.
- *   
+ *
  *   This program is distributed in the hope that it will be useful,
  *   but WITHOUT ANY WARRANTY; without even the implied warranty of
  *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *   GNU General Public License for more details.
- *   
+ *
  *   You should have received a copy of the GNU General Public License
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
@@ -68,28 +68,28 @@ enum { balPARAMS, balIC };
 class balBifurcationDiagram : public balObject {
  public:
   /** Returns the name of the class. */
-  virtual const char * GetClassName() const { return "balBifurcationDiagram" ; }
+  virtual const char * GetClassName() const;
   /** Creates a new balBifurcationDiagram. */
-  static balBifurcationDiagram * Create() { return new balBifurcationDiagram; }
+  static balBifurcationDiagram * Create();
   /** Destroys a balBifurcationDiagram. */
-  virtual void Destroy() { delete this; }
-  
-  /** 
+  virtual void Destroy();
+
+  /**
    * Sets the dynamical system to integrate. balBifurcationDiagram
-   * assumes that the dynamical contain an instance of balBifurcationParameters, 
+   * assumes that the dynamical contain an instance of balBifurcationParameters,
    * instead of the simpler balParameters.
    * @param sys A dynamical system: any instance of a class inherited
    * from balDynamicalSystem.
    */
   void SetDynamicalSystem(balDynamicalSystem * sys);
-  
+
   /**
    * Gets the dynamical system to integrate.
    * @return The dynamical system used in the computation of the
    * bifurcation diagram.
    */
   balDynamicalSystem * GetDynamicalSystem() const;
-  
+
   /**
    * Sets the logger used for saving integration data to file. A logger
    * is automatically instantiated when a balBifurcationDiagram is
@@ -99,12 +99,12 @@ class balBifurcationDiagram : public balObject {
    * @param log An instance of one of the classes inherited by balLogger.
    */
   void SetLogger(balLogger * log);
-  
+
   /**
    * @return The logger used for saving data to file.
    */
   balLogger * GetLogger() const;
-  
+
   /**
    * Sets the ODESolver used to integrate the dynamical system. An ODE
    * solver is automatically instantiated when a balBifurcationDiagram is
@@ -113,43 +113,43 @@ class balBifurcationDiagram : public balObject {
    * \param sol An instance of an ODE solver.
    */
   void SetODESolver(balODESolver * sol);
-  
+
   /**
    * This method returns a pointer to the ODE solver used to integrate
    * the system. It is useful to set parameters of the ODE solver.
    * @return The ODE solver used to integrate the system.
    */
   balODESolver * GetODESolver() const;
-  
+
   /**
    * Sets the name of the file where data will be saved.
    * @param filename File where the bifurcation diagram will be saved.
    */
   void SetFilename(const char * filename);
-  
+
   /**
    * @return The name of the file where data is saved.
    */
   const char * GetFilename();
-  
+
   /**
    * Performs the actual computation of the brute-force bifurcation
    * diagram.
    */
   void ComputeDiagram();
-  
+
   /**
    * Asks whether each new integration is restarted from the original
    * initial conditions.
    */
-  bool RestartsFromX0() const { return restart_from_x0; }
-  
+  bool RestartsFromX0() const;
+
   /**
    * Sets whether each new integration should restart or not from the
    * original initial conditions.
    */
-  void RestartFromX0(bool restart) { restart_from_x0 = restart; }
-  
+  void RestartFromX0(bool restart);
+
   /**
    * Sets the number of parallel threads launched to compute the
    * bifurcation diagrams. The ideal value for _nthreads is equal to the
@@ -157,31 +157,30 @@ class balBifurcationDiagram : public balObject {
    * doesn't own a dual-core these days?!?).
    */
   void SetNumberOfThreads(int _nthreads);
-  
+
   /**
    * Gets the number of parallel threads launched to compute the
    * bifurcation diagrams.
    */
   int GetNumberOfThreads() const;
-  
+
   bool SaveClassificationData(const char *filename) const;
   double** GetClassificationData() const;
 
   bool SetMode(int _mode);
   void SetInitialConditions(int nx0, double **x0);
-  
+
  protected:
   balBifurcationDiagram();
   virtual ~balBifurcationDiagram();
-  
+
  private:
-  
+
   void ComputeDiagramSingleThread();
   void ComputeDiagramMultiThread();
   void IntegrateAndEnqueue(balODESolver *sol);
   double* BuildClassificationEntry(balSolution *sol);
-  
-  
+
   /** The ODE solver used to integrate the system */
   balODESolver * solver;
   /** The dynamical system to integrate */
@@ -190,8 +189,8 @@ class balBifurcationDiagram : public balObject {
   balParameters * parameters;
   /**
    * The object used to save data to a file: by default H5 file logging
-   * is used, i.e., logger is an instance of the balH5Logger class: 
-   * if the user wants to use another logger, they should provide it 
+   * is used, i.e., logger is an instance of the balH5Logger class:
+   * if the user wants to use another logger, they should provide it
    * by using the SetLogger member.
    */
   balLogger * logger;
@@ -199,7 +198,7 @@ class balBifurcationDiagram : public balObject {
   bool destroy_logger;
   /** Tells whether the solver should be deleted when a new one is set. */
   bool destroy_solver;
-  
+
   /** The number of dimensions of the system. */
   int ndim;
   /** The total number of parameters of the system. */
@@ -216,7 +215,7 @@ class balBifurcationDiagram : public balObject {
    * condition set by the user (true, default value) or from the final value of the
    * previous integration (false) */
   bool restart_from_x0;
-  
+
   /**
    * A list containing the classification of the bifurcation diagram in
    * terms of number of turns of the solution. Each entry contains
@@ -242,7 +241,7 @@ class balBifurcationDiagram : public balObject {
 /**
  * \struct balDoubleArrayComparer
  * \brief Object used to compare two arrays of double values when sorting a list
- */ 
+ */
 struct balDoubleArrayComparer {
   bool operator() (double *array1, double *array2, int sz) {
     for (int i=0; i<sz; i++) {

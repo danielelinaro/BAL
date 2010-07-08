@@ -127,13 +127,13 @@ class balODESolver : public balObject {
 
  public:
   /** Returns the name of the class. */
-  virtual const char * GetClassName() const { return "balODESolver" ; }
+  virtual const char * GetClassName() const;
   /** Creates a new balODESolver. */
-  static balODESolver * Create() { return new balODESolver; }
+  static balODESolver * Create();
   /** Creates a copy of balODESolver. */
-  static balODESolver * Copy (balODESolver * solver) { return new balODESolver(*solver); }
+  static balODESolver * Copy (balODESolver * solver);
   /** Destroys a balODESolver. */
-  virtual void Destroy() { delete this; }
+  virtual void Destroy();
   
   realtype * GetBuffer() const;
   int GetBufferSize() const;

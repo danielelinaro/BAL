@@ -40,10 +40,10 @@
  */
 class balLorenz : public balDynamicalSystem {
  public:
-  virtual const char * GetClassName () const { return "balLorenz"; }
-  static balLorenz * Create () { return new balLorenz; }
-  virtual balDynamicalSystem * Copy() { return new balLorenz(*this); }
-  virtual void Destroy () { delete this; }
+  virtual const char * GetClassName () const;
+  static balLorenz * Create ();
+  virtual balDynamicalSystem * Copy();
+  virtual void Destroy ();
   
   int RHS (realtype t, N_Vector x, N_Vector xdot, void * data);
 #ifdef CVODE25
@@ -55,7 +55,7 @@ class balLorenz : public balDynamicalSystem {
 		void *jac_data, N_Vector tmp1, N_Vector tmp2, N_Vector tmp3);
 #endif
 
-  bool HasJacobian() const { return (IsExtended() ? false : true); }
+  bool HasJacobian() const;
 
  protected:
   balLorenz();

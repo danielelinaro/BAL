@@ -27,6 +27,21 @@
 
 #include "balInterp1D.h"
 
+/***** balBaseInterp1D *****/
+
+const char * balBaseInterp1D::GetClassName() const {
+  return "balBaseInterp1D";
+}
+
+void balBaseInterp1D::Destroy() {
+  delete this;
+}
+  
+double balBaseInterp1D::interp(double x) {
+  int jlo = cor ? hunt(x) : locate(x);
+  return rawinterp(jlo,x);
+}
+
 int balBaseInterp1D::locate(const double x) {
   int ju, jm, jl, ascnd;
   
@@ -100,6 +115,58 @@ int balBaseInterp1D::hunt(const double x) {
   return MAX(0,MIN(n-mm,jl-((mm-2)>>1)));
 }
 
+balBaseInterp1D::balBaseInterp1D(double * x, const double *y, int length, int m)
+  : n(length), mm(m), jsav(0), cor(0), xx(&x[0]), yy(y) { 
+  dj = MIN(1, (int)pow((double)n,0.25));
+}
+
+balBaseInterp1D::~balBaseInterp1D() {
+}
+
+/***** balLinearInterp1D *****/
+
+const char * balLinearInterp1D::GetClassName() const {
+  return "balLinearInterp1D";
+}
+
+void balLinearInterp1D::Destroy() {
+  this->~balLinearInterp1D();
+}
+
+balLinearInterp1D * balLinearInterp1D::Create(double * xv, double * yv, int length) {
+  return new balLinearInterp1D(xv,yv,length);
+}
+
+balLinearInterp1D::balLinearInterp1D(double * xv, double * yv, int length) :
+  balBaseInterp1D(xv,yv,length,2) {}
+
+balLinearInterp1D::~balLinearInterp1D() {}
+  
+double balLinearInterp1D::rawinterp(int j, double x) {
+  if (xx[j]==xx[j+1]) 
+    return yy[j];
+  return yy[j] + ((x-xx[j])/(xx[j+1]-xx[j]))*(yy[j+1]-yy[j]);
+}
+
+/***** balPolyInterp1D *****/
+
+const char * balPolyInterp1D::GetClassName() const {
+  return "balPolyInterp1D";
+}
+
+void balPolyInterp1D::Destroy() {
+  this->~balPolyInterp1D();
+}
+
+balPolyInterp1D * balPolyInterp1D::Create(double * xv, double * yv, int length, int m) {
+  return new balPolyInterp1D(xv,yv,length,m);
+}
+
+balPolyInterp1D::balPolyInterp1D(double * xv, double * yv, int length, int m) :
+  balBaseInterp1D(xv,yv,length,m), dy(0.0) {}
+
+balPolyInterp1D::~balPolyInterp1D() {}
+
 double balPolyInterp1D::rawinterp(int j, double x) {
   int i, m, ns; 
   double y, den, dif, dift, ho, hp, w; 
@@ -148,6 +215,28 @@ double balPolyInterp1D::rawinterp(int j, double x) {
   delete d;
   return y;
 }
+
+/***** balSplineInterp1D *****/
+
+const char * balSplineInterp1D::GetClassName() const {
+  return "balSplineInterp1D";
+}
+
+void balSplineInterp1D::Destroy() {
+  this->~balSplineInterp1D();
+}
+
+balSplineInterp1D * balSplineInterp1D::Create(double * xv, double * yv, int length, double yp1, double ypn) {
+  return new balSplineInterp1D(xv,yv,length,yp1,ypn);
+}
+  
+balSplineInterp1D::balSplineInterp1D(double * xv, double * yv, int length, double yp1, double ypn) :
+  balBaseInterp1D(xv,yv,length,2) {
+  y2 = new double[length];
+  sety2(xv,yv,yp1,ypn);
+}
+
+balSplineInterp1D::~balSplineInterp1D() { delete y2; }
 
 void balSplineInterp1D::sety2(double *xv, double *yv, double yp1, double ypn) {
   int i, k; 

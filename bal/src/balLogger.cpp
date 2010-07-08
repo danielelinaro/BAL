@@ -29,6 +29,88 @@
 
 ///// BALLOGGER /////
 
+balLogger::balLogger() : opened(false), cols(-1), params(NULL) {}
+
+balLogger::~balLogger() {}
+
+bool balLogger::OpenFile() {
+  return false;
+}
+
+bool balLogger::CloseFile() {
+  return false;
+}
+
+void balLogger::IsFileOpen(bool open) {
+  opened = open;
+}
+
+const char * balLogger::GetClassName () const {
+  return "balLogger";
+}
+
+balLogger * balLogger::Create() {
+  return new balLogger;
+}
+
+void balLogger::Destroy() {
+  delete this;
+}
+
+bool SetFilename(const char * fname, bool open = false);
+const char * balLogger::GetFilename() const {
+  return filename;
+}
+
+void balLogger::SetParameters(balParameters * p) {
+  params = p;
+}
+
+balParameters * balLogger::GetParameters() const {
+  return params;
+}
+
+void balLogger::SetNumberOfColumns(int c) {
+  cols = c;
+}
+
+int balLogger::GetNumberOfColumns() const {
+  return cols;
+}
+
+bool balLogger::IsFileOpen() const {
+  return opened;
+}
+
+bool balLogger::SaveBuffer(realtype * buffer, int rows) { 
+  if(!IsFileOpen()) 
+    OpenFile(); 
+  return false; 
+}
+
+bool balLogger::SaveBufferThreaded(list <balSolution *> * sol_list,
+				   boost::mutex * list_mutex,
+				   boost::condition_variable * q_empty,
+				   boost::condition_variable * q_full) {
+  if(!IsFileOpen()) 
+    OpenFile();
+  return false; 
+}
+
+bool balLogger::SaveSolution(balSolution * solution) { 
+  SetNumberOfColumns(solution->GetColumns());
+  SetParameters(solution->GetParameters());
+  return SaveBuffer(solution->GetData(), solution->GetRows()); 
+}
+
+bool balLogger::SaveSolutionThreaded(list <balSolution *> * sol_list,
+				     boost::mutex * list_mutex,
+				     boost::condition_variable * q_empty,
+				     boost::condition_variable * q_full) {
+  return SaveBufferThreaded(sol_list,list_mutex,q_empty,q_full); 
+}
+
+
 bool balLogger::SetFilename(const char *fname, bool open) {
   if(IsFileOpen())
     CloseFile();
@@ -41,6 +123,18 @@ bool balLogger::SetFilename(const char *fname, bool open) {
 }
 
 ///// BALH5LOGGER /////
+
+const char * balH5Logger::GetClassName () const {
+  return "balH5Logger";
+}
+
+balH5Logger * balH5Logger::Create() {
+  return new balH5Logger;
+}
+
+void balH5Logger::Destroy() {
+  this->~balH5Logger();
+}
 
 balH5Logger::balH5Logger() {
   h5_fid = -1;

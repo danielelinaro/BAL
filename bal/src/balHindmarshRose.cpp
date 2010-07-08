@@ -48,6 +48,22 @@ balHindmarshRose::~balHindmarshRose() {
   N_VDestroy_Serial(xderiv);
 }
 
+balHindmarshRose * balHindmarshRose::Create () {
+  return new balHindmarshRose;
+}
+
+balDynamicalSystem * balHindmarshRose::Copy() {
+  return new balHindmarshRose(*this);
+}
+
+void balHindmarshRose::Destroy () {
+  delete this;
+}
+
+const char * balHindmarshRose::GetClassName () const {
+  return "balHindmarshRose";
+}
+
 int balHindmarshRose::RHS (realtype t, N_Vector x, N_Vector xdot, void * data) {
   realtype x1, x2, x3;
   realtype b, I, u, s;
@@ -139,3 +155,15 @@ void balHindmarshRose::EventsConstraints (realtype t, N_Vector x, int * constrai
     constraints[i] = (ris[i] < 0 ? 1 : 0);
 }
 
+bool balHindmarshRose::HasJacobian() const {
+  return true;
+}
+ 
+bool balHindmarshRose::HasEvents() const {
+  return true;
+}
+ 
+bool balHindmarshRose::HasEventsConstraints() const {
+  return true;
+}
+  

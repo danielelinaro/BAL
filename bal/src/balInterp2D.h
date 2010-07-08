@@ -43,27 +43,17 @@ class balBilinearInterp2D : public balObject {
   
  public:
   /** Returns the name of the class. */
-  virtual const char * GetClassName() const { return "balBilinearInterp2D" ; }
+  virtual const char * GetClassName() const;
   /** Destroys a balBilinInterp2D. */
-  virtual void Destroy() { delete this; }
+  virtual void Destroy();
   /** Creates a balBilinInterp2D. */
-  static balBilinearInterp2D * Create(double *x1v, double *x2v, double **yy, int mm, int nn) {
-    return new balBilinearInterp2D(x1v,x2v,yy,mm,nn);
-  }
+  static balBilinearInterp2D * Create(double *x1v, double *x2v, double **yy, int mm, int nn);
 
   double interp(double x1p, double x2p);
   
  protected:
-   balBilinearInterp2D(double *x1v, double *x2v, double **yy, int mm, int nn)
-     : m(mm), n(nn), y(yy) { 
-     x1terp = balLinearInterp1D::Create(x1v,x1v,m);
-     x2terp = balLinearInterp1D::Create(x2v,x2v,n);
-   }
-
-   ~balBilinearInterp2D() {
-     x1terp->Destroy();
-     x2terp->Destroy();
-   }
+  balBilinearInterp2D(double *x1v, double *x2v, double **yy, int mm, int nn);
+  ~balBilinearInterp2D();
   
  private:
   int m, n;

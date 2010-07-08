@@ -27,6 +27,29 @@
 
 #include "balInterp2D.h"
 
+balBilinearInterp2D::balBilinearInterp2D(double *x1v, double *x2v, double **yy, int mm, int nn)
+  : m(mm), n(nn), y(yy) { 
+  x1terp = balLinearInterp1D::Create(x1v,x1v,m);
+  x2terp = balLinearInterp1D::Create(x2v,x2v,n);
+}
+
+balBilinearInterp2D::~balBilinearInterp2D() {
+  x1terp->Destroy();
+  x2terp->Destroy();
+}
+
+const char * balBilinearInterp2D::GetClassName() const {
+  return "balBilinearInterp2D";
+}
+
+void balBilinearInterp2D::Destroy() {
+  delete this;
+}
+
+balBilinearInterp2D * balBilinearInterp2D::Create(double *x1v, double *x2v, double **yy, int mm, int nn) {
+  return new balBilinearInterp2D(x1v,x2v,yy,mm,nn);
+}
+
 double balBilinearInterp2D::interp(double x1p, double x2p) {
   int i, j;
   double yy, t, u;

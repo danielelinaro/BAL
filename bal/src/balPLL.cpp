@@ -28,12 +28,34 @@
 #include "balPLL.h"
 
 const int balPLL::npar = 14;
-const char * balPLL::parname[14] = {"fref","r1","fvco","vdd","rho0",
-																	 "rhoap","k0","krho","kap","alpha",
-																	 "kvcoa","kvcob","kvcoc","tuning"};
+const char * balPLL::parname[14] = {"fref","r1","fvco","vdd","rho0","rhoap","k0","krho","kap","alpha","kvcoa","kvcob","kvcoc","tuning"};
 
 balDynamicalSystem* balPLLFactory() {
 	return balPLL::Create();
+}
+
+const char * balPLL::GetClassName () const {
+  return "balPLL";
+}
+
+balPLL * balPLL::Create () {
+  return new balPLL;
+}
+
+void balPLL::Destroy () {
+  delete this;
+}
+
+bool balPLL::HasJacobian() const {
+  return false;
+}
+
+bool balPLL::HasEvents() const {
+  return true;
+}
+
+bool balPLL::HasEventsConstraints() const {
+  return true;
 }
 
 balPLL::balPLL() : pi(3.141592653589793) {
