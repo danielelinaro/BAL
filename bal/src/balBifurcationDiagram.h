@@ -178,7 +178,7 @@ class balBifurcationDiagram : public balObject {
 
   void ComputeDiagramSingleThread();
   void ComputeDiagramMultiThread();
-  void IntegrateAndEnqueue(balODESolver *sol);
+  void IntegrateAndEnqueue(balODESolver *sol, int solutionId);
   double* BuildClassificationEntry(balSolution *sol);
 
   /** The ODE solver used to integrate the system */

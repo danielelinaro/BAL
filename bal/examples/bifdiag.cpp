@@ -32,15 +32,17 @@
 // TEST balBifurcationDiagram
 int main(int argc, char *argv[]) {
 
-  int steps[4] = {1,501,1,1};
+  int steps[4] = {2,501,1,1};
   realtype x0[3] = {0.5,0.5,0.5};
   balBifurcationParameters * bp = balBifurcationParameters::Create();
   bp->SetNumber(4);
-  bp->SetIthParameter(0,2.96);
-  bp->SetIthParameter(2,0.01);
-  bp->SetIthParameter(3,4.0);
+  //bp->SetIthParameter(0,2.96);
+  bp->SetIthParameterLowerBound(0,2.5);
+  bp->SetIthParameterUpperBound(0,3.5);
   bp->SetIthParameterLowerBound(1,1);
   bp->SetIthParameterUpperBound(1,6);
+  bp->SetIthParameter(2,0.01);
+  bp->SetIthParameter(3,4.0);
   bp->SetNumberOfSteps(steps);
   balHindmarshRose * hr = balHindmarshRose::Create();
   hr->SetParameters(bp);

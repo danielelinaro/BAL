@@ -41,7 +41,7 @@ par = bal.Parameters(eye.npar)
 
 # the solver
 solver = bal.ODESolver(eye,par)
-solver.x0 = [0,1]
+solver.x0 = [-1,1]
 solver.intersections = 1e7
 solver.dt = 1e-2
 solver.ttran = 0
@@ -49,14 +49,14 @@ solver.tstop = 10
 solver.mode = 'trajectory'
 
 solver.run()
-s = solver.solution()
-saveH5file([s],'eye.h5')
+#s = solver.solution()
+#saveH5file([s],'eye.h5')
 
-from pylab import figure, plot, xlabel, ylabel, title, show, axis
+#from pylab import figure, plot, xlabel, ylabel, title, show, axis
 
-figure()
-plot(s.data['t'],s.data['x'][0::2],'k')
-xlabel('t')
-ylabel('x')
-axis('tight')
-show()
+#figure()
+#plot(s.data['t'],s.data['x'][0::2],'k')
+#xlabel('t')
+#ylabel('x')
+#axis('tight')
+#show()

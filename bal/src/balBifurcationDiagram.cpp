@@ -233,7 +233,7 @@ void balBifurcationDiagram::ComputeDiagramSingleThread() {
 }
 
 void balBifurcationDiagram::ComputeDiagramMultiThread() {
-  int i, idx, cnt;
+  int i, idx, cnt, solutionId;
   // the total number of integrations
   int total;
   // the number of integrations that must be performed outside of the main loop
@@ -242,7 +242,7 @@ void balBifurcationDiagram::ComputeDiagramMultiThread() {
   int nloops;
 
   balBifurcationParameters *pars;
-  
+
   switch(mode) {
   case balPARAMS:
     pars = (balBifurcationParameters *) parameters;
@@ -267,8 +267,8 @@ void balBifurcationDiagram::ComputeDiagramMultiThread() {
   /**
    * calculating the first total % nthreads solutions in a serial fashion
    **/
-  for(cnt = 0; cnt < prologue; cnt++) {
-    IntegrateAndEnqueue(solver);
+  for(cnt = 0, solutionId = 1; cnt < prologue; cnt++, solutionId++) {
+    IntegrateAndEnqueue(solver,solutionId);
     printf("%c%s", ESC, GREEN);
     printf("[%05d/%05d]\r", cnt+1, total);
     printf("%c%s", ESC, NORMAL); fflush(stdout);
@@ -310,13 +310,14 @@ void balBifurcationDiagram::ComputeDiagramMultiThread() {
     }
     
     /* launch the nthread solvers */
-    for (i = 0; i < nthreads; i++)
-      threads[i] = new boost::thread(&balBifurcationDiagram::IntegrateAndEnqueue,this,lsol[i]);
+    for (i = 0; i < nthreads; i++, solutionId++)
+      threads[i] = new boost::thread(&balBifurcationDiagram::IntegrateAndEnqueue,this,lsol[i],solutionId);
     
     for (i = 0; i < nthreads; i++) {
       threads[i]->join();
       printf("%c%s", ESC, GREEN);
-      printf("[%05d/%05d]\r", (prologue + cnt*nthreads + i + 1), total);
+      //printf("[%05d/%05d]\r", (prologue + cnt*nthreads + i + 1), total);
+      printf("[%05d/%05d]\r", solutionId, total);
       printf("%c%s", ESC, NORMAL); fflush(stdout);
     }
   }
@@ -338,9 +339,10 @@ void balBifurcationDiagram::ComputeDiagramMultiThread() {
   logger_thread->join();
 }
 
-void balBifurcationDiagram::IntegrateAndEnqueue(balODESolver * sol) {
+void balBifurcationDiagram::IntegrateAndEnqueue(balODESolver * sol, int solutionId) {
   sol->Solve();
   balSolution *solution = sol->GetSolution();
+  solution->SetID(solutionId);
   classification->push_back(BuildClassificationEntry(solution));
   
   {
@@ -348,7 +350,7 @@ void balBifurcationDiagram::IntegrateAndEnqueue(balODESolver * sol) {
     while (solution_list.size() >= LIST_MAX_SIZE) {  
       
       /**
-       * we notifi the thread that will write (which is waiting on q_full)
+       * we notify the thread that will write (which is waiting on q_full)
        * that the solution list in now full
        **/
       q_full.notify_one();

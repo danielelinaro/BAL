@@ -57,12 +57,15 @@ class balSolution : public balObject {
   balParameters * GetParameters() const;
   void SetParameters(balParameters * p);
   
-  realtype * GetData();	
+  realtype * GetData() const;
   void SetData(int r, int c, realtype * data);
   
-  int GetNumberOfTurns();
+  int GetNumberOfTurns() const;
   void SetNumberOfTurns(int _nturns);
   
+  int GetID() const;
+  void SetID(int id);
+
  protected:
   /* Protected destructor of the class. */
   virtual ~balSolution();
@@ -74,6 +77,7 @@ class balSolution : public balObject {
   realtype * buffer;
   int rows, columns;
   int nturns;
+  int ID;
 };
 
 /**
@@ -83,13 +87,14 @@ class balSolution : public balObject {
  */
 struct balSolutionComparer {
   bool operator() (balSolution * sol1, balSolution * sol2) {
-    
+    return sol1->GetID() < sol2->GetID();
+    /*
     for (int i = 0; i < sol1->GetParameters()->GetNumber(); i++) {
       if (sol1->GetParameters()->At(i) < sol2->GetParameters()->At(i))
 	return true;
     }
-    
     return false;
+    */
   }
 };
 

@@ -84,19 +84,12 @@ class balLogger : public balObject {
   int GetNumberOfColumns() const;
   bool IsFileOpen() const;
   
-  virtual bool SaveBuffer(realtype * buffer, int rows);
-  
-  virtual bool SaveBufferThreaded(list <balSolution *> * sol_list,
-				  boost::mutex * list_mutex,
-				  boost::condition_variable * q_empty,
-				  boost::condition_variable * q_full);
-  
-  virtual bool SaveSolution(balSolution * solution);
-  
-  virtual bool SaveSolutionThreaded(list <balSolution *> * sol_list,
-				    boost::mutex * list_mutex,
-				    boost::condition_variable * q_empty,
-				    boost::condition_variable * q_full);
+  virtual bool SaveBuffer(realtype * buffer, int rows, int id = 1);
+  bool SaveSolution(balSolution * solution);
+  bool SaveSolutionThreaded(list <balSolution *> * sol_list,
+			    boost::mutex * list_mutex,
+			    boost::condition_variable * q_empty,
+			    boost::condition_variable * q_full);
   
  protected:
   balLogger();
@@ -104,6 +97,8 @@ class balLogger : public balObject {
   virtual bool OpenFile();
   virtual bool CloseFile();
   void IsFileOpen(bool open);
+
+  virtual bool SortAndWriteSolutionList(list <balSolution *> * sol_list);
   
  private:
   /** Tells whether the logging file is open or not */
@@ -124,11 +119,7 @@ class balH5Logger : public balLogger {
   static balH5Logger * Create();
   virtual void Destroy();
   
-  virtual bool SaveBuffer(realtype * buffer, int rows);
-  virtual bool SaveBufferThreaded(list <balSolution *> * sol_list,
-				  boost::mutex * list_mutex,
-				  boost::condition_variable * q_empty,
-				  boost::condition_variable * q_full);
+  virtual bool SaveBuffer(realtype * buffer, int rows, int id = 1);
   
  protected:
   balH5Logger();
@@ -137,9 +128,6 @@ class balH5Logger : public balLogger {
   virtual bool CloseFile();
   
  private:
-  
-  bool SortAndWriteSolutionList(list <balSolution *> * sol_list);
-  
   // the handle of the file
   hid_t h5_fid;
   // dataset creation property list
@@ -148,9 +136,8 @@ class balH5Logger : public balLogger {
   hsize_t chunk[2];
   // whether data compression should be enabled (default: yes)
   bool compressed;
-
+  // the name of the dataset in the H5 file
   char datasetname[DATASETNAME_LENGTH];
-  int counter;
 };
 
 

@@ -10,10 +10,9 @@ int main(int argc, char *argv[]) {
   balParameters * pars = balParameters::Create();
   pars->SetNumber(0);
 
-  balEye * eye;
-  eye = balEye::Create();
-  if(! eye->ReadVectorField(argv[1])) {
-  //if(! eye->SpecialOptions((void *) argv[1])) {
+  balEye * eye = balEye::Create();
+
+  if(! eye->SpecialOptions((void *) argv[1])) {
     printf("Unable to read vector field file. Aborting.\n");
     pars->Destroy();
     eye->Destroy();

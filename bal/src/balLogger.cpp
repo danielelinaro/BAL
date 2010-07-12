@@ -82,34 +82,86 @@ bool balLogger::IsFileOpen() const {
   return opened;
 }
 
-bool balLogger::SaveBuffer(realtype * buffer, int rows) { 
+bool balLogger::SaveBuffer(realtype * buffer, int rows, int id) { 
   if(!IsFileOpen()) 
     OpenFile(); 
-  return false; 
-}
-
-bool balLogger::SaveBufferThreaded(list <balSolution *> * sol_list,
-				   boost::mutex * list_mutex,
-				   boost::condition_variable * q_empty,
-				   boost::condition_variable * q_full) {
-  if(!IsFileOpen()) 
-    OpenFile();
   return false; 
 }
 
 bool balLogger::SaveSolution(balSolution * solution) { 
   SetNumberOfColumns(solution->GetColumns());
   SetParameters(solution->GetParameters());
-  return SaveBuffer(solution->GetData(), solution->GetRows()); 
+  return SaveBuffer(solution->GetData(), solution->GetRows(), solution->GetID()); 
 }
 
 bool balLogger::SaveSolutionThreaded(list <balSolution *> * sol_list,
 				     boost::mutex * list_mutex,
 				     boost::condition_variable * q_empty,
 				     boost::condition_variable * q_full) {
-  return SaveBufferThreaded(sol_list,list_mutex,q_empty,q_full); 
+  if(!IsFileOpen())
+    OpenFile();
+  
+  // interrupt enabled by default
+  
+  /* data writing routine. */
+  while (true) {
+    try {
+      {
+	boost::mutex::scoped_lock lock(*list_mutex);
+	/* 
+	 * if the data queue is empty the thread is set on wait 
+	 * on condition variable q_full waiting queue and released
+	 * when ComputeDiagramMultiThread() calls notify_one()
+	 * on q_full when new solution is available 
+	 */
+	while (sol_list->size() < LIST_MAX_SIZE) {
+	  
+	  q_full->wait(lock);  // INTERRUPTION POINT
+	  /* 
+	   * Atomically call lock.unlock() and blocks the current thread.
+	   * The thread will unblock when notified by a call
+	   * to this->notify_one() or this->notify_all(). 
+	   * When the thread is unblocked (for whatever reason),
+	   * the lock is reacquired by invoking lock.lock() before the call to 
+	   * wait returns. The lock is also reacquired by
+	   * invoking lock.lock() if the function exits with an exception.
+	   */
+	}
+	
+	SortAndWriteSolutionList(sol_list);
+	
+      }
+      /* 
+       * this scope has been introduced due to scoped_lock class implementation: 
+       * mutex list_mutex is locked in lock initialization and unlocked while exiting the scope 
+       */
+      /* notifies all threaded solvers the queue is now empty, giving them the control */
+      q_empty->notify_all();
+      
+    }
+    catch (boost::thread_interrupted&) {
+      SortAndWriteSolutionList(sol_list);
+      break;
+    }
+  }
+  return true;
 }
 
+bool balLogger::SortAndWriteSolutionList(list <balSolution *> * sol_list) {
+  balSolution * solution;
+  
+  /* balSolutionComparer is a struct defined in balSolution.h defining a method on operator() *
+   * to compare two balSolution pointers */
+  sol_list->sort(balSolutionComparer());
+  
+  while (!sol_list->empty()) {
+    solution = sol_list->front();
+    sol_list->pop_front();
+    SaveSolution(solution);
+    solution->Destroy();
+  }
+  return true;
+}
 
 bool balLogger::SetFilename(const char *fname, bool open) {
   if(IsFileOpen())
@@ -138,7 +190,6 @@ void balH5Logger::Destroy() {
 
 balH5Logger::balH5Logger() {
   h5_fid = -1;
-  counter = -1;
   chunk[0] = chunk[1] = -1;
 
   htri_t avail;
@@ -146,7 +197,7 @@ balH5Logger::balH5Logger() {
   unsigned int filter_info;
 
   // check if gzip compression is available
-  avail = H5Zfilter_avail(H5Z_FILTER_DEFLATE);
+  avail = H5Zfilter_avail (H5Z_FILTER_DEFLATE);
   if (!avail) {
     printf("Disabling compression...\n");
     compressed = false;
@@ -172,7 +223,6 @@ balH5Logger::balH5Logger() {
     compressed = false;
     return;
   }
-
   // enable gzip compression
   compressed = true;
 }
@@ -189,7 +239,6 @@ bool balH5Logger::OpenFile() {
     return false;
   }
   IsFileOpen(true);
-  counter = 0;
   if(compressed) {
     /*
      * Create the dataset creation property list and add the shuffle
@@ -221,7 +270,7 @@ bool balH5Logger::CloseFile() {
   return flag == 0;
 }
 
-bool balH5Logger::SaveBuffer(realtype * buffer, int rows) {
+bool balH5Logger::SaveBuffer(realtype * buffer, int rows, int id) {
   if(buffer == NULL || rows <= 0 || GetNumberOfColumns() <= 0 || GetParameters() == NULL) {
     return false;
   }
@@ -236,9 +285,8 @@ bool balH5Logger::SaveBuffer(realtype * buffer, int rows) {
   dims[0] = rows;
   dims[1] = GetNumberOfColumns();
 
-  counter++;
   // create the name of the dataset: the letter C in the name means that the H5 file has been saved in C++
-  sprintf(datasetname, "C%06d", counter);
+  sprintf(datasetname, "C%06d", id);
   
   if(compressed) { // do this if compression is enabled
     // set chunk size
@@ -281,70 +329,5 @@ bool balH5Logger::SaveBuffer(realtype * buffer, int rows) {
   status = H5LTset_attribute_double(h5_fid, datasetname, "parameters", GetParameters()->GetParameters(), GetParameters()->GetNumber());
 
   return status >= 0;
-}
-
-bool balH5Logger::SaveBufferThreaded (list <balSolution*> * sol_list,
-				      boost::mutex * list_mutex,
-				      boost::condition_variable * q_empty,
-				      boost::condition_variable * q_full) {
-  if(!IsFileOpen())
-    OpenFile();
-  
-  // interrupt enabled by default
-  
-  /* data writing routine. */
-  while (true) {
-    try {
-      {
-	boost::mutex::scoped_lock lock(*list_mutex);
-	/* 
-	 * if the data queue is empty the thread is set on wait 
-	 * on condition variable q_full waiting queue and released when ComputeDiagramMultiThread() calls notify_one()
-	 * on q_full when new solution is available 
-	 */
-	while (sol_list->size() < LIST_MAX_SIZE) {
-	  
-	  q_full->wait(lock);  // INTERRUPTION POINT
-	  /* 
-	   * Atomically call lock.unlock() and blocks the current thread. The thread will unblock when notified by a call
-	   * to this->notify_one() or this->notify_all(). When the thread is unblocked (for whatever reason),
-	   * the lock is reacquired by invoking lock.lock() before the call to wait returns. The lock is also reacquired by
-	   * invoking lock.lock() if the function exits with an exception.
-	   */
-	}
-	
-	SortAndWriteSolutionList(sol_list);
-	
-      }
-      /* 
-       * this scope has been introduced due to scoped_lock class implementation: 
-       * mutex list_mutex is locked in lock initialization and unlocked while exiting the scope 
-       */
-      /* notifies all threaded solvers the queue is now empty, giving them the control */
-      q_empty->notify_all();
-      
-    }
-    catch (boost::thread_interrupted&) {
-      SortAndWriteSolutionList(sol_list);
-      break;
-    }
-  }
-  return true;
-}
-
-bool balH5Logger::SortAndWriteSolutionList(list <balSolution *> * sol_list) {
-  balSolution * solution;
-  
-  /* balSolutionComparer is a struct defined in balSolution.h definig a method on operator() *
-   * to compare two balSolution pointers */
-  sol_list->sort(balSolutionComparer());
-  
-  while (!sol_list->empty()) {
-    solution = sol_list->front();
-    sol_list->pop_front();
-    SaveSolution(solution);
-    solution->Destroy();
-  }
-  return true;
 }
 

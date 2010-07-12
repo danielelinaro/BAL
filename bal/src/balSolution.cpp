@@ -31,6 +31,7 @@ balSolution::balSolution() {
   rows = columns = 0;
   buffer = NULL;
   parameters = NULL;
+  ID = 0;
 }
 
 balSolution::balSolution(const balSolution& solution) {
@@ -39,6 +40,7 @@ balSolution::balSolution(const balSolution& solution) {
   SetSize(rows,columns);
   memcpy(buffer,solution.buffer,rows*columns*sizeof(realtype));
   nturns = solution.nturns;
+  ID = solution.ID;
 }
 
 balSolution::~balSolution() {
@@ -87,7 +89,7 @@ void balSolution::SetData(int r, int c, realtype * data) {
   memcpy(buffer,data,rows*columns*sizeof(realtype));
 }
 
-realtype * balSolution::GetData() {
+realtype * balSolution::GetData() const {
   return buffer;
 }	
 
@@ -104,7 +106,14 @@ void balSolution::SetNumberOfTurns(int _nturns) {
   nturns = _nturns;
 }
   
-int balSolution::GetNumberOfTurns() {
+int balSolution::GetNumberOfTurns() const {
   return nturns;
 }
 
+void balSolution::SetID(int id) {
+  ID = id;
+}
+
+int balSolution::GetID() const {
+  return ID;
+}

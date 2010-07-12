@@ -119,8 +119,9 @@ static int pyBalDynamicalSystem_setattro(pyBalDynamicalSystem *self, PyObject *n
 	else if (strcmp(n, "options") == 0) {
 		if(PyString_Check(value)) {
 			char *opt = PyString_AsString(value);
-			printf("options = %s\n", opt);
+			printf("before calling SpecialOptions\n");
 			self->dynsys->SpecialOptions((void *) opt);
+			printf("after calling SpecialOptions\n");
 		}
 		else {
 			printf("Unknown option...\n");

@@ -6,14 +6,6 @@
 		       	   To-do list
 
 
-1) in balODESolver modificare la deallocazione della memoria basata solo sulla verifica "if (x != NULL)"
-
-2) verificare quali altre classi hanno lo stesso problema del punto (1) e correggere
-
-3) capire perche' su Ubuntu gli esempi crashano se non si da' il comando
-export MALLOC_CHECK_=0
-
-4) completare le options di getattro per pyBalDynamicalSystem (SpecialOptions)
-
-# DELETE THIS LINE!
+1) aggiungere la possibilita' di salvare gli esponenti di Lyapunov
+2) completare le options di getattro per pyBalDynamicalSystem (SpecialOptions)
 

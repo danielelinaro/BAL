@@ -45,7 +45,7 @@ imagesc(p1,p2,dbif);
 colormap(cmap);
 set(gca,'YDir','normal');
 
-%%
+%
 function [par_1_steps par_2_steps options] = guess_size(block)
 
 options = [0 0];
