@@ -32,7 +32,7 @@
 // TEST balBifurcationDiagram
 int main(int argc, char *argv[]) {
 
-  int steps[4] = {2,501,1,1};
+  int steps[4] = {26,51,1,1};
   realtype x0[3] = {0.5,0.5,0.5};
   balBifurcationParameters * bp = balBifurcationParameters::Create();
   bp->SetNumber(4);

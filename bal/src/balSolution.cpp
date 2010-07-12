@@ -117,3 +117,7 @@ void balSolution::SetID(int id) {
 int balSolution::GetID() const {
   return ID;
 }
+
+bool CompareBalSolutions(balSolution *sol1, balSolution *sol2) {
+  return sol1->GetID() < sol2->GetID();
+}

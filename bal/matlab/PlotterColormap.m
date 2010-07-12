@@ -1,10 +1,17 @@
-function PlotterColormap(data, nlevels, varargin)
-% PlotterColormap(data, nlevels, varargin)
+function PlotterColormap(data, nlevels, params, varargin)
+% PlotterColormap(data, nlevels, params, varargin)
+
+if ~ exist('params','var')
+    params = [1,2];
+end
+params = params(:)';
+data = data(:,[params,size(data,2)]);
 
 [p1steps p2steps options] = guess_size(data);
+fprintf(1, 'p1steps = %d p2steps = %d\n', p1steps, p2steps);
 
 cmap = flipud(hot(nlevels));
-if nargin == 3 && isequal(size(varargin{1}),[nlevels 3])
+if nargin == 4 && isequal(size(varargin{1}),[nlevels 3])
     cmap = varargin{1};
 end
 

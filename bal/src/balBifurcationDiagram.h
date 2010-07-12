@@ -53,6 +53,25 @@ void ResetColours(int d);
 enum { balPARAMS, balIC };
 
 /**
+ * \class balClassificationEntry
+ * \brief Object used to store an entry of the classification list.
+ */
+class balClassificationEntry : public balObject {
+ public:
+  balClassificationEntry(balSolution *sol);
+  int GetN() const;
+  int GetID() const;
+  double* GetData() const;
+
+ private:
+  double* data;
+  int n;
+  int id;
+};
+
+bool CompareBalClassificationEntry(balClassificationEntry *entry1, balClassificationEntry *entry2);
+
+/**
  * \class balBifurcationDiagram
  * \brief Class to calculate brute-force bifurcation diagrams.
  *
@@ -224,7 +243,7 @@ class balBifurcationDiagram : public balObject {
    * is the number of turns of the limit cycle. The value '0' corresponds
    * to an equilibrium solution.
    */
-  list<double *> *classification;
+  list<balClassificationEntry *> *classification;
   bool destroy_classification;
 
   /*** multithreading stuff ***/
@@ -236,20 +255,6 @@ class balBifurcationDiagram : public balObject {
 
   /** The number of threads that will be created to perform the integrations. */
   int nthreads;
-};
-
-/**
- * \struct balDoubleArrayComparer
- * \brief Object used to compare two arrays of double values when sorting a list
- */
-struct balDoubleArrayComparer {
-  bool operator() (double *array1, double *array2, int sz) {
-    for (int i=0; i<sz; i++) {
-      if (array1[i] < array2[i])
-	return true;
-    }
-    return false;
-  }
 };
 
 #endif

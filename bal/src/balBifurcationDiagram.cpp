@@ -35,6 +35,35 @@ void ResetColours(int d) {
   exit(1);
 }
 
+bool CompareBalClassificationEntries(balClassificationEntry *entry1, balClassificationEntry *entry2) {
+  return entry1->GetID() < entry2->GetID();
+}
+
+/***** balClassificationEntry *****/
+
+balClassificationEntry::balClassificationEntry(balSolution *sol) {
+  n = sol->GetParameters()->GetNumber() + 1;
+  data = new double[n];
+  id = sol->GetID();
+  for(int i=0; i<n-1; i++)
+    data[i] = sol->GetParameters()->At(i);
+  data[n-1] = sol->GetNumberOfTurns();
+}
+
+int balClassificationEntry::GetN() const {
+  return n;
+}
+
+int balClassificationEntry::GetID() const {
+  return id;
+}
+
+double* balClassificationEntry::GetData() const {
+  return data;
+}
+
+/***** balBifurcationDiagram *****/
+
 const char * balBifurcationDiagram::GetClassName() const {
   return "balBifurcationDiagram";
 }
@@ -125,33 +154,26 @@ const char * balBifurcationDiagram::GetFilename() {
   return logger->GetFilename();
 }
 
-double* balBifurcationDiagram::BuildClassificationEntry(balSolution *sol) {
-  balParameters *p = sol->GetParameters();
-  double *entry = new double[npar+1];
-  for(int i=0; i<npar; i++)
-    entry[i] = p->At(i);
-  entry[npar] = sol->GetNumberOfTurns();
-  return entry;
-}
-
 bool balBifurcationDiagram::SaveClassificationData(const char *filename) const {
   if(!destroy_classification)
     return false;
   
-  //classification->sort(balDoubleArrayComparer());
+  classification->sort(CompareBalClassificationEntries);
   
   int i;
-  list<double *>::iterator it;
-  FILE *fid; 
+  double *entry;
+  list<balClassificationEntry *>::iterator it;
+  FILE *fid;
   
   fid = fopen(filename,"w"); 
   if(fid == NULL)
     return false;
   
   for(it=classification->begin(); it!=classification->end(); it++) {
-    for(i=0; i<npar; i++)
-      fprintf(fid, "%e ", (*it)[i]);
-    fprintf(fid,"%d\n", (int) (*it)[npar]);
+    entry = (*it)->GetData();
+    for(i=0; i<(*it)->GetN()-1; i++)
+      fprintf(fid, "%e ", entry[i]);
+    fprintf(fid,"%d\n", (int) entry[(*it)->GetN()-1]);
   }
   
   fclose(fid);
@@ -162,16 +184,18 @@ double** balBifurcationDiagram::GetClassificationData() const {
   if(!destroy_classification)
     return NULL;
   
-  //classification->sort(balDoubleArrayComparer());
+  classification->sort(CompareBalClassificationEntries);
   
   int i, j;
-  list<double *>::iterator it;
-  double **data;
+  double **data, *entry;
+  list<balClassificationEntry *>::iterator it;
+
   data = new double*[classification->size()];
   for(it=classification->begin(), i=0; it!=classification->end(); it++, i++) {
-    data[i] = new double[npar+1];
-    for(j=0; j<npar+1; j++)
-      data[i][j] = (*it)[j];
+    entry = (*it)->GetData();
+    data[i] = new double[(*it)->GetN()];
+    for(j=0; j<(*it)->GetN(); j++)
+      data[i][j] = entry[j];
   }
   return data;
 }
@@ -206,7 +230,7 @@ bool balBifurcationDiagram::SetMode(int _mode) {
 void balBifurcationDiagram::ComputeDiagram() {
   if(destroy_classification)
     delete classification;
-  classification = new list<double *>;
+  classification = new list<balClassificationEntry *>;
   destroy_classification = true;
   ComputeDiagramMultiThread();
 }
@@ -222,7 +246,7 @@ void balBifurcationDiagram::ComputeDiagramSingleThread() {
     printf("%c%s", ESC, NORMAL);
     solver->Solve();
     solution = solver->GetSolution();
-    classification->push_back(BuildClassificationEntry(solution));
+    classification->push_back(new balClassificationEntry(solution));
     logger->SaveSolution(solution);
     solution->Destroy();
     if(! restart_from_x0) {
@@ -316,8 +340,7 @@ void balBifurcationDiagram::ComputeDiagramMultiThread() {
     for (i = 0; i < nthreads; i++) {
       threads[i]->join();
       printf("%c%s", ESC, GREEN);
-      //printf("[%05d/%05d]\r", (prologue + cnt*nthreads + i + 1), total);
-      printf("[%05d/%05d]\r", solutionId, total);
+      printf("[%05d/%05d]\r", (prologue + cnt*nthreads + i + 1), total);
       printf("%c%s", ESC, NORMAL); fflush(stdout);
     }
   }
@@ -343,7 +366,7 @@ void balBifurcationDiagram::IntegrateAndEnqueue(balODESolver * sol, int solution
   sol->Solve();
   balSolution *solution = sol->GetSolution();
   solution->SetID(solutionId);
-  classification->push_back(BuildClassificationEntry(solution));
+  classification->push_back(new balClassificationEntry(solution));
   
   {
     boost::mutex::scoped_lock lock(list_mutex);

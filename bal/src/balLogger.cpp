@@ -152,7 +152,8 @@ bool balLogger::SortAndWriteSolutionList(list <balSolution *> * sol_list) {
   
   /* balSolutionComparer is a struct defined in balSolution.h defining a method on operator() *
    * to compare two balSolution pointers */
-  sol_list->sort(balSolutionComparer());
+  //sol_list->sort(balSolutionComparer());
+  sol_list->sort(CompareBalSolutions);
   
   while (!sol_list->empty()) {
     solution = sol_list->front();

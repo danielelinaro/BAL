@@ -80,24 +80,25 @@ class balSolution : public balObject {
   int ID;
 };
 
-/**
+bool CompareBalSolutions(balSolution *sol1, balSolution *sol2);
+
+/*
  * \struct balSolutionComparer
  * \brief Object used to compare two balSolution objects when sorting a list
  * \sa balSolution
  */
+/*
 struct balSolutionComparer {
   bool operator() (balSolution * sol1, balSolution * sol2) {
     return sol1->GetID() < sol2->GetID();
-    /*
-    for (int i = 0; i < sol1->GetParameters()->GetNumber(); i++) {
-      if (sol1->GetParameters()->At(i) < sol2->GetParameters()->At(i))
-	return true;
-    }
-    return false;
-    */
+    //for (int i = 0; i < sol1->GetParameters()->GetNumber(); i++) {
+    //  if (sol1->GetParameters()->At(i) < sol2->GetParameters()->At(i))
+    //    return true;
+    //}
+    //return false;
   }
 };
-
+*/
 
 
 #endif
