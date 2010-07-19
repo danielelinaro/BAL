@@ -1,8 +1,14 @@
 function data = ClassifyEntry(entry, component, tol)
 % data = ClassifyEntry(entry, component, tol)
 
-if size(entry.x,1) == 2
+if entry.labels(end) == -10
+    % the integration ended with an error
+    turns = -1;
+    disp('the integration ended with an error.');
+elseif entry.labels(end) == -3 || size(entry.x,1) == 2
+    % equilibrium
     turns = 0;
+%     fprintf(1, 'label = %d\n', entry.labels(end));
 else
     x = entry.x(3:end,:);
     coord = x(:,component);
@@ -29,6 +35,6 @@ else
     end
 end
 if turns == -1
-    keyboard
+    fprintf('Unable to classify trajectory at p = %f\n', entry.parameters');
 end
 data = [entry.parameters' (entry.t(end)-entry.t(end-turns)) turns];

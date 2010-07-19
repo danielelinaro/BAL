@@ -235,6 +235,12 @@ class balBifurcationDiagram : public balObject {
    * previous integration (false) */
   bool restart_from_x0;
 
+  /*** multithreading stuff ***/
+  /**
+   * A list containing the results of the numerical integrations: when the list
+   * is full, the threads that integrate stop and another thread saves data to file
+   */
+  list<balSolution *> *solutions;
   /**
    * A list containing the classification of the bifurcation diagram in
    * terms of number of turns of the solution. Each entry contains
@@ -244,10 +250,9 @@ class balBifurcationDiagram : public balObject {
    * to an equilibrium solution.
    */
   list<balClassificationEntry *> *classification;
-  bool destroy_classification;
+  /** tells whether solutions and classification have been allocated */
+  bool destroy_lists;
 
-  /*** multithreading stuff ***/
-  list<balSolution *> solution_list;
   boost::thread * logger_thread;
   boost::mutex list_mutex;
   boost::condition_variable q_empty;

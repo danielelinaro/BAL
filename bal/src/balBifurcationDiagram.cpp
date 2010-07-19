@@ -84,8 +84,9 @@ balBifurcationDiagram::balBifurcationDiagram() {
   restart_from_x0 = true;
   nthreads = 2;
   mode = balPARAMS;
+  solutions = NULL;
   classification = NULL;
-  destroy_classification = false;
+  destroy_lists = false;
   nX0 = 0;
   X0 = NULL;
   SetFilename("balBifurcationDiagram.h5");
@@ -106,8 +107,10 @@ balBifurcationDiagram::~balBifurcationDiagram() {
     logger->Destroy();
   if(destroy_solver)
     solver->Destroy();
-  if(destroy_classification)
+  if(destroy_lists) {
+    delete solutions;
     delete classification;
+  }
 }
 
 void balBifurcationDiagram::SetDynamicalSystem(balDynamicalSystem * sys) {
@@ -155,7 +158,7 @@ const char * balBifurcationDiagram::GetFilename() {
 }
 
 bool balBifurcationDiagram::SaveClassificationData(const char *filename) const {
-  if(!destroy_classification)
+  if(!destroy_lists)
     return false;
   
   classification->sort(CompareBalClassificationEntries);
@@ -181,7 +184,7 @@ bool balBifurcationDiagram::SaveClassificationData(const char *filename) const {
 }
 
 double** balBifurcationDiagram::GetClassificationData() const {
-  if(!destroy_classification)
+  if(!destroy_lists)
     return NULL;
   
   classification->sort(CompareBalClassificationEntries);
@@ -229,10 +232,13 @@ bool balBifurcationDiagram::SetMode(int _mode) {
 }
 
 void balBifurcationDiagram::ComputeDiagram() {
-  if(destroy_classification)
+  if(destroy_lists) {
+    delete solutions;
     delete classification;
+  }
+  solutions = new list<balSolution *>;
   classification = new list<balClassificationEntry *>;
-  destroy_classification = true;
+  destroy_lists = true;
   ComputeDiagramMultiThread();
 }
 
@@ -290,7 +296,7 @@ void balBifurcationDiagram::ComputeDiagramMultiThread() {
   /**
    * launching the thread of the writing routine: it activates only when list size >= LIST_MAX_SIZE
    **/
-  logger_thread = new boost::thread(&balLogger::SaveSolutionThreaded,logger,&solution_list,&list_mutex,&q_empty,&q_full);
+  logger_thread = new boost::thread(&balLogger::SaveSolutionThreaded,logger,solutions,&list_mutex,&q_empty,&q_full);
   
   /**
    * calculating the first total % nthreads solutions in a serial fashion
@@ -370,11 +376,10 @@ void balBifurcationDiagram::IntegrateAndEnqueue(balODESolver * sol, int solution
   sol->Solve();
   balSolution *solution = sol->GetSolution();
   solution->SetID(solutionId);
-  classification->push_back(new balClassificationEntry(solution));
   
   {
     boost::mutex::scoped_lock lock(list_mutex);
-    while (solution_list.size() >= LIST_MAX_SIZE) {  
+    while (solutions->size() >= LIST_MAX_SIZE) {  
       
       /**
        * we notify the thread that will write (which is waiting on q_full)
@@ -389,7 +394,9 @@ void balBifurcationDiagram::IntegrateAndEnqueue(balODESolver * sol, int solution
       q_empty.wait(lock);
     }
     // insert a new solution into the list
-    solution_list.push_back(solution);
+    solutions->push_back(solution);
+    // insert a new classification into the list
+    classification->push_back(new balClassificationEntry(solution));
   }	
   
   if(! restart_from_x0) {
