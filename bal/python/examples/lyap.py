@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from bal import *
+from pybal import bal
 from pylab import figure, plot, xlabel, ylabel, title, show, axis
 
 ### START FUNCTIONS ###
@@ -68,12 +68,12 @@ from numpy.linalg import qr
 from numpy.random import random
 
 # the system
-sys = DynamicalSystem()
+sys = bal.DynamicalSystem()
 #sys.create('balLorenz')
 sys.create('balHindmarshRose')
 
 # the parameters
-par = Parameters(sys.npar)
+par = bal.Parameters(sys.npar)
 
 ### LORENZ ###
 # chaos
@@ -91,7 +91,7 @@ par = Parameters(sys.npar)
 # equilibrium
 #par.setpars([4,1,0.01,4])
 
-solver = ODESolver(sys,par)
+solver = bal.ODESolver(sys,par)
 solver.dt = 0.01
 solver.ttran = 1000
 solver.tstop = 2000

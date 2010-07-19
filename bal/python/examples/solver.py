@@ -1,14 +1,14 @@
 #!/usr/bin/env python
 
-from bal import *
+from pybal import bal
 from pylab import figure, plot, xlabel, ylabel, title, show, axis
 
-hr = DynamicalSystem()
+hr = bal.DynamicalSystem()
 hr.create('balHindmarshRose')
-par = Parameters(hr.npar)
+par = bal.Parameters(hr.npar)
 par.setpars([2.96,0.01,4],(0,2,3))
 par.bifpar(1,[2.5,4.5,11])
-solver = ODESolver(hr,par)
+solver = bal.ODESolver(hr,par)
 solver.x0 = [0,0,0]
 solver.dt = 0.01
 solver.ttran = 500.0

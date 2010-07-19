@@ -29,7 +29,7 @@ if not isfile(vectorfile):
     print(vectorfile + ' does not exist. Aborting...')
     exit(1)
 
-import bal
+from pybal import bal
 
 # the dynamical system
 eye = bal.DynamicalSystem()

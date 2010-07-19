@@ -37,14 +37,14 @@ config = ConfigParser()
 config.readfp(fid)
 fid.close()
 
-from bal import *
+from pybal import bal
 
 # the dynamical system
-pll = DynamicalSystem()
+pll = bal.DynamicalSystem()
 pll.create('balPLL')
 
 # the parameters
-par = Parameters(pll.npar)
+par = bal.Parameters(pll.npar)
 parnames = ['fref','r1','fvco','vdd','rho0','rhoap','k0','krho','kap','alpha','kvcoa','kvcob','kvcoc','tuning']
 for k,p in enumerate(parnames):
     steps = config.getint(p,'steps')
@@ -62,7 +62,7 @@ for k,p in enumerate(parnames):
         vdd = pmin
 
 # the solver
-solver = ODESolver(pll,par)
+solver = bal.ODESolver(pll,par)
 solver.x0 = [0,vdd,0,0]
 solver.intersections = 1e7
 solver.dt = 5e-11

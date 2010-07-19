@@ -1,18 +1,18 @@
 #!/usr/bin/env python
 
-from bal import *
+from pybal import bal
 
 outfile = 'hr.h5'
 
-hr = DynamicalSystem()
+hr = bal.DynamicalSystem()
 hr.create('balHindmarshRose')
 
-par = Parameters(hr.npar)
+par = bal.Parameters(hr.npar)
 par.bifpar(0,[2.5,3.5,21])
 par.bifpar(1,[2.5,4.5,101])
 par.setpars([0.01,4],(2,3))
 
-bifdiag = BifurcationDiagram(hr,par)
+bifdiag = balBifurcationDiagram(hr,par)
 bifdiag.outfile = outfile
 bifdiag.mode = 'events'
 bifdiag.equilbreak = True

@@ -1282,7 +1282,7 @@ PyMODINIT_FUNC initbal(void) {
 	if (PyType_Ready(&pyBalBifurcationDiagramType) < 0)
 		return;
 
-	m = Py_InitModule3("bal", module_methods, "BAL module");
+	m = Py_InitModule3("pybal.bal", module_methods, "BAL module");
 	if (m == NULL)
 		return;
 	
@@ -1297,3 +1297,4 @@ PyMODINIT_FUNC initbal(void) {
 	Py_INCREF(&pyBalBifurcationDiagramType);
 	PyModule_AddObject(m, "BifurcationDiagram", (PyObject *) &pyBalBifurcationDiagramType);
 }
+
