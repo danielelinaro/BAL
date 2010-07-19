@@ -8,8 +8,9 @@ hr = DynamicalSystem()
 hr.create('balHindmarshRose')
 
 par = Parameters(hr.npar)
-par.setpars([2.96,0.01,4],(0,2,3))
-par.bifpar(1,[2.5,4.5,201])
+par.bifpar(0,[2.5,3.5,21])
+par.bifpar(1,[2.5,4.5,101])
+par.setpars([0.01,4],(2,3))
 
 bifdiag = BifurcationDiagram(hr,par)
 bifdiag.outfile = outfile

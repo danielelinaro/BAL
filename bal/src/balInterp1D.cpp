@@ -54,7 +54,7 @@ int balBaseInterp1D::locate(const double x) {
   ju = n-1; // and upper limits. 
   while (ju-jl > 1) {  // If we are not yet done, 
     jm = (ju+jl) >> 1; // compute a midpoint, 
-    if (x >= xx[jm] == ascnd) 
+    if ((x >= xx[jm]) == ascnd) 
       jl = jm; // and replace either the lower limit 
     else 
       ju = jm; // or the upper limit, as appropriate. 
@@ -72,13 +72,13 @@ int balBaseInterp1D::hunt(const double x) {
     ju=n-1; 
   }
   else {
-    if (x >= xx[jl] == ascnd) { 
+    if ((x >= xx[jl]) == ascnd) { 
       for (;;) {
 	ju = jl + inc; 
 	if (ju >= n-1) { 
 	  ju = n-1; break;
 	}
-	else if (x < xx[ju] == ascnd) 
+	else if ((x < xx[ju]) == ascnd) 
 	  break;
 	else { 
 	  jl = ju;
@@ -94,7 +94,7 @@ int balBaseInterp1D::hunt(const double x) {
 	  jl = 0;
 	  break;
 	} 
-	else if (x >= xx[jl] == ascnd)
+	else if ((x >= xx[jl]) == ascnd)
 	  break;
 	else {	
 	  ju = jl;
@@ -106,7 +106,7 @@ int balBaseInterp1D::hunt(const double x) {
   
   while (ju-jl > 1) {
     jm = (ju+jl) >> 1;
-    if (x >= xx[jm] == ascnd)
+    if ((x >= xx[jm]) == ascnd)
       jl=jm;
     else
       ju=jm;

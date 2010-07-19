@@ -133,7 +133,7 @@ bool balEye::ReadVectorField(const char *filename) {
   DeleteVectorField();
 
   char line[256], *token;
-  int i, j, k;
+  int i, j;
   FILE *fid;
   
   printf("Reading from %s\n", filename);

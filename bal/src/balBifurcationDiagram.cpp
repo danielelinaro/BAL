@@ -225,6 +225,7 @@ bool balBifurcationDiagram::SetMode(int _mode) {
     return false;
   }
   mode = _mode;
+  return true;
 }
 
 void balBifurcationDiagram::ComputeDiagram() {
@@ -278,6 +279,9 @@ void balBifurcationDiagram::ComputeDiagramMultiThread() {
     idx = 0;
     total = nX0;
     break;
+  default:
+    fprintf(stderr, "Unknown mode of operation in balBifurcationDiagram::ComputeDiagramMultiThread.\n");
+    return;
   }
   
   nloops = total / nthreads;
