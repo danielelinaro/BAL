@@ -1,10 +1,14 @@
 
 LDADD = ../src/libbal.la
 
-AM_CPPFLAGS = "@CVODEVERSION@" -I$(srcdir)/../src -I.
+# debug off
+#AM_CPPFLAGS = "@CVODEVERSION@" -I$(srcdir)/../src -I.
+# debug on
+AM_CPPFLAGS = "@CVODEVERSION@" -I$(srcdir)/../src -I. -g -O0
 
 if EXAMPLES
-noinst_PROGRAMS = obj params loggers dynsys bifparams solver bifdiag interp pll lorenz eye basin
+#noinst_PROGRAMS = obj params loggers dynsys bifparams solver bifdiag interp pll lorenz eye basin
+bin_PROGRAMS = obj params loggers dynsys bifparams solver bifdiag interp pll lorenz eye basin
 interp_SOURCES = interp.cpp 
 obj_SOURCES = obj.cpp 
 params_SOURCES = params.cpp 

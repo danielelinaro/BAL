@@ -262,7 +262,8 @@ class balODESolver : public balObject {
   /** Coordinates of the first intersection with the Poincare' section
    * (used to detect cycles) */
   N_Vector x_inters;
-  
+  bool nvectors_allocated;
+
   /** Indicates whether setup has been performed or not */
   bool setup;
   

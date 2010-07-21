@@ -41,7 +41,7 @@ bool balLogger::CloseFile() {
   return false;
 }
 
-void balLogger::IsFileOpen(bool open) {
+void balLogger::SetFileIsOpen(bool open) {
   opened = open;
 }
 
@@ -57,7 +57,6 @@ void balLogger::Destroy() {
   delete this;
 }
 
-bool SetFilename(const char * fname, bool open = false);
 const char * balLogger::GetFilename() const {
   return filename;
 }
@@ -236,10 +235,10 @@ balH5Logger::~balH5Logger() {
 bool balH5Logger::OpenFile() {
   h5_fid = H5Fcreate(GetFilename(), H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
   if(h5_fid == -1) {
-    IsFileOpen(false);
+    SetFileIsOpen(false);
     return false;
   }
-  IsFileOpen(true);
+  SetFileIsOpen(true);
   if(compressed) {
     /*
      * Create the dataset creation property list and add the shuffle
@@ -267,7 +266,7 @@ bool balH5Logger::CloseFile() {
   }
   int flag = H5Fclose(h5_fid);
   if(flag == 0)
-    IsFileOpen(false);
+    SetFileIsOpen(false);
   return flag == 0;
 }
 

@@ -143,8 +143,10 @@ class balBifurcationDiagram : public balObject {
   /**
    * Sets the name of the file where data will be saved.
    * @param filename File where the bifurcation diagram will be saved.
+   * @param openFile Flag that tells wheter the file should be opened immediately
+   * or only when data is ready to be written.
    */
-  void SetFilename(const char * filename);
+  void SetFilename(const char * filename, bool openFile = true);
 
   /**
    * @return The name of the file where data is saved.

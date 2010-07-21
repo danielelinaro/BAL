@@ -75,6 +75,7 @@ balODESolver::balODESolver() {
   xdot = NULL;
   x0 = NULL;
   x_inters = NULL;
+  nvectors_allocated = false;
   class_event = 1;
 }
 
@@ -83,8 +84,8 @@ balODESolver::balODESolver(const balODESolver& solver) {
   delete_buffer = false;
   rows = 0;
   
+  nvectors_allocated = false;
   SetDynamicalSystem((solver.GetDynamicalSystem())->Copy());
-  
   for(int i=0; i<dynsys->GetDimension(); i++)
     Ith(x0,i) = Ith(solver.x0,i);
   
@@ -119,7 +120,7 @@ balODESolver::~balODESolver() {
   if(events_constraints != NULL) {
     delete events_constraints;
   }
-  if(x != NULL) {
+  if(nvectors_allocated) {
     N_VDestroy_Serial(x);
     N_VDestroy_Serial(xdot);
     N_VDestroy_Serial(x0);
@@ -165,16 +166,18 @@ void balODESolver::SetDynamicalSystem(balDynamicalSystem * ds) {
     // plus 2, i.e. the time instant and a label that describes the type of
     // record
     cols = neq + 2;
-    if(x != NULL) {
+    if(nvectors_allocated) {
       N_VDestroy_Serial(x);
       N_VDestroy_Serial(xdot);
       N_VDestroy_Serial(x0);
       N_VDestroy_Serial(x_inters);
+      nvectors_allocated = false;
     }
     x = N_VNew_Serial(neq);
     xdot = N_VNew_Serial(neq);
     x0 = N_VNew_Serial(neq);
     x_inters = N_VNew_Serial(neq);
+    nvectors_allocated = true;
     // perform setup!
     setup = false;
   }

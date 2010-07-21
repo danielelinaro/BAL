@@ -96,7 +96,7 @@ class balLogger : public balObject {
   virtual ~balLogger();
   virtual bool OpenFile();
   virtual bool CloseFile();
-  void IsFileOpen(bool open);
+  void SetFileIsOpen(bool open);
 
   virtual bool SortAndWriteSolutionList(list <balSolution *> * sol_list);
   

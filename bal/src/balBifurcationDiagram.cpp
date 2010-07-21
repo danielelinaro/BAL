@@ -89,7 +89,7 @@ balBifurcationDiagram::balBifurcationDiagram() {
   destroy_lists = false;
   nX0 = 0;
   X0 = NULL;
-  SetFilename("balBifurcationDiagram.h5");
+  SetFilename("balBifurcationDiagram.h5",false);
   signal(SIGINT, ResetColours);
 }
 
@@ -149,8 +149,8 @@ balODESolver * balBifurcationDiagram::GetODESolver() const {
   return solver;
 }
 
-void balBifurcationDiagram::SetFilename(const char * filename) {
-  logger->SetFilename(filename);
+void balBifurcationDiagram::SetFilename(const char * filename, bool openFile) {
+  logger->SetFilename(filename,openFile);
 }
 
 const char * balBifurcationDiagram::GetFilename() {
