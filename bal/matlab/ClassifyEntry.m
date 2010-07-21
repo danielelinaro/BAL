@@ -1,5 +1,15 @@
-function data = ClassifyEntry(entry, component, tol)
-% data = ClassifyEntry(entry, component, tol)
+function data = ClassifyEntry(entry, event, component, tol)
+% data = ClassifyEntry(entry, event component, tol)
+
+if ~ exist('event','var')
+    event = 1;
+end
+if ~ exist('component','var')
+    component = 1;
+end
+if ~ exist('tol','var')
+    tol = 1e-3;
+end
 
 if entry.labels(end) == -10
     % the integration ended with an error
@@ -8,29 +18,32 @@ if entry.labels(end) == -10
 elseif entry.labels(end) == -3 || size(entry.x,1) == 2
     % equilibrium
     turns = 0;
-%     fprintf(1, 'label = %d\n', entry.labels(end));
 else
-    x = entry.x(3:end,:);
-    coord = x(:,component);
-    if max(max(diff(coord))) < tol
-        turns = 1;
-    else
-        sz = numel(coord);
-        stop = floor(sz / 2);
-        
+    idx = find(entry.labels == event);
+    if isempty(idx)
         turns = -1;
-        for ii=2:stop
-            num = floor(sz/ii);
-            tmp = coord(1:ii*num);
-            tmp = reshape(tmp, [ii num]);
-            distances = diff(tmp,1,2);
-            if max(max(distances')) < tol
-                turns = ii;
-                break
+    else
+        coord = entry.x(idx,component);
+        if max(max(diff(coord))) < tol
+            turns = 1;
+        else
+            sz = numel(coord);
+            stop = floor(sz / 2);
+
+            turns = -1;
+            for ii=2:stop
+                num = floor(sz/ii);
+                tmp = coord(1:ii*num);
+                tmp = reshape(tmp, [ii num]);
+                distances = diff(tmp,1,2);
+                if max(max(distances')) < tol
+                    turns = ii;
+                    break
+                end
             end
-        end
-        if ii >= stop
-            turns = ii;
+            if ii >= stop
+                turns = ii;
+            end
         end
     end
 end
