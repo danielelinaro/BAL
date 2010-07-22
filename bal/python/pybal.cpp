@@ -1150,6 +1150,15 @@ static int pyBalBifurcationDiagram_setattro(pyBalBifurcationDiagram *self, PyObj
 		else
 			err = -1;
 	}
+	else if(strcmp(n, "equiltol") == 0) {
+		self->diagram->GetODESolver()->SetEquilibriumTolerance(PyFloat_AsDouble(value));
+	}
+	else if(strcmp(n, "reltol") == 0) {
+		self->diagram->GetODESolver()->SetRelativeTolerance(PyFloat_AsDouble(value));
+	}
+	else if(strcmp(n, "abstol") == 0) {
+		self->diagram->GetODESolver()->SetAbsoluteTolerance(PyFloat_AsDouble(value));
+	}
 	else {
 		err = -1;
 	}
