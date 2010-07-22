@@ -2,7 +2,7 @@
 AC_PREREQ([2.61])
 
 # init autoconf, automake and libtool
-AC_INIT([bal], [0.9.1], [daniele.linaro@unige.it])
+AC_INIT([bal], [0.9.2], [daniele.linaro@unige.it])
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_SRCDIR([src/balObject.h])
 AM_INIT_AUTOMAKE([-Wall -Werror foreign])
