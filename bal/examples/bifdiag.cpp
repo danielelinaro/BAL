@@ -36,7 +36,7 @@ int main(int argc, char *argv[]) {
   realtype x0[3] = {0.5,0.5,0.5};
   balBifurcationParameters * bp = balBifurcationParameters::Create();
   bp->SetNumber(4);
-  //bp->SetIthParameter(0,2.96);
+  bp->SetIthParameter(0,2.96);
   bp->SetIthParameterLowerBound(0,2.5);
   bp->SetIthParameterUpperBound(0,3.5);
   bp->SetIthParameterLowerBound(1,1);
@@ -48,23 +48,18 @@ int main(int argc, char *argv[]) {
   hr->SetParameters(bp);
   balBifurcationDiagram * bifd = balBifurcationDiagram::Create();
   bifd->SetDynamicalSystem(hr);
-  bifd->GetODESolver()->SetIntegrationMode(balEVENTS);
+  bifd->GetODESolver()->SetIntegrationMode(balBOTH);
   bifd->GetODESolver()->HaltAtEquilibrium(true);
   bifd->GetODESolver()->HaltAtCycle(true);
   bifd->GetODESolver()->SetTransientDuration(1e3);
-  bifd->GetODESolver()->SetFinalTime(5e3);
+  bifd->GetODESolver()->SetFinalTime(1e4);
   bifd->GetODESolver()->SetMaxNumberOfIntersections(200);
   bifd->GetODESolver()->SetX0(x0);
-  //bifd->GetODESolver()->IsStiff(true);
-
+  bifd->SetFilename("hr.h5");
   bifd->SetNumberOfThreads(argc > 1 ? atoi(argv[1]) : 2);
-  bifd->SetFilename("hr.a.h5");
+
   bifd->ComputeDiagram();
-  bifd->SetFilename("hr.b.h5");
-  bifd->ComputeDiagram();
-  bifd->SetFilename("hr.c.h5");
-  bifd->ComputeDiagram();
-  //bifd->SaveClassificationData("hr.classified");
+  bifd->SaveClassificationData("hr.classified");
 
   bifd->Destroy();
   hr->Destroy();

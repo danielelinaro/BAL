@@ -90,7 +90,9 @@ typedef enum
     /** Records the events, i.e. the crossings of Poincare' sections */
     balEVENTS,
     /** Records both trajectory and events */
-    balBOTH
+    balBOTH,
+    /** Compute Lyapunov spectrum */
+    balLYAP
   } integration_mode;
 
 

@@ -74,7 +74,7 @@ int balHindmarshRose::RHS (realtype t, N_Vector x, N_Vector xdot, void * data) {
   I = parameters->At(1);
   u = parameters->At(2);
   s = parameters->At(3);
-  
+
   x1 = Ith (x, 0);
   x2 = Ith (x, 1);
   x3 = Ith (x, 2);

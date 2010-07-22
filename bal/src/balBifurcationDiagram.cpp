@@ -239,7 +239,16 @@ void balBifurcationDiagram::ComputeDiagram() {
   solutions = new list<balSolution *>;
   classification = new list<balClassificationEntry *>;
   destroy_lists = true;
-  ComputeDiagramMultiThread();
+
+  /* this switch is really not necessary: it is safe to always *
+   * use ComputeDiagramMultiThread().                          */
+  switch(nthreads) {
+  case 1:
+    ComputeDiagramSingleThread();
+    break;
+  default:
+    ComputeDiagramMultiThread();
+  }
 }
 
 void balBifurcationDiagram::ComputeDiagramSingleThread() {
