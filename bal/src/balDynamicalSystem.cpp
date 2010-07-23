@@ -129,7 +129,7 @@ int balDynamicalSystem::RHSWrapper (realtype t, N_Vector x, N_Vector xdot, void 
     for(j=0; j<bds->n; j++,k++)
       Ith(xdot,3+k) = F[j][i];
   }
-  
+
   return CV_SUCCESS;
 }
 
@@ -245,7 +245,7 @@ bool balDynamicalSystem::IsExtended() const {
   return ext;
 }
 
-bool balDynamicalSystem::SpecialOptions(void *opt) {
+bool balDynamicalSystem::SpecialOptions(const void *opt) {
   return false;
 }
 

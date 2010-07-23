@@ -95,7 +95,7 @@ class balDynamicalSystem : public balObject {
   virtual bool HasEventsConstraints() const;
   
   virtual void Reset();
-  virtual bool SpecialOptions(void *opt);
+  virtual bool SpecialOptions(const void *opt);
   virtual void ManageEvents(realtype t, N_Vector X, int * events, int * constraints = NULL);
   
   int GetNumberOfEvents() const;

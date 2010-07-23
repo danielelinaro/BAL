@@ -34,11 +34,14 @@ balDynamicalSystem* balDynastyFactory() {
 balDynasty::balDynasty() : balDynamicalSystem(), eps(1e-4) {
   SetDimension(3);
   SetNumberOfParameters(7);
-  SetNumberOfEvents(GetDimension());
+  //SetNumberOfEvents(GetDimension());
+  SetNumberOfEvents(1);
+  constraint_type = MAXIMA;
   xderiv = N_VNew_Serial(GetDimension());
 }
 
 balDynasty::balDynasty(const balDynasty& dyn) : balDynamicalSystem(dyn), eps(1e-4) {
+  constraint_type = dyn.constraint_type;
   xderiv = N_VNew_Serial(dyn.GetDimension());
   for(int i = 0; i < dyn.GetDimension(); i++)
     Ith(xderiv,i)=Ith(dyn.xderiv,i);
@@ -171,6 +174,12 @@ void balDynasty::EventsConstraints (realtype t, N_Vector x, int * constraints, v
   realtype ris[3], xdot[3];
   balParameters *parameters;
   
+  if(constraint_type != MINIMA && constraint_type != MAXIMA) {
+    for(int i=0; i<GetNumberOfEvents(); i++)
+      constraints[i] = 1;
+    return;
+  }
+
   x1 = Ith (x, 0);
   x2 = Ith (x, 1);
   x3 = Ith (x, 2);
@@ -203,8 +212,36 @@ void balDynasty::EventsConstraints (realtype t, N_Vector x, int * constraints, v
   ris[1] = q*(-1+e*x1*denx-x3*deny)*xdot[1]+q*xdot[1]*(-e*x1*xdot[0]*denxsquare+e*xdot[0]*denx+x3*xdot[1]*denysquare-xdot[2]*deny);
   ris[2] = r*(-x1*x2*xdot[0]*denxsquare+x2*xdot[0]*denx+x1*xdot[1]*denx-g*xdot[2]);
 	
-  for(int i=0; i<GetNumberOfEvents(); i++)
-    constraints[i] = (ris[i] > 0 ? 1 : 0);
+  switch(constraint_type) {
+  case MINIMA:
+    for(int i=0; i<GetNumberOfEvents(); i++)
+      constraints[i] = (ris[i] > 0 ? 1 : 0);
+    break;
+  case MAXIMA:
+    for(int i=0; i<GetNumberOfEvents(); i++)
+      constraints[i] = (ris[i] < 0 ? 1 : 0);
+    break;
+  default:
+    for(int i=0; i<GetNumberOfEvents(); i++)
+      constraints[i] = 1;
+  }
+}
+
+bool balDynasty::SpecialOptions(const void *opt) {
+  char *s = (char *) opt;
+  if(strncasecmp(s,"minima",6) == 0) {
+    constraint_type = MINIMA;
+    return true;
+  }
+  if(strncasecmp(s,"maxima",6) == 0) {
+    constraint_type = MAXIMA;
+    return true;
+  }
+  if(strncasecmp(s,"any",3) == 0) {
+    constraint_type = ANY;
+    return true;
+  }
+  return false;
 }
 
 bool balDynasty::HasJacobian() const {

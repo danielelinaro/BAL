@@ -65,7 +65,7 @@ class balEye : public balDynamicalSystem {
   int Events (realtype t, N_Vector x, realtype * event, void * data);
   
   bool HasEvents() const;
-  bool SpecialOptions(void *opt);
+  bool SpecialOptions(const void *opt);
   bool ReadVectorField(const char *filename);
 
  protected:

@@ -31,8 +31,10 @@
 #include "balObject.h"
 #include "balParameters.h"
 #include "balDynamicalSystem.h"
+#include <cstring>
 #include <cvode/cvode.h>
 
+enum {MINIMA, MAXIMA, ANY};
 
 /**
  * \class balDynasty
@@ -63,7 +65,8 @@ class balDynasty : public balDynamicalSystem {
   bool HasJacobian() const;
   bool HasEvents() const;
   bool HasEventsConstraints() const;
-  
+  bool SpecialOptions(const void *opt);
+
  protected:
   balDynasty();
   balDynasty(const balDynasty& hr);
@@ -72,6 +75,7 @@ class balDynasty : public balDynamicalSystem {
  private:
   N_Vector xderiv;
   const double eps;
+  int constraint_type;
 };
 
 #ifdef __cplusplus

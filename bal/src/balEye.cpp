@@ -95,8 +95,8 @@ bool balEye::HasEvents() const {
   return true;
 }
 
-bool balEye::SpecialOptions(void *opt) {
-  printf("balEye::SpecialOptions %s\n", (char *) opt);
+bool balEye::SpecialOptions(const void *opt) {
+  printf("balEye::SpecialOptions %s\n", (const char *) opt);
   return ReadVectorField((const char*) opt);
 }
 

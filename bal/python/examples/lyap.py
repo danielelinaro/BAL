@@ -35,7 +35,7 @@ def lyapunov(dynsys,pars,tstart,tend,tstep,ic):
     x[0:n] = ic
     x[n:] = list(reshape(eye(n),[n**2,1]).flatten())
     dynsys.extended = 1
-    solver = ODESolver(dynsys,pars)
+    solver = bal.ODESolver(dynsys,pars)
     solver.x0 = list(x)
     solver.dt = tstep/5
     solver.ttran = 0.0
@@ -69,8 +69,8 @@ from numpy.random import random
 
 # the system
 sys = bal.DynamicalSystem()
-#sys.create('balLorenz')
-sys.create('balHindmarshRose')
+sys.create('balLorenz')
+#sys.create('balHindmarshRose')
 
 # the parameters
 par = bal.Parameters(sys.npar)
@@ -81,7 +81,7 @@ par = bal.Parameters(sys.npar)
 # limit cycle
 #par.setpars([10.,99.96,8./3.])
 # stable equilibrium
-#par.setpars([10.,10,8./3.])
+par.setpars([10.,10,8./3.])
 
 ### HR ###
 # chaos
@@ -98,13 +98,14 @@ solver.tstop = 2000
 solver.mode = 'trajectory + events'
 solver.x0 = [0,0,0]
 
-par.setpars([2.96,3,0.01,4])
-par.bifpar(1,[3.42,3.72,301])
+#par.setpars([2.96,3,0.01,4])
+#par.bifpar(1,[3.42,3.72,301])
 x0 = [0,1,0]
-for p in par:
+#for p in par:
     # lyapunov exponents
-    lp = lyapunov(sys,par,0,1000,5,x0)
+lp = lyapunov(sys,par,0,1000,5,x0)
+print lp
     # number of turns
-    solver.run()
-    s = solver.solution()
-    print p, lp, solver.nturns
+#solver.run()
+#s = solver.solution()
+#print p, lp, solver.nturns
