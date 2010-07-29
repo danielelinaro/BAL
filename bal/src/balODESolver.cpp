@@ -59,6 +59,7 @@ balODESolver::balODESolver() {
   tstep = STEP;
   ttran = T_TRAN;
   tfinal = T_END;
+  lyap_tstep = 100*STEP;
   setup = false;
   max_intersections = DEFAULT_INTERSECTIONS;
   bufsize = 0;
@@ -75,6 +76,7 @@ balODESolver::balODESolver() {
   xdot = NULL;
   x0 = NULL;
   x_inters = NULL;
+  lyapunov_exponents = NULL;
   nvectors_allocated = false;
   class_event = 1;
 }
@@ -97,6 +99,8 @@ balODESolver::balODESolver(const balODESolver& solver) {
   tstep = solver.GetTimeStep();
   ttran = solver.GetTransientDuration();
   tfinal = solver.GetFinalTime();
+  lyap_tstep = solver.GetLyapunovTimeStep();
+  lyapunov_exponents = solver.GetLyapunovExponents();
   setup = false;
   max_intersections = solver.GetMaxNumberOfIntersections();
   bufsize = 0;
@@ -130,6 +134,10 @@ balODESolver::~balODESolver() {
     CVodeFree(&cvode_mem);
   }
   fclose(errfp);
+
+  if(lyapunov_exponents != NULL){
+    delete lyapunov_exponents;
+  }
 }
 
 double * balODESolver::GetBuffer() const {
@@ -239,6 +247,15 @@ void balODESolver::SetTimeStep (realtype step) {
       delete_buffer = true;
     }
   }
+}
+
+realtype balODESolver::GetLyapunovTimeStep () const {
+  return lyap_tstep;
+}
+
+void balODESolver::SetLyapunovTimeStep (realtype tstep) {
+  if (tstep > 0)
+    lyap_tstep = tstep;
 }
 
 realtype balODESolver::GetRelativeTolerance () const {
@@ -352,18 +369,40 @@ realtype * balODESolver::GetXEnd() const {
   return buffer + (rows-1)*cols + 1;
 }
 
-void balODESolver::SetX0(N_Vector X0) {
+void balODESolver::SetX0(N_Vector X0, int n) {
   if(X0 != NULL && dynsys != NULL) {
-    for(int i=0; i<dynsys->GetDimension(); i++)
+    int stop;
+    if(n == -1)
+      stop = dynsys->GetDimension();
+    else
+      stop = n;
+    for(int i=0; i<stop; i++)
       Ith(x0,i) = Ith(X0,i);
   }
 }
 
-void balODESolver::SetX0(realtype * X0) {
+void balODESolver::SetX0(realtype * X0, int n) {
   if(X0 != NULL && dynsys != NULL) {
-    for(int i=0; i<dynsys->GetDimension(); i++)
+    int stop;
+    if(n == -1)
+      stop = dynsys->GetDimension();
+    else
+      stop = n;
+    for(int i=0; i<stop; i++)
       Ith(x0,i) = X0[i];
   }
+}
+
+inline void balODESolver::SetOrthonormalBaseIC() {
+  int length = dynsys->GetOriginalDimension();
+  for(int i=0; i<length; i++) {
+    for(int j=0; j<length; j++)
+      Ith(x0,length+i*length+j) = (i==j ? 1.0 : 0.0) ;
+  }
+}
+
+realtype * balODESolver::GetLyapunovExponents() const {
+  return lyapunov_exponents;
 }
 
 bool balODESolver::Setup() {
@@ -468,6 +507,7 @@ bool balODESolver::AllocateSolutionBuffer() {
     }
     switch(mode) {
     case balTRAJ:
+		case balLYAP:
       lrows = (int) ceil ((tfinal - ttran) / tstep);
       if(lrows < 0) lrows = 0;
       lrows += 2;
@@ -586,11 +626,67 @@ realtype balODESolver::EuclideanDistance(int length, N_Vector x, N_Vector y) con
   return sqrt(dst);
 }
 
+bool balODESolver::GramSchmidtOrthonorm(realtype* x, realtype* xnorm, realtype* znorm) const {
+  int n = dynsys->GetOriginalDimension();
+  int i,j,k;
+  realtype * tmp = new realtype[n];
+ 
+  znorm[0] = Norm(n,x);
+  for (k=0; k<n; k++)
+    xnorm[k] = x[k]/znorm[0];
+  
+  for (i=1; i<n ; i++) {
+    
+    for (k=0; k<n; k++)
+      tmp[k] = x[n*i+k]; 
+    
+    for (j=0; j<i; j++) {
+      for (k=0; k<n; k++)
+	tmp[k] = tmp[k] - DotProduct(n,x+(n*i),xnorm+(n*j)) * xnorm[n*j+k];
+    }
+    
+    znorm[i] = Norm(n,tmp);
+    
+    for (k=0; k<n; k++)
+      xnorm[n*i+k] = tmp[k]/znorm[i];
+  }
+
+  fprintf(stderr, "norms: %f %f %f\n", Norm(n,xnorm), Norm(n,xnorm+n), Norm(n,xnorm+2*n));
+  fprintf(stderr, "dots: %f %f %f\n", DotProduct(n,xnorm,xnorm+n), DotProduct(n,xnorm,xnorm+2*n), DotProduct(n,xnorm+n,xnorm+2*n));
+
+  /*
+  for(i=0; i<n; i++) {
+    for(j=0; j<n; j++)
+      fprintf(stderr, "%f ", xnorm[i*n+j]);
+    fprintf(stderr, "\n");
+  }
+  */
+
+  delete tmp;
+  return true;
+} 
+
+inline realtype balODESolver::Norm(int length, realtype* x) const {
+  realtype norm = 0.0;
+  for(int i = 0; i<length; i++)
+    norm += x[i]*x[i];
+  return sqrt(norm);
+}  
+
+inline realtype  balODESolver::DotProduct(int length, realtype* x, realtype* y) const {
+  realtype res = 0.0;
+  for(int i=0; i<length; i++)
+    res += x[i]*y[i];
+  return res;
+}
+ 
+
 bool balODESolver::ResetCVode() {
   int flag;
 
   switch(mode) {
   case balTRAJ:
+  case balLYAP:
 #ifdef CVODE25
     flag = CVodeRootInit (cvode_mem, 0, NULL, dynsys);
 #endif
@@ -635,8 +731,68 @@ bool balODESolver::Solve() {
   case balEVENTS:
   case balBOTH:
     return SolveWithEvents();
+  case balLYAP:
+    return SolveLyapunov();
   }
   return false;
+}
+
+bool balODESolver::SolveLyapunov() {
+  if(!dynsys->IsExtended())
+    return false;
+  int N = dynsys->GetDimension();
+  int n = dynsys->GetOriginalDimension();
+  int i;
+  realtype * x_ = new realtype[N];
+  realtype * xnorm = new realtype[n*n];
+  realtype * znorm = new realtype[n];
+  realtype * cum = new realtype[n];
+  realtype * lp = new realtype[n];
+  for (i=0; i<n; i++)
+    cum[i] = 0.0;
+  realtype tend = tfinal;
+  realtype t_ = 0.0;
+  
+  dynsys->Extend(false);
+  neq = dynsys->GetDimension();
+  printf("ci: %lf\t%lf\t%lf\n", Ith(x0,0),Ith(x0,1),Ith(x0,2));
+  tfinal = ttran;
+  SolveWithoutEvents();
+  
+  printf("ttran esaurito stato: %lf\t%lf\t%lf\n", Ith(x,0),Ith(x,1),Ith(x,2));
+  
+  dynsys->Extend(true);
+  neq = dynsys->GetDimension();
+  SetX0(x,n);
+  SetOrthonormalBaseIC();
+  printf("ci: %lf\t%lf\t%lf\n", Ith(x0,3),Ith(x0,4),Ith(x0,5));
+  tfinal = lyap_tstep;
+  ttran = 0;
+  delete_buffer=true;
+  Setup();
+  while(t_<tend){
+    SolveWithoutEvents();
+    t_ += lyap_tstep;
+    for(i=0; i<N; i++)
+      x_[i] = Ith(x,i);
+    GramSchmidtOrthonorm(x_+n,xnorm,znorm);
+    for(i=0; i<n*n; i++)
+      x_[i+n] = xnorm[i];
+    for(i=0; i<n; i++)
+      cum[i] += log(znorm[i])/log(2.0);
+    SetX0(x_);	   		        
+  }   	
+  
+  for(i=0; i<n; i++)
+    lp[i] = cum[i]/t_;
+  if(lyapunov_exponents != NULL)
+    delete lyapunov_exponents;
+  lyapunov_exponents = lp;
+  
+  delete x_;
+  delete xnorm;
+  delete znorm;
+  delete cum;
 }
 
 bool balODESolver::SolveWithoutEvents() {
@@ -655,7 +811,7 @@ bool balODESolver::SolveWithoutEvents() {
 
   if(! ResetCVode())
     return false;
-
+	
   /************* TRANSIENT *****************/
   SkipTransient(&eq,&err);
   
@@ -674,17 +830,17 @@ bool balODESolver::SolveWithoutEvents() {
 	 * an extremum of a state variables, which is a condition always
 	 * verified when the trajectory is on an equilibrium
 	 */
-	if(flag == CV_ILL_INPUT) {
-	  if(CheckEquilibrium() == EQUIL_BREAK)
-	    break;
-	}
+				if(flag == CV_ILL_INPUT) {
+					if(CheckEquilibrium() == EQUIL_BREAK)
+						break;
+				}
 	/* this is done if the error is not CV_ILL_INPUT */
-	err = true;
-	break;
-      }
+				err = true;
+				break;
+			}
 
       if(CheckEquilibrium() == EQUIL_BREAK)
-	break;
+				break;
 
       tout += tstep;
     }

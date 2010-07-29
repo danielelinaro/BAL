@@ -60,7 +60,7 @@
 #define T_END (1.0E3)
 
 /** Default transient time */
-#define T_TRAN (1.0E2)
+#define T_TRAN (0.0)
 
 /** Default number of intersection with the Poincare' section */
 #define DEFAULT_INTERSECTIONS (100)
@@ -154,6 +154,8 @@ class balODESolver : public balObject {
   void SetFinalTime (realtype final);
   realtype GetTimeStep () const;
   void SetTimeStep (realtype step);
+  realtype GetLyapunovTimeStep () const;
+  void SetLyapunovTimeStep (realtype tstep);
   realtype GetRelativeTolerance () const;
   void SetRelativeTolerance (realtype rtol);
   realtype GetAbsoluteTolerance () const;
@@ -174,13 +176,15 @@ class balODESolver : public balObject {
   void SetEquilibriumTolerance(realtype tol);
   realtype GetCycleTolerance() const;
   void SetCycleTolerance(realtype tol);
+
+  realtype * GetLyapunovExponents() const;
   
   N_Vector GetX() const;
   N_Vector GetXdot() const;
   N_Vector GetX0() const;
   realtype * GetXEnd() const;
-  void SetX0(N_Vector X0);
-  void SetX0(realtype * X0);
+  void SetX0(N_Vector X0, int n = -1);
+  void SetX0(realtype * X0, int n = -1);
   
   bool Setup();
   bool Solve();
@@ -198,10 +202,16 @@ class balODESolver : public balObject {
   void SkipTransient(bool *equilibrium, bool *error);
   bool SolveWithoutEvents();
   bool SolveWithEvents();
+  bool SolveLyapunov();
   void SetSolutionLength(int length);
   int CheckEquilibrium();
   int CheckCycle(int guess);
+  
   realtype EuclideanDistance(int length, N_Vector x, N_Vector y = NULL) const;
+  inline realtype Norm(int length, realtype* x) const;
+  inline realtype DotProduct(int length, realtype* x, realtype* y) const;
+  bool GramSchmidtOrthonorm(realtype* x, realtype* xnorm, realtype* znorm) const;
+  inline void SetOrthonormalBaseIC();
   
  private:
   /** Number of equations */
@@ -230,6 +240,9 @@ class balODESolver : public balObject {
   realtype tfinal; // SG
   /** Integration time step */
   realtype tstep; // SG
+  /** Lypunov exponents calculus tstep*/
+  realtype lyap_tstep;
+  realtype * lyapunov_exponents;
   
   /** Relative tolerance */
   realtype reltol; // SG

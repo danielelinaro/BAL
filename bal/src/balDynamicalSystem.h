@@ -100,6 +100,7 @@ class balDynamicalSystem : public balObject {
   
   int GetNumberOfEvents() const;
   int GetDimension() const;
+  int GetOriginalDimension() const;
   int GetNumberOfParameters() const;
   void SetParameters(balParameters *) throw(balException);
   balParameters * GetParameters() const;
