@@ -31,14 +31,14 @@ balDynamicalSystem* balHindmarshRoseFactory() {
   return balHindmarshRose::Create();
 }
 
-balHindmarshRose::balHindmarshRose()/* : balDynamicalSystem(), xrest(-1.6)*/ {
+balHindmarshRose::balHindmarshRose() : xrest(-1.6) {
   SetDimension(3);
   SetNumberOfParameters(4);
   SetNumberOfEvents(GetDimension());
   xderiv = N_VNew_Serial(GetDimension());
 }
 
-balHindmarshRose::balHindmarshRose(const balHindmarshRose& hr) : balDynamicalSystem( hr ) {
+balHindmarshRose::balHindmarshRose(const balHindmarshRose& hr) : xrest(-1.6) {
   xderiv = N_VNew_Serial(hr.GetDimension());
   for(int i = 0; i < hr.GetDimension(); i++)
     Ith(xderiv,i)=Ith(hr.xderiv,i);

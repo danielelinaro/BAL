@@ -71,6 +71,10 @@ int main(int argc, char *argv[]) {
   N_Vector x = N_VNew_Serial(n);
   N_Vector xdot = N_VNew_Serial(n);
 
+  balHindmarshRose *hrcopy = (balHindmarshRose *) hr->Copy();
+  printf("hrcopy->xrest = %f\n", hrcopy->xrest);
+  hrcopy->Destroy();
+
   if(argc == n+1) {
     for(i=0; i<n; i++)
       NV_Ith_S(x,i) = atof(argv[i+1]);
@@ -113,7 +117,7 @@ int main(int argc, char *argv[]) {
   N_VDestroy_Serial(x);
   N_VDestroy_Serial(xdot);
   hr->Destroy();
-  
+
   return 0;
 }
 
