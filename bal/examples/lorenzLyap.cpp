@@ -28,48 +28,51 @@
 #include "balSolution.h"
 using namespace std;
 
-// TEST balODESolver SolveLyapunovExponents
+/********** TEST balODESolver SolveLyapunovExponents **********
+ *																														*
+ *		lyapunov exponents calculated using base 2 logarithm		*
+ *		in formula.																							*
+ *																														*
+ *		test parameters [16.0 45.92 4.0] from Wolf's article		*
+ *		'Determining Lyapunov Exponents From a Time Series'			*
+ *		Lyapunov Spectrum: l1 = 2.16, l2 = 0.00, l3 = -32.4			*
+ *		for t=10000																							*
+ *																														*
+ **************************************************************/
+
+
 int main(int argc, char *argv[]) {
 	
   // parameters
   balParameters * pars = balParameters::Create();
   pars->SetNumber(3);
-  pars->At(0) = 16.0;
+  pars->At(0) = 16;
   pars->At(1) = 45.92;
-  pars->At(2) = 4;
+  pars->At(2) = 4.0;
   
   // Lorenz
   balLorenz *lor = balLorenz::Create();
   lor->SetParameters(pars);
-  lor->Extend(true);
   
-  realtype x0[] = {0,1,0};
+	// Setting ODESolver fields 
+  realtype x0[] = {10,1,0};
   balODESolver * solver = balODESolver::Create();
   solver->SetDynamicalSystem(lor);
   solver->SetTransientDuration(1000);
-  solver->SetFinalTime(2000);
+  solver->SetFinalTime(1e4);
   solver->SetTimeStep(0.01);
-  solver->SetLyapunovTimeStep(2);
+  solver->SetLyapunovTimeStep(0.5);
   solver->SetIntegrationMode(balLYAP);
   solver->SetX0(x0);
+	
+	// Calculating Lyapunov Exponents
   solver->Solve();
-  
-  realtype * lp = solver->GetLyapunovExponents();
-  printf("\nLyapunov Exponents: %e,%e,%e \n",lp[0],lp[1],lp[2]);
 	
+	for(int i=0; i<lor->GetOriginalDimension(); i++){
+		printf("%e ",solver->GetLyapunovExponents()[i]);
+	}
+	printf("\n");
 	
-// balSolution *sol = solver->GetSolution();
-//  int r,c,i,j;
-//  double *buffer;
-//  sol->GetSize(&r,&c);
-//  buffer = sol->GetData();
-//  for(i=0; i<r; i++) {
-//    for(j=0; j<c-1; j++)
-//      printf("%f ", buffer[i*c+j]);
-//    printf("%d\n", (int) buffer[i*c+j]);
-//  }
-  
-  //sol->Destroy();
   solver->Destroy();
   lor->Destroy();
   pars->Destroy();

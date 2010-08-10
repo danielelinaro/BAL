@@ -121,7 +121,7 @@ int balDynamicalSystem::RHSWrapper (realtype t, N_Vector x, N_Vector xdot, void 
     for(j=0; j<bds->n; j++) {
       F[i][j] = 0.;
       for(k=0; k<bds->n; k++)
-	F[i][j] += IJth(bds->jac,i,k)*Y[k][j];
+				F[i][j] += IJth(bds->jac,i,k)*Y[k][j];
     }
   }
   // the last n*n components of the vector field

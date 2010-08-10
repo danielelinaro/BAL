@@ -161,11 +161,11 @@ void balODESolver::SetDynamicalSystem(balDynamicalSystem * ds) {
       nev = dynsys->GetNumberOfEvents();
       events = new int[nev];
       if(dynsys->HasEventsConstraints()) {
-	// if constraints are presents, their number must be equal to the
-	// number of events. if, for some reason, the i-th constraint makes
-	// no sense, then it is sufficient that the dynamical system class
-	// always return events_constraints[i] = 1.
-	events_constraints = new int[nev];
+		// if constraints are presents, their number must be equal to the
+		// number of events. if, for some reason, the i-th constraint makes
+		// no sense, then it is sufficient that the dynamical system class
+		// always return events_constraints[i] = 1.
+				events_constraints = new int[nev];
       }
     }
     params = dynsys->GetParameters();
@@ -520,9 +520,9 @@ bool balODESolver::AllocateSolutionBuffer() {
       // the number of detected intersections is increased only after
       // transient evolution.
       if(lrows < 0) 
-	lrows = 2;
+				lrows = 2;
       else
-	lrows += max_intersections + 2;
+				lrows += max_intersections + 2;
     }
     bufsize = lrows * cols;
     try {
@@ -626,9 +626,10 @@ realtype balODESolver::EuclideanDistance(int length, N_Vector x, N_Vector y) con
   return sqrt(dst);
 }
 
-bool balODESolver::GramSchmidtOrthonorm(realtype* x, realtype* xnorm, realtype* znorm) const {
+bool balODESolver::GramSchmidtOrthonorm(realtype * x, realtype * xnorm, realtype * znorm) const {
   int n = dynsys->GetOriginalDimension();
   int i,j,k;
+	realtype dp;
   realtype * tmp = new realtype[n];
  
   znorm[0] = Norm(n,x);
@@ -641,8 +642,9 @@ bool balODESolver::GramSchmidtOrthonorm(realtype* x, realtype* xnorm, realtype* 
       tmp[k] = x[n*i+k]; 
     
     for (j=0; j<i; j++) {
+			dp = DotProduct(n,x+(n*i),xnorm+(n*j));
       for (k=0; k<n; k++)
-	tmp[k] = tmp[k] - DotProduct(n,x+(n*i),xnorm+(n*j)) * xnorm[n*j+k];
+				tmp[k] = tmp[k] - dp * xnorm[n*j+k];
     }
     
     znorm[i] = Norm(n,tmp);
@@ -651,8 +653,8 @@ bool balODESolver::GramSchmidtOrthonorm(realtype* x, realtype* xnorm, realtype* 
       xnorm[n*i+k] = tmp[k]/znorm[i];
   }
 
-  fprintf(stderr, "norms: %f %f %f\n", Norm(n,xnorm), Norm(n,xnorm+n), Norm(n,xnorm+2*n));
-  fprintf(stderr, "dots: %f %f %f\n", DotProduct(n,xnorm,xnorm+n), DotProduct(n,xnorm,xnorm+2*n), DotProduct(n,xnorm+n,xnorm+2*n));
+  //fprintf(stderr, "norms: %f %f %f\n", Norm(n,xnorm), Norm(n,xnorm+n), Norm(n,xnorm+2*n));
+  //fprintf(stderr, "dots: %f %f %f\n", DotProduct(n,xnorm,xnorm+n), DotProduct(n,xnorm,xnorm+2*n), DotProduct(n,xnorm+n,xnorm+2*n));
 
   /*
   for(i=0; i<n; i++) {
@@ -666,14 +668,14 @@ bool balODESolver::GramSchmidtOrthonorm(realtype* x, realtype* xnorm, realtype* 
   return true;
 } 
 
-inline realtype balODESolver::Norm(int length, realtype* x) const {
+inline realtype balODESolver::Norm(int length, realtype * x) const {
   realtype norm = 0.0;
   for(int i = 0; i<length; i++)
     norm += x[i]*x[i];
   return sqrt(norm);
 }  
 
-inline realtype  balODESolver::DotProduct(int length, realtype* x, realtype* y) const {
+inline realtype  balODESolver::DotProduct(int length, realtype * x, realtype * y) const {
   realtype res = 0.0;
   for(int i=0; i<length; i++)
     res += x[i]*y[i];
@@ -738,39 +740,51 @@ bool balODESolver::Solve() {
 }
 
 bool balODESolver::SolveLyapunov() {
-  if(!dynsys->IsExtended())
-    return false;
-  int N = dynsys->GetDimension();
+	
+	int i;
+	realtype tend = tfinal;
+  realtype t_ = 0.0;
+	tfinal = ttran;
+	delete_buffer = true;
+	printf("ci: %lf\t%lf\t%lf\n", Ith(x0,0),Ith(x0,1),Ith(x0,2));
+	SolveWithoutEvents();
+	printf("ttran esaurito stato: %lf\t%lf\t%lf\n", Ith(x,0),Ith(x,1),Ith(x,2));
+	
+	realtype * new_x0 = new realtype [dynsys->GetDimension()];
+	for (i=0; i<dynsys->GetDimension(); i++)
+		new_x0[i] = Ith(x,i);
+		
+	dynsys->Extend(true);
+	SetDynamicalSystem(dynsys);
+  
+	int N = dynsys->GetDimension();
   int n = dynsys->GetOriginalDimension();
-  int i;
   realtype * x_ = new realtype[N];
   realtype * xnorm = new realtype[n*n];
   realtype * znorm = new realtype[n];
   realtype * cum = new realtype[n];
-  realtype * lp = new realtype[n];
+	if (lyapunov_exponents !=NULL)
+		delete lyapunov_exponents;
+  lyapunov_exponents = new realtype[n];
   for (i=0; i<n; i++)
     cum[i] = 0.0;
-  realtype tend = tfinal;
-  realtype t_ = 0.0;
-  
-  dynsys->Extend(false);
-  neq = dynsys->GetDimension();
-  printf("ci: %lf\t%lf\t%lf\n", Ith(x0,0),Ith(x0,1),Ith(x0,2));
-  tfinal = ttran;
-  SolveWithoutEvents();
-  
-  printf("ttran esaurito stato: %lf\t%lf\t%lf\n", Ith(x,0),Ith(x,1),Ith(x,2));
-  
-  dynsys->Extend(true);
-  neq = dynsys->GetDimension();
-  SetX0(x,n);
+	
+	SetX0(new_x0,n);
+	delete new_x0;
   SetOrthonormalBaseIC();
-  printf("ci: %lf\t%lf\t%lf\n", Ith(x0,3),Ith(x0,4),Ith(x0,5));
+  
+	printf("ci_ext: ");
+	for (i=0;i<N; i++)
+		printf("%lf ",Ith(x0,i));
+	printf("\n");
+  
   tfinal = lyap_tstep;
-  ttran = 0;
-  delete_buffer=true;
-  Setup();
-  while(t_<tend){
+  ttran = 0.0;
+	
+	delete_buffer = true;
+	Setup();
+	dynsys->Reset();
+  while(t_ < tend){
     SolveWithoutEvents();
     t_ += lyap_tstep;
     for(i=0; i<N; i++)
@@ -780,14 +794,24 @@ bool balODESolver::SolveLyapunov() {
       x_[i+n] = xnorm[i];
     for(i=0; i<n; i++)
       cum[i] += log(znorm[i])/log(2.0);
-    SetX0(x_);	   		        
-  }   	
+    SetX0(x_);
+		
+		/*if((int)t_ % 100 == 0){
+			for(i=0; i<n; i++){
+				lyapunov_exponents[i] = cum[i]/t_;
+				printf("%e ",lyapunov_exponents[i]);
+				printf(" %lf ",x_[i]);
+			}
+			printf("\n");
+      }*/
+	}
   
-  for(i=0; i<n; i++)
-    lp[i] = cum[i]/t_;
-  if(lyapunov_exponents != NULL)
-    delete lyapunov_exponents;
-  lyapunov_exponents = lp;
+  for(i=0; i<n; i++){
+		lyapunov_exponents[i] = cum[i]/t_;
+		//printf("%e ",lyapunov_exponents[i]);
+	}
+	//printf("\n");
+					 
   
   delete x_;
   delete xnorm;
