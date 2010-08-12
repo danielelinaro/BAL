@@ -30,8 +30,11 @@
 balSolution::balSolution() {
   rows = columns = 0;
   buffer = NULL;
+	lyapunov_exponents = NULL;
+	spectrum_dimension = 0;
   parameters = NULL;
   ID = 0;
+	lyapunov_mode = false;
 }
 
 balSolution::balSolution(const balSolution& solution) {
@@ -39,12 +42,15 @@ balSolution::balSolution(const balSolution& solution) {
   solution.GetSize(&rows,&columns);
   SetSize(rows,columns);
   memcpy(buffer,solution.buffer,rows*columns*sizeof(realtype));
-  nturns = solution.nturns;
+	nturns = solution.nturns;
   ID = solution.ID;
+	if (solution.lyapunov_mode)
+		SetLyapunovExponents(solution.spectrum_dimension,solution.lyapunov_exponents);
 }
 
 balSolution::~balSolution() {
   if(buffer != NULL) delete buffer;
+	if(lyapunov_exponents !=NULL) delete lyapunov_exponents;
   if(parameters != NULL) parameters->Destroy();
 }
 
@@ -110,12 +116,29 @@ int balSolution::GetNumberOfTurns() const {
   return nturns;
 }
 
+void balSolution::SetLyapunovExponents(int n, realtype * lp) {
+	if (lyapunov_exponents == NULL || n != spectrum_dimension)
+		lyapunov_exponents = new realtype[n];
+	spectrum_dimension = n;
+	lyapunov_mode = true;
+	for (int i=0; i<spectrum_dimension ; i++)
+		lyapunov_exponents[i] = lp[i];
+}
+
+realtype * balSolution::GetLyapunovExponents() const {
+	return lyapunov_exponents;
+}
+
 void balSolution::SetID(int id) {
   ID = id;
 }
 
 int balSolution::GetID() const {
   return ID;
+}
+
+bool balSolution::IsLyapunovMode() const {
+	return lyapunov_mode;
 }
 
 bool CompareBalSolutions(balSolution *sol1, balSolution *sol2) {

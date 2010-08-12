@@ -62,9 +62,14 @@ class balSolution : public balObject {
   
   int GetNumberOfTurns() const;
   void SetNumberOfTurns(int _nturns);
-  
+
+	realtype * GetLyapunovExponents() const;
+  void SetLyapunovExponents(int n, realtype * lp);
+	
   int GetID() const;
   void SetID(int id);
+	
+	bool IsLyapunovMode() const;
 
  protected:
   /* Protected destructor of the class. */
@@ -75,9 +80,12 @@ class balSolution : public balObject {
  private:
   balParameters * parameters;
   realtype * buffer;
+	realtype * lyapunov_exponents;
+	int spectrum_dimension;
   int rows, columns;
   int nturns;
   int ID;
+	bool lyapunov_mode;
 };
 
 bool CompareBalSolutions(balSolution *sol1, balSolution *sol2);

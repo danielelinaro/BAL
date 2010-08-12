@@ -47,7 +47,10 @@ balClassificationEntry::balClassificationEntry(balSolution *sol) {
   id = sol->GetID();
   for(int i=0; i<n-1; i++)
     data[i] = sol->GetParameters()->At(i);
-  data[n-1] = sol->GetNumberOfTurns();
+	if (sol->IsLyapunovMode())
+		data[n-1] = sol->GetLyapunovExponents()[0]; //saving Maximal Lyapunov exponent (MLE)
+	else 	
+		data[n-1] = sol->GetNumberOfTurns();
 }
 
 int balClassificationEntry::GetN() const {
@@ -176,7 +179,10 @@ bool balBifurcationDiagram::SaveClassificationData(const char *filename) const {
     entry = (*it)->GetData();
     for(i=0; i<(*it)->GetN()-1; i++)
       fprintf(fid, "%e ", entry[i]);
-    fprintf(fid,"%d\n", (int) entry[(*it)->GetN()-1]);
+		if (solver->GetIntegrationMode() == balLYAP)
+			fprintf(fid,"%e\n", (double) entry[(*it)->GetN()-1]);
+		else 
+			fprintf(fid,"%d\n", (int) entry[(*it)->GetN()-1]);
   }
   
   fclose(fid);
@@ -282,6 +288,9 @@ void balBifurcationDiagram::ComputeDiagramMultiThread() {
   int nloops;
 
   balBifurcationParameters *pars;
+	
+	if (solver->GetIntegrationMode() == balLYAP)
+		restart_from_x0	= true;
 
   switch(mode) {
   case balPARAMS:
@@ -305,7 +314,8 @@ void balBifurcationDiagram::ComputeDiagramMultiThread() {
   /**
    * launching the thread of the writing routine: it activates only when list size >= LIST_MAX_SIZE
    **/
-  logger_thread = new boost::thread(&balLogger::SaveSolutionThreaded,logger,solutions,&list_mutex,&q_empty,&q_full);
+	if (solver->GetIntegrationMode() != balLYAP)
+		logger_thread = new boost::thread(&balLogger::SaveSolutionThreaded,logger,solutions,&list_mutex,&q_empty,&q_full);
   
   /**
    * calculating the first total % nthreads solutions in a serial fashion
@@ -344,11 +354,11 @@ void balBifurcationDiagram::ComputeDiagramMultiThread() {
     switch(mode) {
     case balPARAMS:
       for(i = 0; i < nthreads; i++, pars->Next())
-	lpar[i]->CopyValues(pars);
+				lpar[i]->CopyValues(pars);
       break;
     case balIC:
       for(i = 0; i < nthreads; i++, idx++)
-	lsol[i]->SetX0(X0[idx]);
+				lsol[i]->SetX0(X0[idx]);
       break;
     }
     
@@ -373,12 +383,13 @@ void balBifurcationDiagram::ComputeDiagramMultiThread() {
     lsol[i]->Destroy();
     lpar[i]->Destroy();
   }
-  
+  if (solver->GetIntegrationMode() != balLYAP) {
   /* interrupting logger_thread */
   logger_thread->interrupt();
   
   /* waiting logger thread to writing the remaining solution in the queue and exit */
   logger_thread->join();
+	}
 }
 
 void balBifurcationDiagram::IntegrateAndEnqueue(balODESolver * sol, int solutionId) {
@@ -403,11 +414,15 @@ void balBifurcationDiagram::IntegrateAndEnqueue(balODESolver * sol, int solution
       q_empty.wait(lock);
     }
     // insert a new solution into the list
-    solutions->push_back(solution);
+	  if (solver->GetIntegrationMode() != balLYAP)
+			solutions->push_back(solution);
     // insert a new classification into the list
     classification->push_back(new balClassificationEntry(solution));
-  }	
+	}	
   
+	if (solver->GetIntegrationMode() == balLYAP)
+		solution->Destroy();
+	
   if(! restart_from_x0) {
     sol->SetX0(sol->GetXEnd());
   }

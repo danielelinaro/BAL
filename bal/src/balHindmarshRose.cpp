@@ -31,14 +31,14 @@ balDynamicalSystem* balHindmarshRoseFactory() {
   return balHindmarshRose::Create();
 }
 
-balHindmarshRose::balHindmarshRose() : xrest(-1.6) {
+balHindmarshRose::balHindmarshRose() /* xrest(-1.6) */{
   SetDimension(3);
   SetNumberOfParameters(4);
   SetNumberOfEvents(GetDimension());
   xderiv = N_VNew_Serial(GetDimension());
 }
 
-balHindmarshRose::balHindmarshRose(const balHindmarshRose& hr) : xrest(-1.6) {
+balHindmarshRose::balHindmarshRose(const balHindmarshRose& hr) : balDynamicalSystem(hr) /* : xrest(-1.6) */ {
   xderiv = N_VNew_Serial(hr.GetDimension());
   for(int i = 0; i < hr.GetDimension(); i++)
     Ith(xderiv,i)=Ith(hr.xderiv,i);
@@ -81,7 +81,7 @@ int balHindmarshRose::RHS (realtype t, N_Vector x, N_Vector xdot, void * data) {
 
   Ith (xdot, 0) = x2 - x1*x1*x1 + b*x1*x1 + I - x3;
   Ith (xdot, 1) = 1 - 5*x1*x1 - x2;
-  Ith (xdot, 2) = u*(s*(x1 - xrest) - x3);
+  Ith (xdot, 2) = u*(s*(x1 - XREST) - x3);
 
   return CV_SUCCESS;
 }

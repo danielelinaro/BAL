@@ -33,6 +33,8 @@
 #include "balDynamicalSystem.h"
 #include <cvode/cvode.h>
 
+#define XREST (-1.6)
+
 /**
  * \class balHindmarshRose
  * \brief Implementation of a dynamical system that describes a the
@@ -63,7 +65,7 @@ class balHindmarshRose : public balDynamicalSystem {
   bool HasEvents() const;
   bool HasEventsConstraints() const;
   
-  const double xrest;
+  //const double xrest;
 
  protected:
   balHindmarshRose();

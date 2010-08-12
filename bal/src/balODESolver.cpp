@@ -77,18 +77,19 @@ balODESolver::balODESolver() {
   x0 = NULL;
   x_inters = NULL;
   lyapunov_exponents = NULL;
+	delete_lyapunov_exponents = false;
   nvectors_allocated = false;
   class_event = 1;
 }
 
 balODESolver::balODESolver(const balODESolver& solver) {
-  buffer = NULL;
+  int i;
+	buffer = NULL;
   delete_buffer = false;
   rows = 0;
-  
   nvectors_allocated = false;
   SetDynamicalSystem((solver.GetDynamicalSystem())->Copy());
-  for(int i=0; i<dynsys->GetDimension(); i++)
+  for(i=0; i<dynsys->GetDimension(); i++)
     Ith(x0,i) = Ith(solver.x0,i);
   
   reltol = solver.GetRelativeTolerance();
@@ -100,7 +101,13 @@ balODESolver::balODESolver(const balODESolver& solver) {
   ttran = solver.GetTransientDuration();
   tfinal = solver.GetFinalTime();
   lyap_tstep = solver.GetLyapunovTimeStep();
-  lyapunov_exponents = solver.GetLyapunovExponents();
+	delete_lyapunov_exponents = false;
+	if (solver.delete_lyapunov_exponents) {
+		lyapunov_exponents = new realtype[dynsys->GetOriginalDimension()];
+		delete_lyapunov_exponents = true;
+		for(i=0; i<dynsys->GetOriginalDimension(); i++)
+			lyapunov_exponents[i] = solver.GetLyapunovExponents()[i];
+	}
   setup = false;
   max_intersections = solver.GetMaxNumberOfIntersections();
   bufsize = 0;
@@ -135,7 +142,7 @@ balODESolver::~balODESolver() {
   }
   fclose(errfp);
 
-  if(lyapunov_exponents != NULL){
+  if(delete_lyapunov_exponents){
     delete lyapunov_exponents;
   }
 }
@@ -206,7 +213,10 @@ balSolution * balODESolver::GetSolution() const {
   balSolution * solution = balSolution::Create();
   solution->SetData(rows,cols,buffer);
   solution->SetParameters(params);
-  solution->SetNumberOfTurns(nturns);
+	if (mode == balLYAP)
+		solution->SetLyapunovExponents(dynsys->GetOriginalDimension(),lyapunov_exponents);
+  else 
+		solution->SetNumberOfTurns(nturns);
   return solution;
 }
 
@@ -742,13 +752,17 @@ bool balODESolver::Solve() {
 bool balODESolver::SolveLyapunov() {
 	
 	int i;
+	realtype * temp_x0 = new realtype[dynsys->GetOriginalDimension()];
+	for(i=0; i<dynsys->GetOriginalDimension(); i++)
+		temp_x0[i] = Ith(x0,i);
+	realtype temp_ttran = ttran;
 	realtype tend = tfinal;
   realtype t_ = 0.0;
 	tfinal = ttran;
 	delete_buffer = true;
-	printf("ci: %lf\t%lf\t%lf\n", Ith(x0,0),Ith(x0,1),Ith(x0,2));
+	//fprintf(stderr,"ci: %lf\t%lf\t%lf\t%lf\n", Ith(x0,0),Ith(x0,1),Ith(x0,2),dynsys->GetParameters()->At(0));
 	SolveWithoutEvents();
-	printf("ttran esaurito stato: %lf\t%lf\t%lf\n", Ith(x,0),Ith(x,1),Ith(x,2));
+	//fprintf(stderr,"ttran esaurito stato: %lf\t%lf\t%lf\n", Ith(x,0),Ith(x,1),Ith(x,2));
 	
 	realtype * new_x0 = new realtype [dynsys->GetDimension()];
 	for (i=0; i<dynsys->GetDimension(); i++)
@@ -763,9 +777,10 @@ bool balODESolver::SolveLyapunov() {
   realtype * xnorm = new realtype[n*n];
   realtype * znorm = new realtype[n];
   realtype * cum = new realtype[n];
-	if (lyapunov_exponents !=NULL)
-		delete lyapunov_exponents;
-  lyapunov_exponents = new realtype[n];
+	if (!delete_lyapunov_exponents){
+		lyapunov_exponents = new realtype[n];
+		delete_lyapunov_exponents = true;
+	}
   for (i=0; i<n; i++)
     cum[i] = 0.0;
 	
@@ -773,10 +788,10 @@ bool balODESolver::SolveLyapunov() {
 	delete new_x0;
   SetOrthonormalBaseIC();
   
-	printf("ci_ext: ");
-	for (i=0;i<N; i++)
-		printf("%lf ",Ith(x0,i));
-	printf("\n");
+	//fprintf(stderr,"ci_ext: ");
+//	for (i=0;i<N; i++)
+//		fprintf(stderr,"%lf ",Ith(x0,i));
+//	fprintf(stderr,"\n");
   
   tfinal = lyap_tstep;
   ttran = 0.0;
@@ -793,7 +808,7 @@ bool balODESolver::SolveLyapunov() {
     for(i=0; i<n*n; i++)
       x_[i+n] = xnorm[i];
     for(i=0; i<n; i++)
-      cum[i] += log(znorm[i])/log(2.0);
+      cum[i] += log(znorm[i]);///log(2.0);
     SetX0(x_);
 		
 		/*if((int)t_ % 100 == 0){
@@ -811,8 +826,16 @@ bool balODESolver::SolveLyapunov() {
 		//printf("%e ",lyapunov_exponents[i]);
 	}
 	//printf("\n");
-					 
+	
+	ttran = temp_ttran;
+	tfinal = tend;
+	dynsys->Extend(false);
+	SetDynamicalSystem(dynsys);
+	delete_buffer = true;
+	Setup();
+	SetX0(temp_x0);
   
+	delete temp_x0;
   delete x_;
   delete xnorm;
   delete znorm;

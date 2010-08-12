@@ -242,8 +242,10 @@ class balODESolver : public balObject {
   realtype tstep; // SG
   /** Lypunov exponents calculus tstep*/
   realtype lyap_tstep;
+	
   realtype * lyapunov_exponents;
-  
+  bool delete_lyapunov_exponents;
+	
   /** Relative tolerance */
   realtype reltol; // SG
   /** Absolute tolerance */
