@@ -92,7 +92,7 @@ balPLL::balPLL() : pi(3.141592653589793) {
 #endif
 
 #ifndef WITHPHIERR
-  divout = 0;
+  divout = 1;
   cnt = 0;
 #endif
   
@@ -285,7 +285,7 @@ void balPLL::ManageEvents(realtype t, N_Vector X, int * events, int * constraint
 #ifndef FRACTIONAL
     if(cnt >= N/2) {
 #else
-    if(cnt >= N[idx]/2) {
+    if(cnt >= ((double) N[idx]/2)) {
 #endif
       cnt = 0;
       divout = !divout;
@@ -296,9 +296,11 @@ void balPLL::ManageEvents(realtype t, N_Vector X, int * events, int * constraint
 	fprintf(stderr, "%c%s", ESC, NORMAL);
 #ifdef FRACTIONAL
 	idx = (idx+1) % nidx;
+	/*
 	fprintf(stderr, "%c%s", ESC, RED);
 	fprintf(stderr, "idx <= %d and N <= %d @ %e\n", idx, N[idx], t);
 	fprintf(stderr, "%c%s", ESC, NORMAL);
+	*/
 #endif
       }
     }

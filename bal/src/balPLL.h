@@ -34,7 +34,7 @@
 #include <cvode/cvode.h>
 
 //#define WITHPHIERR
-#define FRACTIONAL
+//#define FRACTIONAL
 
 /**
  * \class balPLL
