@@ -38,6 +38,7 @@ config.readfp(fid)
 fid.close()
 
 from pybal import bal
+from pybal import util
 
 # the dynamical system
 pll = bal.DynamicalSystem()
@@ -73,15 +74,18 @@ if config.getint('Simulation','trajectory'):
 else:
     solver.mode = 'events'
 
-solver.run()
-s = solver.solution()
-saveH5file([s],'pll.h5')
+#print('Starting simulation...')
+#solver.run()
+#print('Simulation finished...')
+#s = solver.solution()
+#util.saveH5file([s],'pll.h5')
 
-from pylab import figure, plot, xlabel, ylabel, title, show, axis
+#from pylab import figure, plot, xlabel, ylabel, title, show, axis
 
-figure()
-plot(s.data['t'],s.data['x'][3::4],'k')
-xlabel('t (s)')
-ylabel('w (V)')
-axis('tight')
-show()
+#figure()
+#plot(s.data['t'],s.data['x'][3::4],'k')
+#xlabel('t (s)')
+#ylabel('w (V)')
+#axis('tight')
+#show()
+

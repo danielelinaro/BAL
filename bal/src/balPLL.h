@@ -34,6 +34,7 @@
 #include <cvode/cvode.h>
 
 //#define WITHPHIERR
+#define FRACTIONAL
 
 /**
  * \class balPLL
@@ -114,13 +115,19 @@ class balPLL : public balDynamicalSystem {
   realtype tuning_coeff;
   
   // coefficient of division of the frequency divider
+#ifndef FRACTIONAL
   int N;
+#else
+  int N[2], idx, nidx;
+#endif
+
 #ifndef WITHPHIERR
   // output of the frequency divider
   int divout;
   // counter
   int cnt;
 #endif
+
 };
 
 #ifdef __cplusplus
