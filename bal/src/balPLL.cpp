@@ -67,10 +67,16 @@ balPLL::balPLL() : pi(3.141592653589793) {
 	
   // the number of state variables of the VCO
   int ndim = 4;
-  
+
 #ifdef WITHPHIERR
   // in this case, we have an additional state variable, PhiErr
   ndim++;
+#endif
+
+#ifdef EXTEND
+  // we save the value of icp (the current in the charge pump)
+  // and divout (the output of the frequency divider)
+  ndim += 2;
 #endif
 
   SetDimension(ndim);
@@ -81,18 +87,22 @@ balPLL::balPLL() : pi(3.141592653589793) {
   C0 = 0.85e-9;
   C1 = 6e-9;
   Aud = 0.8e-3;
+#ifdef MISMATCH
+  Aud_mismatch = 0.1;
+#endif
 
 #ifndef FRACTIONAL
   N = 2400;
 #else
-  N[0] = 2400;
-  N[1] = 2401;
+  for(int i=0; i<ndiv/2; i++) {
+    N[i] = 2400;
+    N[i+ndiv/2] = 2401;
+  }
   idx = 0;
-  nidx = 2;
 #endif
 
 #ifndef WITHPHIERR
-  divout = 1;
+  divout = 0;
   cnt = 0;
 #endif
   
@@ -110,13 +120,6 @@ int balPLL::RHS (realtype t, N_Vector X, N_Vector Xdot, void * data) {
 #endif
   realtype icp;
   balParameters * parameters = (balParameters *) data;
-
-  /*
-  static int function_calls = 0;
-  function_calls++;
-  if(function_calls % 1000000 == 0)
-    fprintf(stderr, ">>> Number of function calls: %d Mln. Simulation time: %e <<<\n", function_calls/1000000, t);
-  */
 
   fREF = parameters->At(0);
   T = 1.0/fREF;
@@ -160,19 +163,12 @@ int balPLL::RHS (realtype t, N_Vector X, N_Vector Xdot, void * data) {
   Ith (Xdot, 0) = A*x - B*y;
   Ith (Xdot, 1) = A*y + B*x;
 
-#ifdef WITHPHIERR
-#ifndef FRACTIONAL
-  Ith (Xdot, 4) = 2*pi*fREF - (x*Ith(Xdot,1) - y*Ith(Xdot,0))/(N*gamma*gamma);
-#else
-  Ith (Xdot, 4) = 2*pi*fREF - (x*Ith(Xdot,1) - y*Ith(Xdot,0))/(N[idx]*gamma*gamma);
-#endif
-#endif
-  
   // ODE for r
   Ith (Xdot, 2) =  1.0 / (R1*C1) * (w-r);
   
-  // compute icp, the current in the charge pump
+  // computation of icp, the current in the charge pump
 #ifdef WITHPHIERR
+
   realtype phihat, that, tmp;
   tmp = fabs(phierr/(2*pi));
   phihat = (tmp - floor(tmp));
@@ -180,12 +176,38 @@ int balPLL::RHS (realtype t, N_Vector X, N_Vector Xdot, void * data) {
   that = (tmp - floor(tmp));
   S = (phihat > that ? true : false);
   icp = S*Aud*(fabs(phierr)/phierr);
+
 #else
+
+#ifndef MISMATCH
   icp = zu*Aud - zd*Aud;
+#else
+  realtype Au, Ad;
+  Au = Aud;
+  Ad = Aud*(1.0-Aud_mismatch);
+  icp = zu*Au - zd*Ad;
+#endif
+
 #endif
   
   // ODE for w
   Ith (Xdot, 3) =  1.0 / C0 * (icp + (r-w)/R1);
+
+#ifdef WITHPHIERR
+  // ODE for phierr
+#ifndef FRACTIONAL
+  Ith (Xdot, 4) = 2*pi*fREF - (x*Ith(Xdot,1) - y*Ith(Xdot,0))/(N*gamma*gamma);
+#else
+  Ith (Xdot, 4) = 2*pi*fREF - (x*Ith(Xdot,1) - y*Ith(Xdot,0))/(N[idx]*gamma*gamma);
+#endif
+#endif
+  
+#ifdef EXTEND
+  Ith (X, GetDimension()-2) = (realtype) divout;
+  Ith (X, GetDimension()-1) = icp;
+  Ith (Xdot, GetDimension()-2) = 0.;
+  Ith (Xdot, GetDimension()-1) = 0.;
+#endif
   
   return CV_SUCCESS;
 }
@@ -283,25 +305,20 @@ void balPLL::ManageEvents(realtype t, N_Vector X, int * events, int * constraint
   if(events[1] && c[1]) {
     cnt++;
 #ifndef FRACTIONAL
-    if(cnt >= N/2) {
+    if((divout && cnt == floor((double) N/2)) || (!divout && cnt == ceil((double) N/2))) {
 #else
-    if(cnt >= ((double) N[idx]/2)) {
+    if((divout && cnt == floor((double) N[idx]/2)) || (!divout && cnt == ceil((double) N[idx]/2))) {
 #endif
       cnt = 0;
       divout = !divout;
-      if(divout) {
+      if(divout) { // rising edge of the output of the frequency divider
 	zd = true;
+#ifdef FRACTIONAL
+	idx = (idx+1) % ndiv;
+#endif
 	fprintf(stderr, "%c%s", ESC, YELLOW);
 	fprintf(stderr, "zd <= 1 @ %e\n", t);
 	fprintf(stderr, "%c%s", ESC, NORMAL);
-#ifdef FRACTIONAL
-	idx = (idx+1) % nidx;
-	/*
-	fprintf(stderr, "%c%s", ESC, RED);
-	fprintf(stderr, "idx <= %d and N <= %d @ %e\n", idx, N[idx], t);
-	fprintf(stderr, "%c%s", ESC, NORMAL);
-	*/
-#endif
       }
     }
   }

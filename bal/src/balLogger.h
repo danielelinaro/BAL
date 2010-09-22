@@ -63,6 +63,8 @@
 #define FILENAME_LENGTH (200)
 #define DATASETNAME_LENGTH (10)
 
+#define DONTCOMPRESS
+
 using std::list;
 
 /**

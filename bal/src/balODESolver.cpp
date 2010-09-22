@@ -582,6 +582,27 @@ void balODESolver::SkipTransient(bool *equilibrium, bool *error) {
       *error = true;
       break;
     }
+    
+    /* 
+     * if events are enabled, we give the dynamical system the possibility to
+     * change its internal structure also during the transient evolution.
+     */
+    if ((mode == balEVENTS || mode == balBOTH) && flag == CV_ROOT_RETURN) {
+      CVodeGetRootInfo (cvode_mem, events);
+      if(dynsys->HasEventsConstraints()) {
+	dynsys->EventsConstraints(t,x,events_constraints,params);
+	/* 
+	 * call ManageEvents so that the dynamical system can (optionally)
+	 * change something in its internal structure. See for example
+	 * balPLL, a switch system.
+	 */
+	dynsys->ManageEvents(t,x,events,events_constraints);
+      }
+      else {
+	dynsys->ManageEvents(t,x,events);
+      }
+    }
+
     flag = CheckEquilibrium();
     if(flag != EQUIL_FALSE)
       *equilibrium = true;
@@ -751,54 +772,54 @@ bool balODESolver::Solve() {
 
 bool balODESolver::SolveLyapunov() {
 	
-	int i;
-	realtype * temp_x0 = new realtype[dynsys->GetOriginalDimension()];
-	for(i=0; i<dynsys->GetOriginalDimension(); i++)
-		temp_x0[i] = Ith(x0,i);
-	realtype temp_ttran = ttran;
-	realtype tend = tfinal;
+  int i;
+  realtype * temp_x0 = new realtype[dynsys->GetOriginalDimension()];
+  for(i=0; i<dynsys->GetOriginalDimension(); i++)
+    temp_x0[i] = Ith(x0,i);
+  realtype temp_ttran = ttran;
+  realtype tend = tfinal;
   realtype t_ = 0.0;
-	tfinal = ttran;
-	delete_buffer = true;
-	//fprintf(stderr,"ci: %lf\t%lf\t%lf\t%lf\n", Ith(x0,0),Ith(x0,1),Ith(x0,2),dynsys->GetParameters()->At(0));
-	SolveWithoutEvents();
-	//fprintf(stderr,"ttran esaurito stato: %lf\t%lf\t%lf\n", Ith(x,0),Ith(x,1),Ith(x,2));
-	
-	realtype * new_x0 = new realtype [dynsys->GetDimension()];
-	for (i=0; i<dynsys->GetDimension(); i++)
-		new_x0[i] = Ith(x,i);
-		
-	dynsys->Extend(true);
-	SetDynamicalSystem(dynsys);
+  tfinal = ttran;
+  delete_buffer = true;
+  //fprintf(stderr,"ci: %lf\t%lf\t%lf\t%lf\n", Ith(x0,0),Ith(x0,1),Ith(x0,2),dynsys->GetParameters()->At(0));
+  SolveWithoutEvents();
+  //fprintf(stderr,"ttran esaurito stato: %lf\t%lf\t%lf\n", Ith(x,0),Ith(x,1),Ith(x,2));
   
-	int N = dynsys->GetDimension();
+  realtype * new_x0 = new realtype [dynsys->GetDimension()];
+  for (i=0; i<dynsys->GetDimension(); i++)
+    new_x0[i] = Ith(x,i);
+  
+  dynsys->Extend(true);
+  SetDynamicalSystem(dynsys);
+  
+  int N = dynsys->GetDimension();
   int n = dynsys->GetOriginalDimension();
   realtype * x_ = new realtype[N];
   realtype * xnorm = new realtype[n*n];
   realtype * znorm = new realtype[n];
   realtype * cum = new realtype[n];
-	if (!delete_lyapunov_exponents){
-		lyapunov_exponents = new realtype[n];
-		delete_lyapunov_exponents = true;
-	}
+  if (!delete_lyapunov_exponents){
+    lyapunov_exponents = new realtype[n];
+    delete_lyapunov_exponents = true;
+  }
   for (i=0; i<n; i++)
     cum[i] = 0.0;
-	
-	SetX0(new_x0,n);
-	delete new_x0;
+  
+  SetX0(new_x0,n);
+  delete new_x0;
   SetOrthonormalBaseIC();
   
-	//fprintf(stderr,"ci_ext: ");
-//	for (i=0;i<N; i++)
-//		fprintf(stderr,"%lf ",Ith(x0,i));
-//	fprintf(stderr,"\n");
+  //fprintf(stderr,"ci_ext: ");
+  //	for (i=0;i<N; i++)
+  //		fprintf(stderr,"%lf ",Ith(x0,i));
+  //	fprintf(stderr,"\n");
   
   tfinal = lyap_tstep;
   ttran = 0.0;
-	
-	delete_buffer = true;
-	Setup();
-	dynsys->Reset();
+  
+  delete_buffer = true;
+  Setup();
+  dynsys->Reset();
   while(t_ < tend){
     SolveWithoutEvents();
     t_ += lyap_tstep;
@@ -810,32 +831,32 @@ bool balODESolver::SolveLyapunov() {
     for(i=0; i<n; i++)
       cum[i] += log(znorm[i]);///log(2.0);
     SetX0(x_);
-		
-		/*if((int)t_ % 100 == 0){
-			for(i=0; i<n; i++){
-				lyapunov_exponents[i] = cum[i]/t_;
-				printf("%e ",lyapunov_exponents[i]);
-				printf(" %lf ",x_[i]);
-			}
-			printf("\n");
+    
+    /*if((int)t_ % 100 == 0){
+      for(i=0; i<n; i++){
+      lyapunov_exponents[i] = cum[i]/t_;
+      printf("%e ",lyapunov_exponents[i]);
+      printf(" %lf ",x_[i]);
+      }
+      printf("\n");
       }*/
-	}
+  }
   
   for(i=0; i<n; i++){
-		lyapunov_exponents[i] = cum[i]/t_;
-		//printf("%e ",lyapunov_exponents[i]);
-	}
-	//printf("\n");
-	
-	ttran = temp_ttran;
-	tfinal = tend;
-	dynsys->Extend(false);
-	SetDynamicalSystem(dynsys);
-	delete_buffer = true;
-	Setup();
-	SetX0(temp_x0);
+    lyapunov_exponents[i] = cum[i]/t_;
+    //printf("%e ",lyapunov_exponents[i]);
+  }
+  //printf("\n");
   
-	delete temp_x0;
+  ttran = temp_ttran;
+  tfinal = tend;
+  dynsys->Extend(false);
+  SetDynamicalSystem(dynsys);
+  delete_buffer = true;
+  Setup();
+  SetX0(temp_x0);
+  
+  delete temp_x0;
   delete x_;
   delete xnorm;
   delete znorm;
@@ -877,18 +898,18 @@ bool balODESolver::SolveWithoutEvents() {
 	 * an extremum of a state variables, which is a condition always
 	 * verified when the trajectory is on an equilibrium
 	 */
-				if(flag == CV_ILL_INPUT) {
-					if(CheckEquilibrium() == EQUIL_BREAK)
-						break;
-				}
+	if(flag == CV_ILL_INPUT) {
+	  if(CheckEquilibrium() == EQUIL_BREAK)
+	    break;
+	}
 	/* this is done if the error is not CV_ILL_INPUT */
-				err = true;
-				break;
-			}
-
+	err = true;
+	break;
+      }
+      
       if(CheckEquilibrium() == EQUIL_BREAK)
-				break;
-
+	break;
+      
       tout += tstep;
     }
   }

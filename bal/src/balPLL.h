@@ -34,7 +34,13 @@
 #include <cvode/cvode.h>
 
 //#define WITHPHIERR
-//#define FRACTIONAL
+#define FRACTIONAL
+//#define MISMATCH
+//#define EXTEND
+
+#ifdef FRACTIONAL
+const int ndiv = 2;
+#endif
 
 /**
  * \class balPLL
@@ -99,6 +105,9 @@ class balPLL : public balDynamicalSystem {
   realtype C1, R1;	// make up the filter, and the state variable r is associated to C1
   realtype Vdd;			// supply voltage
   realtype Aud;			// current in the charge-pump
+#ifdef MISMATCH
+  realtype Aud_mismatch;
+#endif
   realtype fREF, T;	// frequency (and corresponding period) of the square wave input to one of the flip-flops
   realtype treset;	// time at which both Zu and Zd are equal to 1
   realtype dt;			// interval after which the circuit is reset (i.e., treset+dt)
@@ -118,14 +127,14 @@ class balPLL : public balDynamicalSystem {
 #ifndef FRACTIONAL
   int N;
 #else
-  int N[2], idx, nidx;
+  int N[ndiv], idx;
 #endif
 
 #ifndef WITHPHIERR
-  // output of the frequency divider
-  int divout;
   // counter
   int cnt;
+  // output of the frequency divider
+  int divout;
 #endif
 
 };

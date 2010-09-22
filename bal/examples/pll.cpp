@@ -63,9 +63,17 @@ int main(int argc, char *argv[]) {
   }
   
 #ifdef WITHPHIERR
+#ifdef EXTEND
+  realtype x0[7] = {0.,0.,0.,0.,pi,0.,0.};
+#else
   realtype x0[5] = {0.,0.,0.,0.,pi};
+#endif
+#else
+#ifdef EXTEND
+  realtype x0[6] = {0.,0.,0.,0.,0.,0.};
 #else
   realtype x0[4] = {0.,0.,0.,0.};
+#endif
 #endif
   x0[1] = config.read<double>("vdd");	
   
@@ -84,7 +92,8 @@ int main(int argc, char *argv[]) {
   bifd->GetODESolver()->HaltAtEquilibrium(false);
   bifd->GetODESolver()->HaltAtCycle(false);
   bifd->GetODESolver()->SetFinalTime(config.read<double>("tout"));
-  bifd->GetODESolver()->SetTimeStep(5e-12);
+  bifd->GetODESolver()->SetTimeStep(1e-11);
+  //bifd->GetODESolver()->SetTimeStep(1e-11*2.7);
   bifd->GetODESolver()->SetMaxNumberOfIntersections((int) 1e7);
   bifd->GetODESolver()->SetX0(x0);
   bifd->GetODESolver()->SetRelativeTolerance(1e-10);

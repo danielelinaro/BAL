@@ -196,6 +196,12 @@ balH5Logger::balH5Logger() {
   herr_t status;
   unsigned int filter_info;
 
+#ifdef DONTCOMPRESS
+  printf("Disabling compression...\n");
+  compressed = false;
+  return;
+#endif
+
   // check if gzip compression is available
   avail = H5Zfilter_avail (H5Z_FILTER_DEFLATE);
   if (!avail) {
