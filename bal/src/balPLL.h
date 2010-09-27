@@ -34,8 +34,8 @@
 #include <cvode/cvode.h>
 
 //#define WITHPHIERR
-#define FRACTIONAL
-//#define MISMATCH
+//#define FRACTIONAL
+#define MISMATCH
 //#define EXTEND
 
 #ifdef FRACTIONAL
@@ -110,7 +110,8 @@ class balPLL : public balDynamicalSystem {
 #endif
   realtype fREF, T;	// frequency (and corresponding period) of the square wave input to one of the flip-flops
   realtype treset;	// time at which both Zu and Zd are equal to 1
-  realtype dt;			// interval after which the circuit is reset (i.e., treset+dt)
+  realtype dt;		// duration of the falling edge of the output of the flip-flops
+  realtype tau_d;       // delay of the output of the AND gate
   
   
   /*****************************/

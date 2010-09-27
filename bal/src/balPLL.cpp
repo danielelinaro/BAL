@@ -84,10 +84,14 @@ balPLL::balPLL() : pi(3.141592653589793) {
   
   // fixed parameters
   dt = 1e-9;
+  tau_d = 0.0;
   C0 = 0.85e-9;
   C1 = 6e-9;
   Aud = 0.8e-3;
 #ifdef MISMATCH
+  // increase the delay in the output of the AND gate
+  tau_d = 100e-9;
+  // 10 percent mismatch between the current generators in the charge pump
   Aud_mismatch = 0.1;
 #endif
 
@@ -183,8 +187,8 @@ int balPLL::RHS (realtype t, N_Vector X, N_Vector Xdot, void * data) {
   icp = zu*Aud - zd*Aud;
 #else
   realtype Au, Ad;
-  Au = Aud;
-  Ad = Aud*(1.0-Aud_mismatch);
+  Au = Aud*(1.0+Aud_mismatch);
+  Ad = Aud;
   icp = zu*Au - zd*Ad;
 #endif
 
@@ -270,7 +274,7 @@ int balPLL::Events (realtype t, N_Vector X, realtype * event, void * data) {
   realtype vtune = w/tuning_coeff;
   event[1] = ((rho0+Krho*vtune)/gamma - 1)*k0*x - ((1-alpha)*Kap*(gamma-rhoap) + 1 + alpha*vtune*(KVCOa + KVCOb*vtune + KVCOc*vtune*vtune))*omega0*y;
   // reset
-  event[2] = t - (treset+dt);
+  event[2] = t - (treset+tau_d+dt);
 #endif
   return CV_SUCCESS;
 }

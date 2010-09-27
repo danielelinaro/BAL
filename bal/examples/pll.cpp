@@ -93,7 +93,6 @@ int main(int argc, char *argv[]) {
   bifd->GetODESolver()->HaltAtCycle(false);
   bifd->GetODESolver()->SetFinalTime(config.read<double>("tout"));
   bifd->GetODESolver()->SetTimeStep(1e-11);
-  //bifd->GetODESolver()->SetTimeStep(1e-11*2.7);
   bifd->GetODESolver()->SetMaxNumberOfIntersections((int) 1e7);
   bifd->GetODESolver()->SetX0(x0);
   bifd->GetODESolver()->SetRelativeTolerance(1e-10);
