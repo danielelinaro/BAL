@@ -1,7 +1,7 @@
 /*=========================================================================
  *
  *   Program:   Bifurcation Analysis Library
- *   Module:    balHeartNeuron.h
+ *   Module:    balRossler.h
  *
  *   Copyright (C) 2009,2010 Daniele Linaro
  *
@@ -21,12 +21,12 @@
  *=========================================================================*/
 
 /** 
- * \file balHeartNeuron.h
- * \brief Definition of the class balHeartNeuron
+ * \file balRossler.h
+ * \brief Definition of the class balRossler
  */
 
-#ifndef _BALHEARTNEURON_
-#define _BALHEARTNEURON_
+#ifndef _BALROSSLER_
+#define _BALROSSLER_
 
 #include "balObject.h"
 #include "balParameters.h"
@@ -34,16 +34,16 @@
 #include <cvode/cvode.h>
 
 /**
- * \class balHeartNeuron
- * \brief Implementation of a dynamical system that describes a heart
- * neuron model
- * 
- * \sa balDynamicalSystem balHindmarshRose
+ * \class balRossler
+ * \brief Implementation of the Rossler system
+ *
+ * \sa balDynamicalSystem
  */
-class balHeartNeuron : public balDynamicalSystem {
+class balRossler : public balDynamicalSystem {
  public:
   virtual const char * GetClassName () const;
-  static balHeartNeuron * Create ();
+  static balRossler * Create ();
+  virtual balDynamicalSystem * Copy();
   virtual void Destroy ();
   
   int RHS (realtype t, N_Vector x, N_Vector xdot, void * data);
@@ -56,38 +56,26 @@ class balHeartNeuron : public balDynamicalSystem {
 		void *jac_data, N_Vector tmp1, N_Vector tmp2, N_Vector tmp3);
 #endif
   int Events (realtype t, N_Vector x, realtype * event, void * data);
-  void EventsConstraints (realtype t, N_Vector x, int * constraints, void * data);
   
   bool HasJacobian() const;
   bool HasEvents() const;
   bool HasEventsConstraints() const;
   
-  inline static realtype BoltzmannF(realtype a, realtype b, realtype V) {
-    return 1./(1. + exp(a*(b + V)));
-  }
-  
-  inline static realtype BoltzmannDFDV(realtype a, realtype b, realtype V) {
-    realtype e = exp(a*(b+V));
-    return - (a*e) / ((1.+e)*(1.+e));			
-  }
-  
  protected:
-  balHeartNeuron();
-  virtual ~balHeartNeuron();
+  balRossler();
+  balRossler(const balRossler& hr);
+  virtual ~balRossler();
   
  private:
   N_Vector xderiv;
-  const realtype C,gK2,EK,ENa,gNa,E1,g1,tauNa;	// Constant parameters
-  realtype A[3], B[3];
 };
-
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-balDynamicalSystem* balHeartNeuronFactory();
 	
+  balDynamicalSystem* balRosslerFactory();
+  
 #ifdef __cplusplus
 }
 #endif
