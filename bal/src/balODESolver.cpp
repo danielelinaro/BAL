@@ -168,11 +168,11 @@ void balODESolver::SetDynamicalSystem(balDynamicalSystem * ds) {
       nev = dynsys->GetNumberOfEvents();
       events = new int[nev];
       if(dynsys->HasEventsConstraints()) {
-		// if constraints are presents, their number must be equal to the
-		// number of events. if, for some reason, the i-th constraint makes
-		// no sense, then it is sufficient that the dynamical system class
-		// always return events_constraints[i] = 1.
-				events_constraints = new int[nev];
+	// if constraints are presents, their number must be equal to the
+	// number of events. if, for some reason, the i-th constraint makes
+	// no sense, then it is sufficient that the dynamical system class
+	// always return events_constraints[i] = 1.
+	events_constraints = new int[nev];
       }
     }
     params = dynsys->GetParameters();
@@ -213,10 +213,10 @@ balSolution * balODESolver::GetSolution() const {
   balSolution * solution = balSolution::Create();
   solution->SetData(rows,cols,buffer);
   solution->SetParameters(params);
-	if (mode == balLYAP)
-		solution->SetLyapunovExponents(dynsys->GetOriginalDimension(),lyapunov_exponents);
+  if (mode == balLYAP)
+    solution->SetLyapunovExponents(dynsys->GetOriginalDimension(),lyapunov_exponents);
   else 
-		solution->SetNumberOfTurns(nturns);
+    solution->SetNumberOfTurns(nturns);
   return solution;
 }
 
@@ -517,7 +517,7 @@ bool balODESolver::AllocateSolutionBuffer() {
     }
     switch(mode) {
     case balTRAJ:
-		case balLYAP:
+    case balLYAP:
       lrows = (int) ceil ((tfinal - ttran) / tstep);
       if(lrows < 0) lrows = 0;
       lrows += 2;
@@ -530,13 +530,14 @@ bool balODESolver::AllocateSolutionBuffer() {
       // the number of detected intersections is increased only after
       // transient evolution.
       if(lrows < 0) 
-				lrows = 2;
+	lrows = 2;
       else
-				lrows += max_intersections + 2;
+	lrows += max_intersections + 2;
     }
     bufsize = lrows * cols;
     try {
       buffer = new realtype[bufsize];
+      fprintf(stderr, "The buffer size is %dx%d = %ld\n", lrows, cols, bufsize);
     } catch (bad_alloc&) {
       fprintf (stderr, "Not enough memory to allocate for the solution buffer...\n");
       return false;
@@ -576,8 +577,15 @@ void balODESolver::SkipTransient(bool *equilibrium, bool *error) {
   *equilibrium = false;
   *error = false;
 
+#ifdef DEBUG
+  fprintf(stderr, "SkipTransient>> t = %e, ttran = %e\n", t, ttran);
+  fprintf(stderr, "SkipTransient>> x = (%e,%e,%e) @ %e\n", Ith(x,0), Ith(x,1), Ith(x,2), t);
+#endif
   while (t < ttran) {
     flag = CVode (cvode_mem, ttran, x, &t, CV_NORMAL);
+#ifdef DEBUG
+    fprintf(stderr, "SkipTransient>> x = (%e,%e,%e) @ %e\n", Ith(x,0), Ith(x,1), Ith(x,2), t);
+#endif
     if (flag < 0 && flag != CV_TOO_MUCH_WORK && (flag != CV_ILL_INPUT || mode == balTRAJ)) {
       *error = true;
       break;
@@ -657,10 +665,25 @@ realtype balODESolver::EuclideanDistance(int length, N_Vector x, N_Vector y) con
   return sqrt(dst);
 }
 
+bool balODESolver::GramSchmidtOrthonorm(realtype * znorm) const {
+  int i, n;
+  realtype *xx, *xnorm;
+  n = dynsys->GetOriginalDimension();
+  xx = new realtype[n*(n+1)];
+  xnorm = new realtype[n*n];
+  for(i=0; i<n*(n+1); i++)
+    xx[i] = Ith(x,i);
+  GramSchmidtOrthonorm(xx,xnorm,znorm);
+  for(i=0; i<n*n; i++)
+    Ith(x,i+n) = xnorm[i];
+  delete xnorm;
+  delete xx;
+}
+
 bool balODESolver::GramSchmidtOrthonorm(realtype * x, realtype * xnorm, realtype * znorm) const {
   int n = dynsys->GetOriginalDimension();
   int i,j,k;
-	realtype dp;
+  realtype dp;
   realtype * tmp = new realtype[n];
  
   znorm[0] = Norm(n,x);
@@ -755,7 +778,7 @@ bool balODESolver::ResetCVode() {
 }
 
 bool balODESolver::Solve() {
-  if(! setup)
+  if(! setup)// && mode != balLYAP)
     Setup();
   dynsys->Reset();
   switch (mode) {
@@ -765,13 +788,225 @@ bool balODESolver::Solve() {
   case balBOTH:
     return SolveWithEvents();
   case balLYAP:
+#ifdef DEBUG
+    //return SolveLyapunovBis();
+    return SolveWithoutEventsLyap();
+#else
     return SolveLyapunov();
+#endif
   }
   return false;
 }
 
-bool balODESolver::SolveLyapunov() {
+bool balODESolver::SolveWithoutEventsLyap() {
+  int i, j, flag;
+  int n, N;
+  realtype tout;
+  bool eq, err;
+  realtype *znorm, *cum;
+
+  // dimension of the system
+  n = dynsys->GetOriginalDimension();
+  // dimension of the extended system
+  N = n*(n+1);
+
+  // set the i.c.
+  for(i=0; i<n; i++) {
+    for(j=0; j<n; j++)
+      Ith(x0,(i+1)*n+j) = (i==j ? 1. : 0.);
+  }
+
+  znorm = new realtype[n];
+  cum = new realtype[n];
+  for (i=0; i<n; i++)
+    cum[i] = 0.0;
+
+  if (!delete_lyapunov_exponents) {
+    lyapunov_exponents = new realtype[n];
+    delete_lyapunov_exponents = true;
+  }
+
+  // check whether the buffer is allocated or it needs to be
+  // reallocated
+  AllocateSolutionBuffer();
+  // set initial conditions (this automatically saves the i.c.
+  // in the first row of the solution buffer)
+  ResetInitialCondition();
+
+  if(! ResetCVode()) {
+    delete znorm;
+    delete cum;
+    return false;
+  }
 	
+  /************* TRANSIENT *****************/
+  SkipTransient(&eq,&err);
+
+  /************* TRAJECTORY *****************/
+  if(!err) {
+    tout = t+lyap_tstep;
+    while (tout < tfinal+lyap_tstep) {
+      GramSchmidtOrthonorm(znorm);
+      for(i=0; i<n; i++)
+	cum[i] += log(znorm[i]);///log(2.0);
+      
+      flag = CVode (cvode_mem, tout, x, &t, CV_NORMAL);
+      StoreRecordInBuffer(balSTEP);
+      
+      if (flag < 0 && flag != CV_TOO_MUCH_WORK) {
+	/*
+	 * this is because the flag CV_ILL_INPUT is returned when two
+	 * events are found at a very small time interval, which is the
+	 * case if at least one of the Poincare' sections corresponds to
+	 * an extremum of a state variables, which is a condition always
+	 * verified when the trajectory is on an equilibrium
+	 */
+	if(flag == CV_ILL_INPUT) {
+	  if(CheckEquilibrium() == EQUIL_BREAK)
+	    break;
+	}
+	/* this is done if the error is not CV_ILL_INPUT */
+	err = true;
+	break;
+      }
+
+      tout += lyap_tstep;
+    }
+    for(i=0; i<n; i++){
+      lyapunov_exponents[i] = cum[i]/t;
+    }
+  }
+
+  delete znorm;
+  delete cum;
+
+  /* if the integrator stopped because of an error, we change the label of the last row in
+   * the integration buffer and stop the integration procedure */
+  if (err) {
+    ChangeCurrentLabel(balERROR);
+    return false;
+  }
+
+  return true;
+}
+
+bool balODESolver::SolveLyapunovBis() {
+  bool eq, err;
+  int i, j, flag;
+  int n, N;
+  realtype *znorm, *cum;
+  realtype tout;
+
+  // dimension of the system
+  n = dynsys->GetOriginalDimension();
+  // dimension of the extended system
+  N = n*(n+1);
+
+  znorm = new realtype[n];
+  cum = new realtype[n];
+  for (i=0; i<n; i++)
+    cum[i] = 0.0;
+
+  if (!delete_lyapunov_exponents) {
+    lyapunov_exponents = new realtype[n];
+    delete_lyapunov_exponents = true;
+  }
+
+  // copy the initial condition
+  N_Vector x0_lyap = N_VNew_Serial(N);
+  for(i=0; i<N; i++)
+    Ith(x0_lyap,i) = Ith(x0,i);
+  for(i=0; i<n; i++) {
+    for(j=0; j<n; j++)
+      Ith(x0_lyap,(i+1)*n+j) = (i==j ? 1. : 0.);
+  }
+
+  // extend the system
+  dynsys->Extend(true);
+  // tell the ODE solver to use the extended system
+  SetDynamicalSystem(dynsys);
+  if(NV_LENGTH_S(x0) != N) {
+    N_VDestroy(x0);
+    x0 = N_VNew_Serial(N);
+  }
+  // reset the initial condition
+  SetX0(x0_lyap);
+  N_VDestroy(x0_lyap);
+
+  // integration mode for transient evolution
+  SetIntegrationMode(balTRAJ);
+  // setup CVode
+  Setup();
+  // reset the integration
+  ResetInitialCondition();
+  
+  /************* TRANSIENT *****************/
+  SkipTransient(&eq,&err);
+#ifdef DEBUG
+  DUMPBUFFER(stdout);
+#endif
+
+  if(!err) {
+    // the new initial condition
+    for(i=0; i<n; i++) {
+      for(j=0; j<n; j++) {
+	Ith(x,n*(i+1)+j) = (i == j ? 1.0 : 0.0);
+	rows--;
+	StoreRecordInBuffer(balTRAN_END);
+      }
+    }
+
+    tout = t + lyap_tstep;
+
+    while (tout < tfinal+lyap_tstep) {
+      flag = CVode (cvode_mem, tout, x, &t, CV_NORMAL);
+      StoreRecordInBuffer(balSTEP);
+      
+      if (flag < 0 && flag != CV_TOO_MUCH_WORK) {
+	/*
+	 * this is because the flag CV_ILL_INPUT is returned when two
+	 * events are found at a very small time interval, which is the
+	 * case if at least one of the Poincare' sections corresponds to
+	 * an extremum of a state variables, which is a condition always
+	 * verified when the trajectory is on an equilibrium
+	 */
+	if(flag == CV_ILL_INPUT) {
+	  if(CheckEquilibrium() == EQUIL_BREAK)
+	    break;
+	}
+	/* this is done if the error is not CV_ILL_INPUT */
+	err = true;
+	break;
+      }
+      
+      if(CheckEquilibrium() == EQUIL_BREAK)
+	break;
+
+      GramSchmidtOrthonorm(znorm);
+      for(i=0; i<n; i++)
+	cum[i] += log(znorm[i]);///log(2.0);
+      
+      tout += lyap_tstep;
+    }
+#ifdef DEBUG
+    DUMPBUFFER(stderr);
+#endif
+    for(i=0; i<n; i++){
+      lyapunov_exponents[i] = cum[i]/t;
+    }
+  }
+
+  /* if the integrator stopped because of an error, we change the label of the last row in
+   * the integration buffer and stop the integration procedure */
+  if (err) {
+    ChangeCurrentLabel(balERROR);
+    return false;
+  }
+
+  return true;
+}
+
+bool balODESolver::SolveLyapunov() {
   int i;
   realtype * temp_x0 = new realtype[dynsys->GetOriginalDimension()];
   for(i=0; i<dynsys->GetOriginalDimension(); i++)

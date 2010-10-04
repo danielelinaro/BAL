@@ -56,7 +56,8 @@ class balRossler : public balDynamicalSystem {
 		void *jac_data, N_Vector tmp1, N_Vector tmp2, N_Vector tmp3);
 #endif
   int Events (realtype t, N_Vector x, realtype * event, void * data);
-  
+  void EventsConstraints (realtype t, N_Vector x, int * constraints, void * data);
+
   bool HasJacobian() const;
   bool HasEvents() const;
   bool HasEventsConstraints() const;

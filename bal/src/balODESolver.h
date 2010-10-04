@@ -46,6 +46,7 @@
 #include <sundials/sundials_direct.h>
 #endif
 
+#define DEBUG
 
 /** Default relative tolerance */
 #define RTOL (1.0E-7)
@@ -80,6 +81,17 @@
 
 /** Error file for CVode */
 #define ERROR_FILE "bal.log"
+
+#define DUMPBUFFER(fid)					\
+  {							\
+    int i, j;						\
+    for(i=0; i<rows; i++) {				\
+      for(j=0; j<cols; j++)				\
+	fprintf(fid, "%e ", buffer[i*cols+j]);		\
+      fprintf(fid, "\n");				\
+    }							\
+  }
+
 
 
 /** The integration mode of the solver. */
@@ -201,8 +213,10 @@ class balODESolver : public balObject {
   void ChangeCurrentLabel(int lbl);
   void SkipTransient(bool *equilibrium, bool *error);
   bool SolveWithoutEvents();
+  bool SolveWithoutEventsLyap();
   bool SolveWithEvents();
   bool SolveLyapunov();
+  bool SolveLyapunovBis();
   void SetSolutionLength(int length);
   int CheckEquilibrium();
   int CheckCycle(int guess);
@@ -211,6 +225,7 @@ class balODESolver : public balObject {
   inline realtype Norm(int length, realtype* x) const;
   inline realtype DotProduct(int length, realtype* x, realtype* y) const;
   bool GramSchmidtOrthonorm(realtype* x, realtype* xnorm, realtype* znorm) const;
+  bool GramSchmidtOrthonorm(realtype* znorm) const;
   inline void SetOrthonormalBaseIC();
   
  private:

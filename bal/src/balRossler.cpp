@@ -38,10 +38,10 @@ balRossler::balRossler() {
   xderiv = N_VNew_Serial(GetDimension());
 }
 
-balRossler::balRossler(const balRossler& hr) : balDynamicalSystem(hr) {
-  xderiv = N_VNew_Serial(hr.GetDimension());
-  for(int i = 0; i < hr.GetDimension(); i++)
-    Ith(xderiv,i)=Ith(hr.xderiv,i);
+balRossler::balRossler(const balRossler& ros) : balDynamicalSystem(ros) {
+  xderiv = N_VNew_Serial(ros.GetDimension());
+  for(int i = 0; i < ros.GetDimension(); i++)
+    Ith(xderiv,i)=Ith(ros.xderiv,i);
 }
 
 balRossler::~balRossler() {
@@ -126,7 +126,7 @@ int balRossler::Jacobian (int N, realtype t, N_Vector x, N_Vector fy, DlsMat J,
    return CV_SUCCESS;
  }
  
-void balRossle::EventsConstraints (realtype t, N_Vector x, int * constraints, void * data) {
+void balRossler::EventsConstraints (realtype t, N_Vector x, int * constraints, void * data) {
   realtype a, b, c;
   realtype x1, x2, x3;
   realtype ris[3], xdot[3];
