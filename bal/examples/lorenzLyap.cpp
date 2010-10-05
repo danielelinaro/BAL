@@ -28,17 +28,17 @@
 #include "balSolution.h"
 using namespace std;
 
-/********** TEST balODESolver SolveLyapunovExponents **********
- *																														*
+/**************** TEST balODESolver SolveLyapunovExponents **********************
+ *										*
  *		lyapunov exponents calculated using base 2 logarithm		*
- *		in formula.																							*
- *																														*
+ *		in formula.							*
+ *									        *
  *		test parameters [16.0 45.92 4.0] from Wolf's article		*
- *		'Determining Lyapunov Exponents From a Time Series'			*
- *		Lyapunov Spectrum: l1 = 2.16, l2 = 0.00, l3 = -32.4			*
- *		for t=10000																							*
- *																														*
- **************************************************************/
+ *		'Determining Lyapunov Exponents From a Time Series'		*
+ *		Lyapunov Spectrum: l1 = 2.16, l2 = 0.00, l3 = -32.4		*
+ *		for t=10000							*
+ *										*
+ ********************************************************************************/
 
 
 int main(int argc, char *argv[]) {
@@ -54,25 +54,24 @@ int main(int argc, char *argv[]) {
   balLorenz *lor = balLorenz::Create();
   lor->SetParameters(pars);
   
-	// Setting ODESolver fields 
+  // Setting ODESolver fields 
   realtype x0[] = {10,1,0};
   balODESolver * solver = balODESolver::Create();
   solver->SetDynamicalSystem(lor);
   solver->SetTransientDuration(1000);
-  solver->SetFinalTime(1e4);
-  solver->SetTimeStep(0.01);
-  solver->SetLyapunovTimeStep(0.5);
+  solver->SetFinalTime(1.1e4);
+  solver->SetLyapunovTimeStep(5);
   solver->SetIntegrationMode(balLYAP);
   solver->SetX0(x0);
 	
-	// Calculating Lyapunov Exponents
+  // Calculating Lyapunov Exponents
   solver->Solve();
-	
-	for(int i=0; i<lor->GetOriginalDimension(); i++){
-		printf("%e ",solver->GetLyapunovExponents()[i]);
-	}
-	printf("\n");
-	
+  
+  for(int i=0; i<lor->GetOriginalDimension(); i++){
+    printf("%e ",solver->GetLyapunovExponents()[i]);
+  }
+  printf("\n");
+  
   solver->Destroy();
   lor->Destroy();
   pars->Destroy();

@@ -213,10 +213,9 @@ class balODESolver : public balObject {
   void ChangeCurrentLabel(int lbl);
   void SkipTransient(bool *equilibrium, bool *error);
   bool SolveWithoutEvents();
-  bool SolveWithoutEventsLyap();
+  bool SolveWithoutEventsLyapunov();
   bool SolveWithEvents();
   bool SolveLyapunov();
-  bool SolveLyapunovBis();
   void SetSolutionLength(int length);
   int CheckEquilibrium();
   int CheckCycle(int guess);

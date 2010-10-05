@@ -417,7 +417,7 @@ realtype * balODESolver::GetLyapunovExponents() const {
 
 bool balODESolver::Setup() {
   int flag;
-  
+
   if (cvode_mem != NULL) {
     CVodeFree (&cvode_mem);
   }
@@ -505,6 +505,7 @@ bool balODESolver::Setup() {
   AllocateSolutionBuffer();
   
   setup = true;
+
   return true;
 }
 
@@ -516,8 +517,12 @@ bool balODESolver::AllocateSolutionBuffer() {
       delete_buffer = false;
     }
     switch(mode) {
-    case balTRAJ:
     case balLYAP:
+      lrows = (int) ceil ((tfinal - ttran) / lyap_tstep);
+      if(lrows < 0) lrows = 0;
+      lrows += 2;
+      break;
+    case balTRAJ:
       lrows = (int) ceil ((tfinal - ttran) / tstep);
       if(lrows < 0) lrows = 0;
       lrows += 2;
@@ -537,7 +542,6 @@ bool balODESolver::AllocateSolutionBuffer() {
     bufsize = lrows * cols;
     try {
       buffer = new realtype[bufsize];
-      fprintf(stderr, "The buffer size is %dx%d = %ld\n", lrows, cols, bufsize);
     } catch (bad_alloc&) {
       fprintf (stderr, "Not enough memory to allocate for the solution buffer...\n");
       return false;
@@ -577,15 +581,8 @@ void balODESolver::SkipTransient(bool *equilibrium, bool *error) {
   *equilibrium = false;
   *error = false;
 
-#ifdef DEBUG
-  fprintf(stderr, "SkipTransient>> t = %e, ttran = %e\n", t, ttran);
-  fprintf(stderr, "SkipTransient>> x = (%e,%e,%e) @ %e\n", Ith(x,0), Ith(x,1), Ith(x,2), t);
-#endif
   while (t < ttran) {
     flag = CVode (cvode_mem, ttran, x, &t, CV_NORMAL);
-#ifdef DEBUG
-    fprintf(stderr, "SkipTransient>> x = (%e,%e,%e) @ %e\n", Ith(x,0), Ith(x,1), Ith(x,2), t);
-#endif
     if (flag < 0 && flag != CV_TOO_MUCH_WORK && (flag != CV_ILL_INPUT || mode == balTRAJ)) {
       *error = true;
       break;
@@ -669,10 +666,10 @@ bool balODESolver::GramSchmidtOrthonorm(realtype * znorm) const {
   int i, n;
   realtype *xx, *xnorm;
   n = dynsys->GetOriginalDimension();
-  xx = new realtype[n*(n+1)];
+  xx = new realtype[n*n];
   xnorm = new realtype[n*n];
-  for(i=0; i<n*(n+1); i++)
-    xx[i] = Ith(x,i);
+  for(i=0; i<n*n; i++)
+    xx[i] = Ith(x,n+i);
   GramSchmidtOrthonorm(xx,xnorm,znorm);
   for(i=0; i<n*n; i++)
     Ith(x,i+n) = xnorm[i];
@@ -696,9 +693,9 @@ bool balODESolver::GramSchmidtOrthonorm(realtype * x, realtype * xnorm, realtype
       tmp[k] = x[n*i+k]; 
     
     for (j=0; j<i; j++) {
-			dp = DotProduct(n,x+(n*i),xnorm+(n*j));
+      dp = DotProduct(n,x+(n*i),xnorm+(n*j));
       for (k=0; k<n; k++)
-				tmp[k] = tmp[k] - dp * xnorm[n*j+k];
+	tmp[k] = tmp[k] - dp * xnorm[n*j+k];
     }
     
     znorm[i] = Norm(n,tmp);
@@ -707,8 +704,12 @@ bool balODESolver::GramSchmidtOrthonorm(realtype * x, realtype * xnorm, realtype
       xnorm[n*i+k] = tmp[k]/znorm[i];
   }
 
-  //fprintf(stderr, "norms: %f %f %f\n", Norm(n,xnorm), Norm(n,xnorm+n), Norm(n,xnorm+2*n));
-  //fprintf(stderr, "dots: %f %f %f\n", DotProduct(n,xnorm,xnorm+n), DotProduct(n,xnorm,xnorm+2*n), DotProduct(n,xnorm+n,xnorm+2*n));
+  /*
+#ifdef DEBUG
+  fprintf(stderr, "norms: %e %e %e\n", Norm(n,xnorm), Norm(n,xnorm+n), Norm(n,xnorm+2*n));
+  fprintf(stderr, "dots: %e %e %e\n", DotProduct(n,xnorm,xnorm+n), DotProduct(n,xnorm,xnorm+2*n), DotProduct(n,xnorm+n,xnorm+2*n));
+#endif
+  */
 
   /*
   for(i=0; i<n; i++) {
@@ -729,13 +730,12 @@ inline realtype balODESolver::Norm(int length, realtype * x) const {
   return sqrt(norm);
 }  
 
-inline realtype  balODESolver::DotProduct(int length, realtype * x, realtype * y) const {
+inline realtype balODESolver::DotProduct(int length, realtype * x, realtype * y) const {
   realtype res = 0.0;
   for(int i=0; i<length; i++)
     res += x[i]*y[i];
   return res;
 }
- 
 
 bool balODESolver::ResetCVode() {
   int flag;
@@ -778,9 +778,24 @@ bool balODESolver::ResetCVode() {
 }
 
 bool balODESolver::Solve() {
-  if(! setup)// && mode != balLYAP)
+  if(mode == balLYAP) {
+    if(!dynsys->IsExtended()) {
+      dynsys->Extend(true);
+      int i, n = dynsys->GetOriginalDimension();
+      realtype *x0_tmp = new realtype[n];
+      for(i=0; i<n; i++)
+	x0_tmp[i] = Ith(x0,i);
+      SetDynamicalSystem(dynsys);
+      for(i=0; i<n; i++)
+	Ith(x0,i) = x0_tmp[i];
+      delete x0_tmp;
+    }
+  }
+
+  if(! setup)
     Setup();
   dynsys->Reset();
+
   switch (mode) {
   case balTRAJ:
     return SolveWithoutEvents();
@@ -789,8 +804,7 @@ bool balODESolver::Solve() {
     return SolveWithEvents();
   case balLYAP:
 #ifdef DEBUG
-    //return SolveLyapunovBis();
-    return SolveWithoutEventsLyap();
+    return SolveWithoutEventsLyapunov();
 #else
     return SolveLyapunov();
 #endif
@@ -798,7 +812,7 @@ bool balODESolver::Solve() {
   return false;
 }
 
-bool balODESolver::SolveWithoutEventsLyap() {
+bool balODESolver::SolveWithoutEventsLyapunov() {
   int i, j, flag;
   int n, N;
   realtype tout;
@@ -810,12 +824,6 @@ bool balODESolver::SolveWithoutEventsLyap() {
   // dimension of the extended system
   N = n*(n+1);
 
-  // set the i.c.
-  for(i=0; i<n; i++) {
-    for(j=0; j<n; j++)
-      Ith(x0,(i+1)*n+j) = (i==j ? 1. : 0.);
-  }
-
   znorm = new realtype[n];
   cum = new realtype[n];
   for (i=0; i<n; i++)
@@ -826,6 +834,10 @@ bool balODESolver::SolveWithoutEventsLyap() {
     delete_lyapunov_exponents = true;
   }
 
+  // set the initial condition
+  for(i=n; i<N; i++)
+    Ith(x0,i) = 0.0;
+
   // check whether the buffer is allocated or it needs to be
   // reallocated
   AllocateSolutionBuffer();
@@ -833,23 +845,41 @@ bool balODESolver::SolveWithoutEventsLyap() {
   // in the first row of the solution buffer)
   ResetInitialCondition();
 
+  // reset CVode
   if(! ResetCVode()) {
     delete znorm;
     delete cum;
     return false;
   }
-	
+  
   /************* TRANSIENT *****************/
   SkipTransient(&eq,&err);
 
+  for(i=0; i<n; i++) {
+    for(j=0; j<n; j++)
+      Ith(x,(i+1)*n+j) = (i==j ? 1. : 0.);
+  }
+  rows--;
+  StoreRecordInBuffer(balTRAN_END);
+  
   /************* TRAJECTORY *****************/
   if(!err) {
-    tout = t+lyap_tstep;
+    tout = ttran + lyap_tstep;
     while (tout < tfinal+lyap_tstep) {
-      GramSchmidtOrthonorm(znorm);
-      for(i=0; i<n; i++)
-	cum[i] += log(znorm[i]);///log(2.0);
-      
+      // the integrator must be re-initialised every time the state is modified
+#ifdef CVODE25
+      flag = CVodeReInit (cvode_mem, balDynamicalSystem::RHSWrapper, t, x, CV_SS, reltol, &abstol);
+#endif
+#ifdef CVODE26:
+      flag = CVodeReInit (cvode_mem, t, x);
+#endif
+      if (flag != CV_SUCCESS) {
+	fprintf (stderr, "Error on CVodeReInit.\n");
+	delete znorm;
+	delete cum;
+	return false;
+      }
+
       flag = CVode (cvode_mem, tout, x, &t, CV_NORMAL);
       StoreRecordInBuffer(balSTEP);
       
@@ -869,6 +899,10 @@ bool balODESolver::SolveWithoutEventsLyap() {
 	err = true;
 	break;
       }
+
+      GramSchmidtOrthonorm(znorm);
+      for(i=0; i<n; i++)
+	cum[i] += log(max(znorm[i],1e-12))/log(2.0);
 
       tout += lyap_tstep;
     }
@@ -879,122 +913,6 @@ bool balODESolver::SolveWithoutEventsLyap() {
 
   delete znorm;
   delete cum;
-
-  /* if the integrator stopped because of an error, we change the label of the last row in
-   * the integration buffer and stop the integration procedure */
-  if (err) {
-    ChangeCurrentLabel(balERROR);
-    return false;
-  }
-
-  return true;
-}
-
-bool balODESolver::SolveLyapunovBis() {
-  bool eq, err;
-  int i, j, flag;
-  int n, N;
-  realtype *znorm, *cum;
-  realtype tout;
-
-  // dimension of the system
-  n = dynsys->GetOriginalDimension();
-  // dimension of the extended system
-  N = n*(n+1);
-
-  znorm = new realtype[n];
-  cum = new realtype[n];
-  for (i=0; i<n; i++)
-    cum[i] = 0.0;
-
-  if (!delete_lyapunov_exponents) {
-    lyapunov_exponents = new realtype[n];
-    delete_lyapunov_exponents = true;
-  }
-
-  // copy the initial condition
-  N_Vector x0_lyap = N_VNew_Serial(N);
-  for(i=0; i<N; i++)
-    Ith(x0_lyap,i) = Ith(x0,i);
-  for(i=0; i<n; i++) {
-    for(j=0; j<n; j++)
-      Ith(x0_lyap,(i+1)*n+j) = (i==j ? 1. : 0.);
-  }
-
-  // extend the system
-  dynsys->Extend(true);
-  // tell the ODE solver to use the extended system
-  SetDynamicalSystem(dynsys);
-  if(NV_LENGTH_S(x0) != N) {
-    N_VDestroy(x0);
-    x0 = N_VNew_Serial(N);
-  }
-  // reset the initial condition
-  SetX0(x0_lyap);
-  N_VDestroy(x0_lyap);
-
-  // integration mode for transient evolution
-  SetIntegrationMode(balTRAJ);
-  // setup CVode
-  Setup();
-  // reset the integration
-  ResetInitialCondition();
-  
-  /************* TRANSIENT *****************/
-  SkipTransient(&eq,&err);
-#ifdef DEBUG
-  DUMPBUFFER(stdout);
-#endif
-
-  if(!err) {
-    // the new initial condition
-    for(i=0; i<n; i++) {
-      for(j=0; j<n; j++) {
-	Ith(x,n*(i+1)+j) = (i == j ? 1.0 : 0.0);
-	rows--;
-	StoreRecordInBuffer(balTRAN_END);
-      }
-    }
-
-    tout = t + lyap_tstep;
-
-    while (tout < tfinal+lyap_tstep) {
-      flag = CVode (cvode_mem, tout, x, &t, CV_NORMAL);
-      StoreRecordInBuffer(balSTEP);
-      
-      if (flag < 0 && flag != CV_TOO_MUCH_WORK) {
-	/*
-	 * this is because the flag CV_ILL_INPUT is returned when two
-	 * events are found at a very small time interval, which is the
-	 * case if at least one of the Poincare' sections corresponds to
-	 * an extremum of a state variables, which is a condition always
-	 * verified when the trajectory is on an equilibrium
-	 */
-	if(flag == CV_ILL_INPUT) {
-	  if(CheckEquilibrium() == EQUIL_BREAK)
-	    break;
-	}
-	/* this is done if the error is not CV_ILL_INPUT */
-	err = true;
-	break;
-      }
-      
-      if(CheckEquilibrium() == EQUIL_BREAK)
-	break;
-
-      GramSchmidtOrthonorm(znorm);
-      for(i=0; i<n; i++)
-	cum[i] += log(znorm[i]);///log(2.0);
-      
-      tout += lyap_tstep;
-    }
-#ifdef DEBUG
-    DUMPBUFFER(stderr);
-#endif
-    for(i=0; i<n; i++){
-      lyapunov_exponents[i] = cum[i]/t;
-    }
-  }
 
   /* if the integrator stopped because of an error, we change the label of the last row in
    * the integration buffer and stop the integration procedure */
