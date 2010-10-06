@@ -60,6 +60,7 @@ int main(int argc, char *argv[]) {
   solver->SetDynamicalSystem(lor);
   solver->SetTransientDuration(1000);
   solver->SetFinalTime(1.1e4);
+  solver->SetTimeStep(5);
   solver->SetLyapunovTimeStep(5);
   solver->SetIntegrationMode(balLYAP);
   solver->SetX0(x0);

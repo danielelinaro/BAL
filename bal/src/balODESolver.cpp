@@ -803,7 +803,7 @@ bool balODESolver::Solve() {
   case balBOTH:
     return SolveWithEvents();
   case balLYAP:
-#ifdef DEBUG
+#ifdef DANIELE
     return SolveWithoutEventsLyapunov();
 #else
     return SolveLyapunov();
@@ -925,6 +925,8 @@ bool balODESolver::SolveWithoutEventsLyapunov() {
 }
 
 bool balODESolver::SolveLyapunov() {
+  SetIntegrationMode(balTRAJ);
+
   int i;
   realtype * temp_x0 = new realtype[dynsys->GetOriginalDimension()];
   for(i=0; i<dynsys->GetOriginalDimension(); i++)
@@ -934,9 +936,7 @@ bool balODESolver::SolveLyapunov() {
   realtype t_ = 0.0;
   tfinal = ttran;
   delete_buffer = true;
-  //fprintf(stderr,"ci: %lf\t%lf\t%lf\t%lf\n", Ith(x0,0),Ith(x0,1),Ith(x0,2),dynsys->GetParameters()->At(0));
   SolveWithoutEvents();
-  //fprintf(stderr,"ttran esaurito stato: %lf\t%lf\t%lf\n", Ith(x,0),Ith(x,1),Ith(x,2));
   
   realtype * new_x0 = new realtype [dynsys->GetDimension()];
   for (i=0; i<dynsys->GetDimension(); i++)
@@ -962,11 +962,6 @@ bool balODESolver::SolveLyapunov() {
   delete new_x0;
   SetOrthonormalBaseIC();
   
-  //fprintf(stderr,"ci_ext: ");
-  //	for (i=0;i<N; i++)
-  //		fprintf(stderr,"%lf ",Ith(x0,i));
-  //	fprintf(stderr,"\n");
-  
   tfinal = lyap_tstep;
   ttran = 0.0;
   
@@ -982,24 +977,12 @@ bool balODESolver::SolveLyapunov() {
     for(i=0; i<n*n; i++)
       x_[i+n] = xnorm[i];
     for(i=0; i<n; i++)
-      cum[i] += log(znorm[i]);///log(2.0);
+      cum[i] += log(max(znorm[i],1e-12))/log(2.0);
     SetX0(x_);
-    
-    /*if((int)t_ % 100 == 0){
-      for(i=0; i<n; i++){
-      lyapunov_exponents[i] = cum[i]/t_;
-      printf("%e ",lyapunov_exponents[i]);
-      printf(" %lf ",x_[i]);
-      }
-      printf("\n");
-      }*/
   }
   
-  for(i=0; i<n; i++){
+  for(i=0; i<n; i++)
     lyapunov_exponents[i] = cum[i]/t_;
-    //printf("%e ",lyapunov_exponents[i]);
-  }
-  //printf("\n");
   
   ttran = temp_ttran;
   tfinal = tend;
@@ -1014,6 +997,9 @@ bool balODESolver::SolveLyapunov() {
   delete xnorm;
   delete znorm;
   delete cum;
+
+  SetIntegrationMode(balLYAP);
+  return true;
 }
 
 bool balODESolver::SolveWithoutEvents() {
@@ -1032,10 +1018,12 @@ bool balODESolver::SolveWithoutEvents() {
 
   if(! ResetCVode())
     return false;
-	
+
   /************* TRANSIENT *****************/
   SkipTransient(&eq,&err);
   
+  static bool print = false;
+
   /************* TRAJECTORY *****************/
   if(!(eq && halt_at_equilibrium) && !err) {
     tout = t+tstep;
@@ -1066,6 +1054,7 @@ bool balODESolver::SolveWithoutEvents() {
       tout += tstep;
     }
   }
+  print = true;
 
   /* if the integrator stopped because of an error, we change the label of the last row in
    * the integration buffer and stop the integration procedure */

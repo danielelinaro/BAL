@@ -46,7 +46,7 @@
 #include <sundials/sundials_direct.h>
 #endif
 
-#define DEBUG
+#define DANIELE
 
 /** Default relative tolerance */
 #define RTOL (1.0E-7)
