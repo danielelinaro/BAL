@@ -6,7 +6,7 @@ AM_CPPFLAGS = "@CVODEVERSION@" -I$(srcdir)/../src -I.
 
 if EXAMPLES
 #noinst_PROGRAMS = obj params loggers dynsys bifparams solver bifdiag interp pll lorenz eye basin dynasty lorenzLyap hrLyap bifdiagLyap
-bin_PROGRAMS = obj params loggers dynsys bifparams solver bifdiag interp pll lorenz eye basin dynasty lorenzLyap hrLyap bifdiagLyap prova
+bin_PROGRAMS = obj params loggers dynsys bifparams solver bifdiag interp pll lorenz eye basin dynasty lorenzLyap hrLyap bifdiagLyap
 interp_SOURCES = interp.cpp 
 obj_SOURCES = obj.cpp 
 params_SOURCES = params.cpp 
@@ -23,6 +23,5 @@ bifdiagLyap_SOURCES = bifdiagLyap.cpp
 basin_SOURCES = basin.cpp 
 dynasty_SOURCES = dynasty.cpp 
 pll_SOURCES = pll.cpp ConfigFile.cpp
-prova_SOURCES = prova.cpp
 endif
 
