@@ -197,7 +197,7 @@ class balBifurcationDiagram : public balObject {
 
  private:
 
-  void ComputeDiagramSingleThread();
+  //void ComputeDiagramSingleThread();
   void ComputeDiagramMultiThread();
   void IntegrateAndEnqueue(balODESolver *sol, int solutionId);
   double* BuildClassificationEntry(balSolution *sol);

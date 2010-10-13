@@ -29,7 +29,7 @@
 #include "balBifurcationDiagram.h"
 #include "balBifurcationParameters.h"
 
-// TEST balBifurcationDiagram calculating Lyapunov Spectrum
+// TEST balODESolver calculating Lyapunov Spectrum
 
 int main(int argc, char *argv[]) {
 
@@ -37,41 +37,41 @@ int main(int argc, char *argv[]) {
   realtype x0[3] = {0.5,0.5,0.5};
   balBifurcationParameters * bp = balBifurcationParameters::Create();
   bp->SetNumber(4);
-	
-	/*	chaos  */
-  bp->At(0) = 2.96;
-	bp->At(1) = 3.0;
-	
-	/* limit cycle 
-	bp->At(0) = 4.0;
-	bp->At(1) = 5.0;
-	 
-	/*	equilibrium
-	bp->At(0) = 4.0;
-	bp->At(1) = 1.0;
-	*/
-	bp->At(2) = 0.01;
-	bp->At(3) = 4.0;
-	
-	balHindmarshRose * hr = balHindmarshRose::Create();
+  
+  // chaos
+  //bp->At(0) = 2.96;
+  //bp->At(1) = 3.0;
+  
+  // limit cycle 
+  //bp->At(0) = 4.0;
+  //bp->At(1) = 5.0;
+     
+  // equilibrium
+  bp->At(0) = 4.0;
+  bp->At(1) = 1.0;
+
+  bp->At(2) = 0.01;
+  bp->At(3) = 4.0;
+  
+  balHindmarshRose * hr = balHindmarshRose::Create();
   hr->SetParameters(bp);
-	
-	balODESolver * solver = balODESolver::Create();
+  
+  balODESolver * solver = balODESolver::Create();
   solver->SetDynamicalSystem(hr);
   solver->SetIntegrationMode(balLYAP);
   solver->SetTimeStep(0.01);
   solver->SetTransientDuration(500);
   solver->SetLyapunovTimeStep(0.5);
-	solver->SetFinalTime(2e3);
+  solver->SetFinalTime(2e3);
   solver->SetX0(x0);
-
-	solver->Solve();
   
-	for(int i=0; i<hr->GetOriginalDimension(); i++){
-		printf("%e ",solver->GetLyapunovExponents()[i]);
-	}
-	printf("\n");
-	
+  solver->Solve();
+  
+  for(int i=0; i<hr->GetOriginalDimension(); i++){
+    printf("%e ",solver->GetLyapunovExponents()[i]);
+  }
+  printf("\n");
+  
   solver->Destroy();
   hr->Destroy();
   bp->Destroy();

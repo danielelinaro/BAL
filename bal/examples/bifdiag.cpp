@@ -32,11 +32,12 @@
 // TEST balBifurcationDiagram
 int main(int argc, char *argv[]) {
 
-  int steps[4] = {1,1,1,1};
+  int steps[4] = {29,1,1,1};
   realtype x0[3] = {0.5,0.5,0.5};
   balBifurcationParameters * bp = balBifurcationParameters::Create();
   bp->SetNumber(4);
-  bp->SetIthParameter(0,3.065);
+  bp->SetIthParameterLowerBound(0,2.9);
+  bp->SetIthParameterUpperBound(0,3.18);
   bp->SetIthParameter(1,3);
   bp->SetIthParameter(2,0.01);
   bp->SetIthParameter(3,4.0);
@@ -45,12 +46,12 @@ int main(int argc, char *argv[]) {
   hr->SetParameters(bp);
   balBifurcationDiagram * bifd = balBifurcationDiagram::Create();
   bifd->SetDynamicalSystem(hr);
-  bifd->GetODESolver()->SetIntegrationMode(balBOTH);
+  bifd->GetODESolver()->SetIntegrationMode(balEVENTS);
   bifd->GetODESolver()->HaltAtEquilibrium(true);
-  bifd->GetODESolver()->HaltAtCycle(false);
-  bifd->GetODESolver()->SetTransientDuration(2e3);
+  bifd->GetODESolver()->HaltAtCycle(true);
+  bifd->GetODESolver()->SetTransientDuration(5e3);
   bifd->GetODESolver()->SetFinalTime(1e4);
-  bifd->GetODESolver()->SetMaxNumberOfIntersections(200);
+  bifd->GetODESolver()->SetMaxNumberOfIntersections(500);
   bifd->GetODESolver()->SetX0(x0);
   bifd->SetFilename("hr.h5");
   bifd->SetNumberOfThreads(argc > 1 ? atoi(argv[1]) : 2);

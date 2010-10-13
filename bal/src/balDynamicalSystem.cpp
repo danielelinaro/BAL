@@ -39,9 +39,9 @@ balDynamicalSystem::balDynamicalSystem() {
 }
 
 balDynamicalSystem::balDynamicalSystem(const balDynamicalSystem& system) {
-  n = system.GetDimension();
-  nev = system.GetNumberOfEvents();
-  pars = system.GetParameters(); // non rialloco spazio parametri
+  n = system.n;
+  nev = system.nev;
+  pars = system.pars; // non rialloco spazio parametri
   p = (system.GetParameters())->GetNumber();
   nExt = system.nExt;
   ext = system.ext;

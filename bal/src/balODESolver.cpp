@@ -77,14 +77,14 @@ balODESolver::balODESolver() {
   x0 = NULL;
   x_inters = NULL;
   lyapunov_exponents = NULL;
-	delete_lyapunov_exponents = false;
+  delete_lyapunov_exponents = false;
   nvectors_allocated = false;
   class_event = 1;
 }
 
 balODESolver::balODESolver(const balODESolver& solver) {
   int i;
-	buffer = NULL;
+  buffer = NULL;
   delete_buffer = false;
   rows = 0;
   nvectors_allocated = false;
@@ -101,13 +101,13 @@ balODESolver::balODESolver(const balODESolver& solver) {
   ttran = solver.GetTransientDuration();
   tfinal = solver.GetFinalTime();
   lyap_tstep = solver.GetLyapunovTimeStep();
-	delete_lyapunov_exponents = false;
-	if (solver.delete_lyapunov_exponents) {
-		lyapunov_exponents = new realtype[dynsys->GetOriginalDimension()];
-		delete_lyapunov_exponents = true;
-		for(i=0; i<dynsys->GetOriginalDimension(); i++)
-			lyapunov_exponents[i] = solver.GetLyapunovExponents()[i];
-	}
+  delete_lyapunov_exponents = false;
+  if (solver.delete_lyapunov_exponents) {
+    lyapunov_exponents = new realtype[dynsys->GetOriginalDimension()];
+    delete_lyapunov_exponents = true;
+    for(i=0; i<dynsys->GetOriginalDimension(); i++)
+      lyapunov_exponents[i] = solver.GetLyapunovExponents()[i];
+  }
   setup = false;
   max_intersections = solver.GetMaxNumberOfIntersections();
   bufsize = 0;
@@ -164,6 +164,7 @@ void balODESolver::SetDynamicalSystem(balDynamicalSystem * ds) {
   if(ds != NULL) {
     dynsys = ds;
     neq	= dynsys->GetDimension();
+    //printf("neq = %d\n", neq);
     if(dynsys->HasEvents()) {
       nev = dynsys->GetNumberOfEvents();
       events = new int[nev];
@@ -193,6 +194,7 @@ void balODESolver::SetDynamicalSystem(balDynamicalSystem * ds) {
     x0 = N_VNew_Serial(neq);
     x_inters = N_VNew_Serial(neq);
     nvectors_allocated = true;
+    //printf("allocated N_Vector's.\n");
     // perform setup!
     setup = false;
   }
@@ -440,6 +442,10 @@ bool balODESolver::Setup() {
   }
 #endif
 #ifdef CVODE26
+  if(x == NULL) {
+    printf("x is NULL.\n");
+    getchar();
+  }
   flag = CVodeInit (cvode_mem, balDynamicalSystem::RHSWrapper, 0.0, x);
   if (flag != CV_SUCCESS) {
     fprintf (stderr, "Error on CVodeInit.\n");
@@ -778,6 +784,8 @@ bool balODESolver::ResetCVode() {
 }
 
 bool balODESolver::Solve() {
+  bool retval;
+
   if(mode == balLYAP) {
     if(!dynsys->IsExtended()) {
       dynsys->Extend(true);
@@ -798,18 +806,19 @@ bool balODESolver::Solve() {
 
   switch (mode) {
   case balTRAJ:
-    return SolveWithoutEvents();
+    retval = SolveWithoutEvents();
   case balEVENTS:
   case balBOTH:
-    return SolveWithEvents();
+    retval = SolveWithEvents();
   case balLYAP:
 #ifdef DANIELE
-    return SolveWithoutEventsLyapunov();
+    retval = SolveWithoutEventsLyapunov();
 #else
-    return SolveLyapunov();
+    retval = SolveLyapunov();
 #endif
   }
-  return false;
+
+  return retval;
 }
 
 bool balODESolver::SolveWithoutEventsLyapunov() {

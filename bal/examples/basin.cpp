@@ -50,17 +50,18 @@ int main(int argc, char *argv[]) {
   bifd->GetODESolver()->HaltAtEquilibrium(true);
   bifd->GetODESolver()->HaltAtCycle(false);
   bifd->GetODESolver()->SetTransientDuration(0e3);
-  bifd->GetODESolver()->SetFinalTime(1e3);
+  bifd->GetODESolver()->SetFinalTime(2e3);
   //bifd->GetODESolver()->SetMaxNumberOfIntersections(200);
 
   bifd->SetNumberOfThreads(argc > 1 ? atoi(argv[1]) : 2);
 
+  double x0_chaos[] = {-0.882461371550183,-3.661932217696160,2.870154513826437};
   int nX0 = 100;
   double **X0 = new double*[nX0];
   for(int i=0; i<nX0; i++) {
     X0[i] = new double[3];
     for(int j=0; j<3; j++)
-      X0[i][j] = -1 + 2*((double) random()/RAND_MAX);
+      X0[i][j] = x0_chaos[j] + 1e-6*(-1 + 2*((double) random()/RAND_MAX));
   }
   bifd->SetMode(balIC);
   bifd->SetInitialConditions(nX0,X0);

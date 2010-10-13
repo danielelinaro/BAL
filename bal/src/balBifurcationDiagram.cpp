@@ -47,10 +47,10 @@ balClassificationEntry::balClassificationEntry(balSolution *sol) {
   id = sol->GetID();
   for(int i=0; i<n-1; i++)
     data[i] = sol->GetParameters()->At(i);
-	if (sol->IsLyapunovMode())
-		data[n-1] = sol->GetLyapunovExponents()[0]; //saving Maximal Lyapunov exponent (MLE)
-	else 	
-		data[n-1] = sol->GetNumberOfTurns();
+  if (sol->IsLyapunovMode())
+    data[n-1] = sol->GetLyapunovExponents()[0]; //saving Maximal Lyapunov exponent (MLE)
+  else 	
+    data[n-1] = sol->GetNumberOfTurns();
 }
 
 int balClassificationEntry::GetN() const {
@@ -179,10 +179,10 @@ bool balBifurcationDiagram::SaveClassificationData(const char *filename) const {
     entry = (*it)->GetData();
     for(i=0; i<(*it)->GetN()-1; i++)
       fprintf(fid, "%e ", entry[i]);
-		if (solver->GetIntegrationMode() == balLYAP)
-			fprintf(fid,"%e\n", (double) entry[(*it)->GetN()-1]);
-		else 
-			fprintf(fid,"%d\n", (int) entry[(*it)->GetN()-1]);
+    if (solver->GetIntegrationMode() == balLYAP)
+      fprintf(fid,"%e\n", (double) entry[(*it)->GetN()-1]);
+    else 
+      fprintf(fid,"%d\n", (int) entry[(*it)->GetN()-1]);
   }
   
   fclose(fid);
@@ -248,6 +248,7 @@ void balBifurcationDiagram::ComputeDiagram() {
 
   /* this switch is really not necessary: it is safe to always *
    * use ComputeDiagramMultiThread().                          */
+  /*
   switch(nthreads) {
   case 1:
     ComputeDiagramSingleThread();
@@ -255,8 +256,11 @@ void balBifurcationDiagram::ComputeDiagram() {
   default:
     ComputeDiagramMultiThread();
   }
+  */
+  ComputeDiagramMultiThread();
 }
 
+/*
 void balBifurcationDiagram::ComputeDiagramSingleThread() {
   balBifurcationParameters * pars = (balBifurcationParameters *) parameters;
   pars->Reset();
@@ -277,6 +281,9 @@ void balBifurcationDiagram::ComputeDiagramSingleThread() {
   }
   printf("\n"); fflush(stdout);
 }
+*/
+
+int PROLOGUE;
 
 void balBifurcationDiagram::ComputeDiagramMultiThread() {
   int i, idx, cnt, solutionId;
@@ -289,9 +296,9 @@ void balBifurcationDiagram::ComputeDiagramMultiThread() {
 
   balBifurcationParameters *pars;
 	
-	if (solver->GetIntegrationMode() == balLYAP)
-		restart_from_x0	= true;
-
+  if (solver->GetIntegrationMode() == balLYAP)
+    restart_from_x0 = true;
+  
   switch(mode) {
   case balPARAMS:
     pars = (balBifurcationParameters *) parameters;
@@ -310,12 +317,14 @@ void balBifurcationDiagram::ComputeDiagramMultiThread() {
   
   nloops = total / nthreads;
   prologue = total % nthreads;
+  PROLOGUE = prologue;
 
   /**
    * launching the thread of the writing routine: it activates only when list size >= LIST_MAX_SIZE
    **/
-	if (solver->GetIntegrationMode() != balLYAP)
-		logger_thread = new boost::thread(&balLogger::SaveSolutionThreaded,logger,solutions,&list_mutex,&q_empty,&q_full);
+  if (solver->GetIntegrationMode() != balLYAP) {
+    logger_thread = new boost::thread(&balLogger::SaveSolutionThreaded,logger,solutions,&list_mutex,&q_empty,&q_full);
+  }
   
   /**
    * calculating the first total % nthreads solutions in a serial fashion
@@ -334,7 +343,7 @@ void balBifurcationDiagram::ComputeDiagramMultiThread() {
       break;
     }
   }
-  
+
   /*
    * we make nthreads copies of both the solvers and the parameters of the dynamical system
    */
@@ -354,18 +363,18 @@ void balBifurcationDiagram::ComputeDiagramMultiThread() {
     switch(mode) {
     case balPARAMS:
       for(i = 0; i < nthreads; i++, pars->Next())
-				lpar[i]->CopyValues(pars);
+	lpar[i]->CopyValues(pars);
       break;
     case balIC:
       for(i = 0; i < nthreads; i++, idx++)
-				lsol[i]->SetX0(X0[idx]);
+	lsol[i]->SetX0(X0[idx]);
       break;
     }
     
     /* launch the nthread solvers */
     for (i = 0; i < nthreads; i++, solutionId++)
       threads[i] = new boost::thread(&balBifurcationDiagram::IntegrateAndEnqueue,this,lsol[i],solutionId);
-    
+
     for (i = 0; i < nthreads; i++) {
       threads[i]->join();
       printf("%c%s", ESC, GREEN);
@@ -383,16 +392,20 @@ void balBifurcationDiagram::ComputeDiagramMultiThread() {
     lsol[i]->Destroy();
     lpar[i]->Destroy();
   }
+  delete lsol;
+  delete lpar;
+
   if (solver->GetIntegrationMode() != balLYAP) {
-  /* interrupting logger_thread */
-  logger_thread->interrupt();
-  
-  /* waiting logger thread to writing the remaining solution in the queue and exit */
-  logger_thread->join();
-	}
+    /* interrupting logger_thread */
+    logger_thread->interrupt();
+    /* waiting logger thread to writing the remaining solution in the queue and exit */
+    logger_thread->join();
+  }
 }
 
 void balBifurcationDiagram::IntegrateAndEnqueue(balODESolver * sol, int solutionId) {
+  //if(solutionId > PROLOGUE)
+  //  printf("ID = %d\n", solutionId);
   sol->Solve();
   balSolution *solution = sol->GetSolution();
   solution->SetID(solutionId);
@@ -414,16 +427,16 @@ void balBifurcationDiagram::IntegrateAndEnqueue(balODESolver * sol, int solution
       q_empty.wait(lock);
     }
     // insert a new solution into the list
-	  if (solver->GetIntegrationMode() != balLYAP)
-			solutions->push_back(solution);
+    if (solver->GetIntegrationMode() != balLYAP)
+      solutions->push_back(solution);
     // insert a new classification into the list
     classification->push_back(new balClassificationEntry(solution));
-	}	
+  }	
   
-	if (solver->GetIntegrationMode() == balLYAP)
-		solution->Destroy();
-	
-  if(! restart_from_x0) {
+  if (solver->GetIntegrationMode() == balLYAP)
+    solution->Destroy();
+  
+  if(! restart_from_x0)
     sol->SetX0(sol->GetXEnd());
-  }
+
 }

@@ -33,32 +33,33 @@
 
 int main(int argc, char *argv[]) {
 
-  int steps[4] = {50,100,1,1};
+  int steps[4] = {10,1,1,1};
   realtype x0[3] = {0.5,0.5,0.5};
   balBifurcationParameters * bp = balBifurcationParameters::Create();
   bp->SetNumber(4);
   bp->SetIthParameterLowerBound(0,2.5);
-	bp->SetIthParameterUpperBound(0,3.5);
-	bp->SetIthParameterLowerBound(1,2.5);
-	bp->SetIthParameterUpperBound(1,4.5);
+  bp->SetIthParameterUpperBound(0,3.5);
+  //bp->SetIthParameterLowerBound(1,2.5);
+  //bp->SetIthParameterUpperBound(1,4.5);
+  bp->SetIthParameter(1,3.5);
   bp->SetIthParameter(2,0.01);
   bp->SetIthParameter(3,4.0);
   bp->SetNumberOfSteps(steps);
   
-	balHindmarshRose * hr = balHindmarshRose::Create();
+  balHindmarshRose * hr = balHindmarshRose::Create();
   hr->SetParameters(bp);
   
-	balBifurcationDiagram * bifd = balBifurcationDiagram::Create();
+  balBifurcationDiagram * bifd = balBifurcationDiagram::Create();
   bifd->SetDynamicalSystem(hr);
   bifd->GetODESolver()->SetIntegrationMode(balLYAP);
   bifd->GetODESolver()->SetTransientDuration(5e2);
-	bifd->GetODESolver()->SetLyapunovTimeStep(1);
-	bifd->GetODESolver()->SetTimeStep(0.01);
+  bifd->GetODESolver()->SetLyapunovTimeStep(1);
+  bifd->GetODESolver()->SetTimeStep(0.5);
   bifd->GetODESolver()->SetFinalTime(2e3);
   bifd->GetODESolver()->SetX0(x0);
   
   bifd->SetNumberOfThreads(argc > 1 ? atoi(argv[1]) : 2);
-
+  
   bifd->ComputeDiagram();
   bifd->SaveClassificationData("LyapDiagTest.classified");
 
