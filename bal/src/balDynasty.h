@@ -36,6 +36,8 @@
 
 enum {MINIMA, MAXIMA, ANY};
 
+#define EPS (1.0E-4)
+
 /**
  * \class balDynasty
  * \brief Implementation of a dynamical system that describes a
@@ -74,7 +76,6 @@ class balDynasty : public balDynamicalSystem {
   
  private:
   N_Vector xderiv;
-  const double eps;
   int constraint_type;
 };
 

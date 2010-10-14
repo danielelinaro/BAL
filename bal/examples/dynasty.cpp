@@ -32,14 +32,13 @@
 // TEST balBifurcationDiagram
 int main(int argc, char *argv[]) {
 
-  int steps[7] = {101,1,1,1,1,1,1};
+  int steps[7] = {1,101,1,1,1,1,1};
   realtype x0[3] = {0.5,0.5,0.5};
   balBifurcationParameters * bp = balBifurcationParameters::Create();
   bp->SetNumber(7);
-  //bp->SetIthParameter(0,-3); // r
-  bp->SetIthParameterLowerBound(0,-4); // r
-  bp->SetIthParameterUpperBound(0,-1); // r
-  bp->SetIthParameter(1,2.2); // e
+  bp->SetIthParameter(0,-3.1); // r
+  bp->SetIthParameterLowerBound(1,1.8); // e
+  bp->SetIthParameterUpperBound(1,2.8); // e
   bp->SetIthParameter(2,0.17); // b
   bp->SetIthParameter(3,0.42); // d
   bp->SetIthParameter(4,0.09); // g
@@ -48,7 +47,7 @@ int main(int argc, char *argv[]) {
   bp->SetNumberOfSteps(steps);
   balDynasty * dynasty = balDynasty::Create();
   dynasty->SetParameters(bp);
-  dynasty->SpecialOptions((const void *) "maxima");
+  dynasty->SpecialOptions((const void *) "minima");
   balBifurcationDiagram * bifd = balBifurcationDiagram::Create();
   bifd->SetDynamicalSystem(dynasty);
   bifd->GetODESolver()->SetIntegrationMode(balEVENTS);
@@ -59,7 +58,7 @@ int main(int argc, char *argv[]) {
   bifd->GetODESolver()->SetEquilibriumTolerance(1e-6);
   bifd->GetODESolver()->SetRelativeTolerance(1e-8);
   bifd->GetODESolver()->SetAbsoluteTolerance(1e-13);
-  bifd->GetODESolver()->SetMaxNumberOfIntersections(500);
+  bifd->GetODESolver()->SetMaxNumberOfIntersections(1000);
   bifd->GetODESolver()->SetX0(x0);
   bifd->SetFilename("dynasty.h5");
   bifd->SetNumberOfThreads(argc > 1 ? atoi(argv[1]) : 2);

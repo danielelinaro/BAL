@@ -31,16 +31,16 @@ balDynamicalSystem* balDynastyFactory() {
   return balDynasty::Create();
 }
 
-balDynasty::balDynasty() : balDynamicalSystem(), eps(1e-4) {
+balDynasty::balDynasty() : balDynamicalSystem() {
   SetDimension(3);
   SetNumberOfParameters(7);
   //SetNumberOfEvents(GetDimension());
   SetNumberOfEvents(1);
-  constraint_type = MAXIMA;
+  constraint_type = MINIMA;
   xderiv = N_VNew_Serial(GetDimension());
 }
 
-balDynasty::balDynasty(const balDynasty& dyn) : balDynamicalSystem(dyn), eps(1e-4) {
+balDynasty::balDynasty(const balDynasty& dyn) : balDynamicalSystem(dyn) {
   constraint_type = dyn.constraint_type;
   xderiv = N_VNew_Serial(dyn.GetDimension());
   for(int i = 0; i < dyn.GetDimension(); i++)
@@ -90,15 +90,15 @@ int balDynasty::RHS (realtype t, N_Vector x, N_Vector xdot, void * data) {
 #ifdef NEGATIVES
     fprintf(stderr, "x = [%.12f,%.12f,%.12f]\n", x1, x2, x3);
 #endif
-    if(x1 > -eps)
+    if(x1 > -EPS)
       x1 = 0.0;
     else
       return CV_ERR_FAILURE;
-    if(x2 > -eps)
+    if(x2 > -EPS)
       x2 = 0.0;
     else
       return CV_ERR_FAILURE;
-    if(x3 > -eps)
+    if(x3 > -EPS)
       x3 = 0.0;
     else
       return CV_ERR_FAILURE;

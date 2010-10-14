@@ -164,7 +164,6 @@ void balODESolver::SetDynamicalSystem(balDynamicalSystem * ds) {
   if(ds != NULL) {
     dynsys = ds;
     neq	= dynsys->GetDimension();
-    //printf("neq = %d\n", neq);
     if(dynsys->HasEvents()) {
       nev = dynsys->GetNumberOfEvents();
       events = new int[nev];
@@ -194,7 +193,6 @@ void balODESolver::SetDynamicalSystem(balDynamicalSystem * ds) {
     x0 = N_VNew_Serial(neq);
     x_inters = N_VNew_Serial(neq);
     nvectors_allocated = true;
-    //printf("allocated N_Vector's.\n");
     // perform setup!
     setup = false;
   }
@@ -442,10 +440,6 @@ bool balODESolver::Setup() {
   }
 #endif
 #ifdef CVODE26
-  if(x == NULL) {
-    printf("x is NULL.\n");
-    getchar();
-  }
   flag = CVodeInit (cvode_mem, balDynamicalSystem::RHSWrapper, 0.0, x);
   if (flag != CV_SUCCESS) {
     fprintf (stderr, "Error on CVodeInit.\n");
@@ -807,17 +801,20 @@ bool balODESolver::Solve() {
   switch (mode) {
   case balTRAJ:
     retval = SolveWithoutEvents();
+    break;
   case balEVENTS:
   case balBOTH:
     retval = SolveWithEvents();
+    break;
   case balLYAP:
 #ifdef DANIELE
     retval = SolveWithoutEventsLyapunov();
+    break;
 #else
     retval = SolveLyapunov();
+    break;
 #endif
   }
-
   return retval;
 }
 
