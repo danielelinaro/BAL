@@ -250,6 +250,7 @@ bool balDynamicalSystem::IsExtended() const {
 }
 
 bool balDynamicalSystem::SpecialOptions(const void *opt) {
+  printf("balDynamicalSystem::SpecialOptions\n");
   return false;
 }
 

@@ -130,7 +130,7 @@ const char * balLinearInterp1D::GetClassName() const {
 }
 
 void balLinearInterp1D::Destroy() {
-  this->~balLinearInterp1D();
+  delete this;
 }
 
 balLinearInterp1D * balLinearInterp1D::Create(double * xv, double * yv, int length) {
@@ -155,7 +155,7 @@ const char * balPolyInterp1D::GetClassName() const {
 }
 
 void balPolyInterp1D::Destroy() {
-  this->~balPolyInterp1D();
+  delete this;
 }
 
 balPolyInterp1D * balPolyInterp1D::Create(double * xv, double * yv, int length, int m) {
@@ -223,7 +223,7 @@ const char * balSplineInterp1D::GetClassName() const {
 }
 
 void balSplineInterp1D::Destroy() {
-  this->~balSplineInterp1D();
+  delete this;
 }
 
 balSplineInterp1D * balSplineInterp1D::Create(double * xv, double * yv, int length, double yp1, double ypn) {

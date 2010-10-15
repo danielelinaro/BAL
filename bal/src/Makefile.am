@@ -9,7 +9,7 @@ balInterp1D.cpp balInterp1D.h balInterp2D.cpp balInterp2D.h balSolution.cpp balS
 balLorenz.cpp balLorenz.h balEye.cpp balEye.h balDynasty.cpp balDynasty.h balRossler.cpp balRossler.h
 libbal_la_LDFLAGS = -version-info ${LIB_VER}
 
-include_HEADERS = balBifurcationDiagram.h balBifurcationParameters.h balCommon.h balDynamicalSystem.h balHindmarshRose.h \
+include_HEADERS = balBifurcationDiagram.h balBifurcationParameters.h balCommon.h balDynamicalSystem.h balEye.h balHindmarshRose.h \
 balHeartNeuron.h balLogger.h balODESolver.h balObject.h balParameters.h balPLL.h balInterp1D.h balInterp2D.h balSolution.h \
-balLorenz.h balDynasty.h balRossler.h
+balLorenz.h balDynasty.h balRossler.h balRandomLibrary.h
 

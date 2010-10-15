@@ -6,26 +6,26 @@ from numpy import histogram, nonzero, zeros, linspace
 def readH5file(filename):
 	"""
 	Reads data from an H5 file.
-
+	
 	Syntax:
-		data = readH5file(filename)
-
+	data = readH5file(filename)
+	
 	where filename is the name of the H5 file and data is a vector of
 	dictionaries that stores the data contained in filename.
-
+	
 	Every element of the vector data is a dictionary with the following
 	keys:
-		par - the parameter vector of the integration
-		t - the time vector
-		x - the state vector
-		labels - the labels associated to every step of the
-		integration. The meaning of the labels is as follows:
-			-10  integration error
-			 -3  equilibrium point
-			 -2  initial conditions
-			 -1  state at the end of transient evolution
-			  0  regular step
-			 +i  intersection with the i-th Poincare' section.
+	par - the parameter vector of the integration
+	t - the time vector
+	x - the state vector
+	labels - the labels associated to every step of the
+	integration. The meaning of the labels is as follows:
+	-10  integration error
+	-3  equilibrium point
+	-2  initial conditions
+	-1  state at the end of transient evolution
+	0  regular step
+	+i  intersection with the i-th Poincare' section.
 
 	Author:
 	Daniele Linaro
@@ -36,7 +36,11 @@ def readH5file(filename):
         data = []
 	for node in fid:
 		if not node._v_name == '/':
-			data.append({'par': node.attrs.parameters,'t': node[:,0],'x': node[:,1:-1],'labels': node[:,-1]})
+			try:
+				pars = getattr(node.attrs,'parameters')
+			except AttributeError:
+				pars = []
+			data.append({'par': pars,'t': node[:,0],'x': node[:,1:-1],'labels': node[:,-1]})
 	fid.close()
 	return data
 
@@ -75,7 +79,8 @@ def saveH5file(solutions,filename):
 		node[0:,0] = array(s.data['t'])
 		node[0:,1:-1] = reshape(array(s.data['x']),(m,n))
 		node[0:,-1] = array(s.data['labels'])
-		node.attrs.parameters = array(s.parameters)
+		if s.parameters != []:
+			node.attrs.parameters = array(s.parameters)
 	# close the file
 	fid.close()
 

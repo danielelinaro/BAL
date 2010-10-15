@@ -77,11 +77,11 @@ par = bal.Parameters(sys.npar)
 
 ### LORENZ ###
 # chaos
-#par.setpars([10.,28,8./3.])
+par.setpars([10.,28,8./3.])
 # limit cycle
 #par.setpars([10.,99.96,8./3.])
 # stable equilibrium
-par.setpars([10.,10,8./3.])
+#par.setpars([10.,10,8./3.])
 
 ### HR ###
 # chaos

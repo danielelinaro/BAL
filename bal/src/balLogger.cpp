@@ -185,7 +185,7 @@ balH5Logger * balH5Logger::Create() {
 }
 
 void balH5Logger::Destroy() {
-  this->~balH5Logger();
+  delete this;
 }
 
 balH5Logger::balH5Logger() {

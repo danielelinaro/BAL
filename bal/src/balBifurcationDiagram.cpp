@@ -53,6 +53,10 @@ balClassificationEntry::balClassificationEntry(balSolution *sol) {
     data[n-1] = sol->GetNumberOfTurns();
 }
 
+balClassificationEntry::~balClassificationEntry() {
+  delete data;
+}
+
 int balClassificationEntry::GetN() const {
   return n;
 }

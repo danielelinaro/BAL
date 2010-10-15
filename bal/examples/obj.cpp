@@ -38,7 +38,7 @@ int main(int argc, char *argv[]) {
   cout << obj->GetClassName() << endl;
   cout << "I am " << (flag ? "" : "not ") << "a " << (argc>1 ? argv[1] : name) << "." << endl;
   obj->Destroy();
-  
+
   return 0;
 }
 

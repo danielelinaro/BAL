@@ -41,7 +41,7 @@ class balUniformRandom {
  private:
   ullong u,v,w; 
  public:
- balUniformRandom(ullong j) : v(4101842887655102017LL), w(1) { 
+  balUniformRandom(ullong j) : v(4101842887655102017LL), w(1) { 
     u = j ^ v; int64(); 
     v = u; int64(); 
     w = v; int64(); 

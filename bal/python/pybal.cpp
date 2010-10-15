@@ -1,4 +1,5 @@
 #include "pybal.h"
+//#include "balEye.h"
 
 // libraries loaded at runtime
 void * ballib;
@@ -83,6 +84,23 @@ static PyObject * pyBalDynamicalSystem_create(PyObject *self, PyObject *args) {
 	return Py_BuildValue("i",0);
 }
 
+static PyObject * pyBalDynamicalSystem_special(PyObject *self, PyObject *args) {
+	const char *opt;
+	if (!PyArg_ParseTuple(args, "s", &opt))
+		return Py_BuildValue("i",1);
+
+	// +++
+	Py_INCREF(self);
+	// cast self to the appropriate type
+	pyBalDynamicalSystem *ds = (pyBalDynamicalSystem *) self;
+	bool flag = ds->dynsys->SpecialOptions((void *) opt);
+	int retval = (flag ? 0 : 1);
+	// ---
+	Py_DECREF(self);
+
+	return Py_BuildValue("i",0);
+}
+
 static PyObject * pyBalDynamicalSystem_getattro(pyBalDynamicalSystem *self, PyObject *name) {
 	Py_INCREF(name);
 	char *n = PyString_AsString(name);
@@ -119,9 +137,16 @@ static int pyBalDynamicalSystem_setattro(pyBalDynamicalSystem *self, PyObject *n
 	else if (strcmp(n, "options") == 0) {
 		if(PyString_Check(value)) {
 			char *opt = PyString_AsString(value);
-			printf("before calling SpecialOptions\n");
-			self->dynsys->SpecialOptions((void *) opt);
-			printf("after calling SpecialOptions\n");
+			printf("before calling SpecialOptions with opt = '%s'\n", opt);
+			bool retval = false;
+			retval = self->dynsys->SpecialOptions((void *) opt);
+			/*
+			Py_INCREF(self->dynsys);
+			balEye *eye = (balEye *) self->dynsys;
+			retval = eye->ReadVectorField(opt);
+			Py_DECREF(self->dynsys);
+			 */
+			printf("after calling SpecialOptions, which returned %s\n", (retval ? "true" : "false"));
 		}
 		else {
 			printf("Unknown option...\n");
@@ -139,6 +164,7 @@ static int pyBalDynamicalSystem_setattro(pyBalDynamicalSystem *self, PyObject *n
 static PyMethodDef pyBalDynamicalSystem_methods[] = {
 	{"name", (PyCFunction) pyBalDynamicalSystem_name, METH_NOARGS, "Return the name of the class"},
 	{"create", (PyCFunction) pyBalDynamicalSystem_create, METH_VARARGS, "Create a particular dynamical system"},
+	{"special", (PyCFunction) pyBalDynamicalSystem_special, METH_VARARGS, "Sets special options"},
 	{NULL}	/* Sentinel */
 };
 
