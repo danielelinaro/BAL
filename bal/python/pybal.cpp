@@ -760,6 +760,8 @@ static int pyBalODESolver_setattro(pyBalODESolver *self, PyObject *name, PyObjec
 			self->solver->SetIntegrationMode(balEVENTS);
 		else if(strcmp(v, "trajectory + events") == 0 || strcmp(v, "both") == 0)
 			self->solver->SetIntegrationMode(balBOTH);
+		else if(strcmp(v, "lyap") == 0 || strcmp(v, "lyapunov"))
+			self->solver->SetIntegrationMode(balLYAP);
 		else
 			err = -1;
 		Py_DECREF(value);
@@ -1044,6 +1046,9 @@ static PyObject * pyBalBifurcationDiagram_getattro(pyBalBifurcationDiagram *self
 			case balBOTH:
 				result = Py_BuildValue("s","trajectory + events");
 				break;
+			case balLYAP:
+				result = Py_BuildValue("s","lyapunov exponents");
+				break;
 		}
 	}
 	else if(strcmp(n, "intersections") == 0) {
@@ -1121,12 +1126,17 @@ static int pyBalBifurcationDiagram_setattro(pyBalBifurcationDiagram *self, PyObj
 	else if(strcmp(n, "mode") == 0) {
 		Py_INCREF(value);
 		char *v = PyString_AsString(value);
+		printf("mode = %s\n", v);
 		if(strcmp(v, "trajectory") == 0)
 			self->diagram->GetODESolver()->SetIntegrationMode(balTRAJ);
 		else if(strcmp(v, "events") == 0)
 			self->diagram->GetODESolver()->SetIntegrationMode(balEVENTS);
 		else if(strcmp(v, "trajectory + events") == 0 || strcmp(v, "both") == 0)
 			self->diagram->GetODESolver()->SetIntegrationMode(balBOTH);
+		else if(strcmp(v, "lyap") == 0 || strcmp(v, "lyapunov") == 0) {
+			self->diagram->GetODESolver()->SetIntegrationMode(balLYAP);
+			printf("LYAPUNOV!\n");
+		}
 		else
 			err = -1;
 		Py_DECREF(value);
