@@ -665,6 +665,9 @@ static PyObject * pyBalODESolver_getattro(pyBalODESolver *self, PyObject *name) 
 	else if(strcmp(n, "dt") == 0) {
 		result = Py_BuildValue("d",self->solver->GetTimeStep());
 	}
+	else if(strcmp(n, "lyap_dt") == 0) {
+		result = Py_BuildValue("d",self->solver->GetLyapunovTimeStep());
+	}
 	else if(strcmp(n, "tstop") == 0) {
 		result = Py_BuildValue("d",self->solver->GetFinalTime());
 	}
@@ -726,6 +729,13 @@ static int pyBalODESolver_setattro(pyBalODESolver *self, PyObject *name, PyObjec
 		double dt = PyFloat_AsDouble(value);
 		if(dt > 0)
 			self->solver->SetTimeStep(dt);
+		else
+			err = -1;
+	}
+	else if(strcmp(n, "lyap_dt") == 0) {
+		double dt = PyFloat_AsDouble(value);
+		if(dt > 0)
+			self->solver->SetLyapunovTimeStep(dt);
 		else
 			err = -1;
 	}
@@ -1022,6 +1032,9 @@ static PyObject * pyBalBifurcationDiagram_getattro(pyBalBifurcationDiagram *self
 	else if(strcmp(n, "dt") == 0) {
 		result = Py_BuildValue("d",self->diagram->GetODESolver()->GetTimeStep());
 	}
+	else if(strcmp(n, "lyap_dt") == 0) {
+		result = Py_BuildValue("d",self->diagram->GetODESolver()->GetLyapunovTimeStep());
+	}
 	else if(strcmp(n, "tstop") == 0) {
 		result = Py_BuildValue("d",self->diagram->GetODESolver()->GetFinalTime());
 	}
@@ -1101,6 +1114,13 @@ static int pyBalBifurcationDiagram_setattro(pyBalBifurcationDiagram *self, PyObj
 		else
 			err = -1;
 	}
+	else if(strcmp(n, "lyap_dt") == 0) {
+		double dt = PyFloat_AsDouble(value);
+		if(dt > 0)
+			self->diagram->GetODESolver()->SetLyapunovTimeStep(dt);
+		else
+			err = -1;
+	}
 	else if(strcmp(n, "tstop") == 0) {
 		double tstop = PyFloat_AsDouble(value);
 		if(tstop > 0)
@@ -1126,17 +1146,14 @@ static int pyBalBifurcationDiagram_setattro(pyBalBifurcationDiagram *self, PyObj
 	else if(strcmp(n, "mode") == 0) {
 		Py_INCREF(value);
 		char *v = PyString_AsString(value);
-		printf("mode = %s\n", v);
 		if(strcmp(v, "trajectory") == 0)
 			self->diagram->GetODESolver()->SetIntegrationMode(balTRAJ);
 		else if(strcmp(v, "events") == 0)
 			self->diagram->GetODESolver()->SetIntegrationMode(balEVENTS);
 		else if(strcmp(v, "trajectory + events") == 0 || strcmp(v, "both") == 0)
 			self->diagram->GetODESolver()->SetIntegrationMode(balBOTH);
-		else if(strcmp(v, "lyap") == 0 || strcmp(v, "lyapunov") == 0) {
+		else if(strcmp(v, "lyap") == 0 || strcmp(v, "lyapunov") == 0)
 			self->diagram->GetODESolver()->SetIntegrationMode(balLYAP);
-			printf("LYAPUNOV!\n");
-		}
 		else
 			err = -1;
 		Py_DECREF(value);
