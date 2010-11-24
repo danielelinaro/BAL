@@ -316,6 +316,7 @@ void balBifurcationDiagram::ComputeDiagramMultiThread() {
   case balIC:
     RestartFromX0(true);
     idx = 0;
+    solver->SetX0(X0[idx]);
     total = nX0;
     break;
   default:
@@ -348,6 +349,7 @@ void balBifurcationDiagram::ComputeDiagramMultiThread() {
       break;
     case balIC:
       idx++;
+      solver->SetX0(X0[idx]);
       break;
     }
   }
