@@ -241,6 +241,10 @@ bool balBifurcationDiagram::SetMode(int _mode) {
   return true;
 }
 
+int balBifurcationDiagram::GetMode() const {
+  return mode;
+}
+
 void balBifurcationDiagram::ComputeDiagram() {
   if(destroy_lists) {
     delete solutions;

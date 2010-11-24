@@ -35,8 +35,8 @@ int main(int argc, char *argv[]) {
 
   balParameters * par = balParameters::Create();
   par->SetNumber(4);
-  par->At(0) = 2.96;
-  par->At(1) = 3;
+  par->At(0) = 2.88;
+  par->At(1) = 2.6;
   par->At(2) = 0.01;
   par->At(3) = 4.0;
 
@@ -46,26 +46,39 @@ int main(int argc, char *argv[]) {
   balBifurcationDiagram * bifd = balBifurcationDiagram::Create();
   bifd->SetDynamicalSystem(hr);
   bifd->SetFilename("hr-basin.h5");
-  bifd->GetODESolver()->SetIntegrationMode(balTRAJ);
+  bifd->GetODESolver()->SetIntegrationMode(balEVENTS);
   bifd->GetODESolver()->HaltAtEquilibrium(true);
-  bifd->GetODESolver()->HaltAtCycle(false);
+  bifd->GetODESolver()->HaltAtCycle(true);
   bifd->GetODESolver()->SetTransientDuration(0e3);
-  bifd->GetODESolver()->SetFinalTime(2e3);
-  //bifd->GetODESolver()->SetMaxNumberOfIntersections(200);
+  bifd->GetODESolver()->SetFinalTime(5e3);
+  bifd->GetODESolver()->SetTimeStep(0.1);
+  bifd->GetODESolver()->SetMaxNumberOfIntersections(300);
 
   bifd->SetNumberOfThreads(argc > 1 ? atoi(argv[1]) : 2);
 
-  double x0_chaos[] = {-0.882461371550183,-3.661932217696160,2.870154513826437};
-  int nX0 = 100;
+  //double x0_chaos[] = {-0.882461371550183,-3.661932217696160,2.870154513826437};
+  int nX0 = 1000;
   double **X0 = new double*[nX0];
   for(int i=0; i<nX0; i++) {
     X0[i] = new double[3];
-    for(int j=0; j<3; j++)
-      X0[i][j] = x0_chaos[j] + 1e-6*(-1 + 2*((double) random()/RAND_MAX));
+    /*
+    X0[i][0] = 2.5*((double) random()/RAND_MAX);
+    X0[i][1] = -10 + 12*((double) random()/RAND_MAX);
+    X0[i][2] = 1.5;
+    */
+    /*
+    X0[i][0] = 2.5*((double) random()/RAND_MAX);
+    X0[i][1] = -5;
+    X0[i][2] = -1+3.0*((double) random()/RAND_MAX);
+    */
+    X0[i][0] = 1.;
+    X0[i][1] = -10 + 12*((double) random()/RAND_MAX);
+    X0[i][2] = -1+3.0*((double) random()/RAND_MAX);
   }
   bifd->SetMode(balIC);
   bifd->SetInitialConditions(nX0,X0);
   bifd->ComputeDiagram();
+  bifd->SaveClassificationData("hr-basin.classified");
   bifd->Destroy();
   hr->Destroy();
   par->Destroy();

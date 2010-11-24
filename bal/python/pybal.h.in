@@ -98,6 +98,8 @@ typedef struct {
 	balBifurcationDiagram * diagram;
 	pyBalDynamicalSystem * dynsys;
 	pyBalParameters *params;
+	double **ic;
+	int nic;
 } pyBalBifurcationDiagram;
 
 static PyObject * pyBalBifurcationDiagram_new(PyTypeObject *type, PyObject *args, PyObject *kwds);

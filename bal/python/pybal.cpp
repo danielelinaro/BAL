@@ -969,6 +969,8 @@ static PyObject * pyBalBifurcationDiagram_new(PyTypeObject *type, PyObject *args
 	self->diagram = NULL;
 	self->params = NULL;
 	self->dynsys = NULL;
+	self->ic = NULL;
+	self->nic = -1;
 	return (PyObject *) self;
 }
 
@@ -1004,6 +1006,7 @@ static int pyBalBifurcationDiagram_init(pyBalBifurcationDiagram *self, PyObject 
 	self->diagram->GetODESolver()->SetX0(x0);
 	self->diagram->RestartFromX0(true);
 	self->diagram->SetNumberOfThreads(2);
+	self->diagram->SetMode(balPARAMS);
 	
 	delete x0;
 	return 0;
@@ -1012,6 +1015,11 @@ static int pyBalBifurcationDiagram_init(pyBalBifurcationDiagram *self, PyObject 
 static void pyBalBifurcationDiagram_dealloc(pyBalBifurcationDiagram *self) {
 	if(self->diagram != NULL)
 		self->diagram->Destroy();
+	if(self->nic > 0) {
+		for(int i=0; i<self->nic; i++)
+			delete [] self->ic[i];
+		delete self->ic;
+	}
 	self->ob_type->tp_free((PyObject *) self);
 }
 
@@ -1061,6 +1069,16 @@ static PyObject * pyBalBifurcationDiagram_getattro(pyBalBifurcationDiagram *self
 				break;
 			case balLYAP:
 				result = Py_BuildValue("s","lyapunov exponents");
+				break;
+		}
+	}
+	else if(strcmp(n, "diagram_mode") == 0) {
+		switch(self->diagram->GetMode()) {
+			case balPARAMS:
+				result = Py_BuildValue("s","parameters");
+				break;
+			case balIC:
+				result = Py_BuildValue("s","IC");
 				break;
 		}
 	}
@@ -1136,12 +1154,32 @@ static int pyBalBifurcationDiagram_setattro(pyBalBifurcationDiagram *self, PyObj
 			err = -1;
 	}
 	else if(strcmp(n, "x0") == 0) {
-		int i, ndim = self->dynsys->dynsys->GetDimension();
-		double *x0 = new double[ndim];
-		for(i=0; i<ndim; i++)
-			x0[i] = PyFloat_AsDouble(PyList_GET_ITEM(value,i));
-		self->diagram->GetODESolver()->SetX0(x0);
-		delete x0;
+		if(self->diagram->GetMode() == balPARAMS) {
+			int i, ndim = self->dynsys->dynsys->GetDimension();
+			double *x0 = new double[ndim];
+			for(i=0; i<ndim; i++)
+				x0[i] = PyFloat_AsDouble(PyList_GET_ITEM(value,i));
+			self->diagram->GetODESolver()->SetX0(x0);
+			delete x0;
+		}
+		else if(self->diagram->GetMode() == balIC) {
+			int i, j, ndim = self->dynsys->dynsys->GetDimension();
+			PyObject *list;
+			if(self->nic > 0) {
+				for(i=0; i<self->nic; i++)
+					delete [] self->ic[i];
+				delete self->ic;
+			}
+			self->nic = PyList_Size(value);
+			self->ic = new double*[self->nic];
+			for(i=0; i<self->nic; i++) {
+				self->ic[i] = new double[ndim];
+				list = PyList_GET_ITEM(value,i);
+				for(j=0; j<ndim; j++)
+					self->ic[i][j] = PyFloat_AsDouble(PyList_GET_ITEM(list,j));
+			}
+			self->diagram->SetInitialConditions(self->nic, self->ic);
+		}
 	}
 	else if(strcmp(n, "mode") == 0) {
 		Py_INCREF(value);
@@ -1154,6 +1192,17 @@ static int pyBalBifurcationDiagram_setattro(pyBalBifurcationDiagram *self, PyObj
 			self->diagram->GetODESolver()->SetIntegrationMode(balBOTH);
 		else if(strcmp(v, "lyap") == 0 || strcmp(v, "lyapunov") == 0)
 			self->diagram->GetODESolver()->SetIntegrationMode(balLYAP);
+		else
+			err = -1;
+		Py_DECREF(value);
+	}
+	else if(strcmp(n, "diagram_mode") == 0) {
+		Py_INCREF(value);
+		char *v = PyString_AsString(value);
+		if(strcmp(v, "parameters") == 0)
+			self->diagram->SetMode(balPARAMS);
+		else if(strcmp(v, "IC") == 0 || strcmp(v, "ic") == 0)
+			self->diagram->SetMode(balIC);
 		else
 			err = -1;
 		Py_DECREF(value);

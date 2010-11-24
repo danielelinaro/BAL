@@ -190,6 +190,7 @@ class balBifurcationDiagram : public balObject {
   double** GetClassificationData() const;
 
   bool SetMode(int _mode);
+  int GetMode() const;
   void SetInitialConditions(int nx0, double **x0);
 
  protected:
