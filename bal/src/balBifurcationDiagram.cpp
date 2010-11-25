@@ -41,16 +41,36 @@ bool CompareBalClassificationEntries(balClassificationEntry *entry1, balClassifi
 
 /***** balClassificationEntry *****/
 
-balClassificationEntry::balClassificationEntry(balSolution *sol) {
-  n = sol->GetParameters()->GetNumber() + 1;
+balClassificationEntry::balClassificationEntry(balSolution *sol, int mode) {
+  int r, c, np, nx;
+  realtype *buffer;
+  np = sol->GetParameters()->GetNumber();
+  n = np; // number of parameters
+  if(mode == balIC) {
+    sol->GetSize(&r,&c);
+    nx = c-2;
+    n += 2*nx; // initial and final condition
+  }
+  n++; // classification
   data = new double[n];
   id = sol->GetID();
-  for(int i=0; i<n-1; i++)
+  for(int i=0; i<np; i++)
     data[i] = sol->GetParameters()->At(i);
-  if (sol->IsLyapunovMode())
+  switch(mode) {
+  case balLYAP:
     data[n-1] = sol->GetLyapunovExponents()[0]; //saving Maximal Lyapunov exponent (MLE)
-  else 	
+    break;
+  case balIC:
+    buffer = sol->GetData();
+    for(int i=0; i<nx; i++) {
+      data[np+i] = buffer[1+i];
+      data[np+nx+i] = buffer[(r-1)*c+1+i];
+    }
     data[n-1] = sol->GetNumberOfTurns();
+    break;
+  default:
+    data[n-1] = sol->GetNumberOfTurns();
+  }
 }
 
 balClassificationEntry::~balClassificationEntry() {
@@ -414,8 +434,6 @@ void balBifurcationDiagram::ComputeDiagramMultiThread() {
 }
 
 void balBifurcationDiagram::IntegrateAndEnqueue(balODESolver * sol, int solutionId) {
-  //if(solutionId > PROLOGUE)
-  //  printf("ID = %d\n", solutionId);
   sol->Solve();
   balSolution *solution = sol->GetSolution();
   solution->SetID(solutionId);
@@ -440,7 +458,7 @@ void balBifurcationDiagram::IntegrateAndEnqueue(balODESolver * sol, int solution
     if (solver->GetIntegrationMode() != balLYAP)
       solutions->push_back(solution);
     // insert a new classification into the list
-    classification->push_back(new balClassificationEntry(solution));
+    classification->push_back(new balClassificationEntry(solution,mode));
   }	
   
   if (solver->GetIntegrationMode() == balLYAP)

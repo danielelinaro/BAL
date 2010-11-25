@@ -48,11 +48,13 @@ class balBilinearInterp2D : public balObject {
   virtual void Destroy();
   /** Creates a balBilinInterp2D. */
   static balBilinearInterp2D * Create(double *x1v, double *x2v, double **yy, int mm, int nn);
+  static balBilinearInterp2D * Copy(balBilinearInterp2D *interp);
 
   double interp(double x1p, double x2p);
   
  protected:
   balBilinearInterp2D(double *x1v, double *x2v, double **yy, int mm, int nn);
+  balBilinearInterp2D(const balBilinearInterp2D & interp);
   ~balBilinearInterp2D();
   
  private:

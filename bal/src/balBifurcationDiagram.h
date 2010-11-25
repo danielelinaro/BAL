@@ -58,7 +58,7 @@ enum { balPARAMS, balIC };
  */
 class balClassificationEntry : public balObject {
  public:
-  balClassificationEntry(balSolution *sol);
+  balClassificationEntry(balSolution *sol, int mode = balPARAMS);
   virtual ~balClassificationEntry();
   int GetN() const;
   int GetID() const;

@@ -33,6 +33,14 @@ balBilinearInterp2D::balBilinearInterp2D(double *x1v, double *x2v, double **yy, 
   x2terp = balLinearInterp1D::Create(x2v,x2v,n);
 }
 
+balBilinearInterp2D::balBilinearInterp2D(const balBilinearInterp2D & interp) {
+  m = interp.m;
+  n = interp.n;
+  y = interp.y;
+  x1terp = balLinearInterp1D::Copy(interp.x1terp);
+  x2terp = balLinearInterp1D::Copy(interp.x2terp);
+}
+
 balBilinearInterp2D::~balBilinearInterp2D() {
   x1terp->Destroy();
   x2terp->Destroy();
@@ -48,6 +56,10 @@ void balBilinearInterp2D::Destroy() {
 
 balBilinearInterp2D * balBilinearInterp2D::Create(double *x1v, double *x2v, double **yy, int mm, int nn) {
   return new balBilinearInterp2D(x1v,x2v,yy,mm,nn);
+}
+
+balBilinearInterp2D * balBilinearInterp2D::Copy(balBilinearInterp2D *interp) {
+  return new balBilinearInterp2D(*interp);
 }
 
 double balBilinearInterp2D::interp(double x1p, double x2p) {

@@ -72,6 +72,7 @@ class balBaseInterp1D : public balObject {
   
  protected:
   balBaseInterp1D(double * x, const double *y, int length, int m);
+  balBaseInterp1D(const balBaseInterp1D & interp);
   ~balBaseInterp1D();
   
   virtual double rawinterp(int jlo, double x) = 0;
@@ -95,9 +96,12 @@ class balLinearInterp1D : public balBaseInterp1D {
   virtual void Destroy();
   /** Creates a balLinearInterp1D */
   static balLinearInterp1D * Create(double * xv, double * yv, int length);
-  
+  static balLinearInterp1D * Copy(balLinearInterp1D *interp);
+
  protected:
   balLinearInterp1D(double * xv, double * yv, int length);
+  balLinearInterp1D(const balLinearInterp1D & interp);
+
   ~balLinearInterp1D();
   
   virtual double rawinterp(int j, double x);
@@ -116,9 +120,11 @@ class balPolyInterp1D : public balBaseInterp1D {
   virtual void Destroy();
   /** Creates a balLinearInterp1D */
   static balPolyInterp1D * Create(double * xv, double * yv, int length, int m);
+  static balPolyInterp1D * Copy(balPolyInterp1D *interp);
   
  protected:
   balPolyInterp1D(double * xv, double * yv, int length, int m);
+  balPolyInterp1D(const balPolyInterp1D & interp);
   ~balPolyInterp1D();
   
   virtual double rawinterp(int j, double x);
@@ -140,9 +146,11 @@ class balSplineInterp1D : public balBaseInterp1D {
   virtual void Destroy();
   /** Creates a balLinearInterp1D */
   static balSplineInterp1D * Create(double * xv, double * yv, int length, double yp1=1.e99, double ypn=1.e99);
+  static balSplineInterp1D * Copy(balSplineInterp1D *interp);
   
  protected:
   balSplineInterp1D(double * xv, double * yv, int length, double yp1, double ypn);
+  balSplineInterp1D(const balSplineInterp1D & interp);
   ~balSplineInterp1D();
   
   void sety2(double *xv, double *yv, double yp1, double ypn);

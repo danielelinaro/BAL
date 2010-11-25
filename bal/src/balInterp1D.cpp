@@ -120,6 +120,16 @@ balBaseInterp1D::balBaseInterp1D(double * x, const double *y, int length, int m)
   dj = MIN(1, (int)pow((double)n,0.25));
 }
 
+balBaseInterp1D::balBaseInterp1D(const balBaseInterp1D & interp) {
+  n = interp.n;
+  mm = interp.mm;
+  xx = interp.xx;
+  yy = interp.yy;
+  jsav = 0;
+  cor = 0;
+  dj = MIN(1, (int)pow((double)n,0.25));
+}
+
 balBaseInterp1D::~balBaseInterp1D() {
 }
 
@@ -137,8 +147,15 @@ balLinearInterp1D * balLinearInterp1D::Create(double * xv, double * yv, int leng
   return new balLinearInterp1D(xv,yv,length);
 }
 
+balLinearInterp1D * balLinearInterp1D::Copy(balLinearInterp1D *interp) {
+  return new balLinearInterp1D(*interp);
+}
+
 balLinearInterp1D::balLinearInterp1D(double * xv, double * yv, int length) :
   balBaseInterp1D(xv,yv,length,2) {}
+
+balLinearInterp1D::balLinearInterp1D(const balLinearInterp1D & interp) :
+  balBaseInterp1D(interp) {}
 
 balLinearInterp1D::~balLinearInterp1D() {}
   
@@ -162,8 +179,17 @@ balPolyInterp1D * balPolyInterp1D::Create(double * xv, double * yv, int length, 
   return new balPolyInterp1D(xv,yv,length,m);
 }
 
+balPolyInterp1D * balPolyInterp1D::Copy(balPolyInterp1D *interp) {
+  return new balPolyInterp1D(*interp);
+}
+
 balPolyInterp1D::balPolyInterp1D(double * xv, double * yv, int length, int m) :
   balBaseInterp1D(xv,yv,length,m), dy(0.0) {}
+
+balPolyInterp1D::balPolyInterp1D(const balPolyInterp1D & interp) :
+  balBaseInterp1D(interp) {
+  dy = interp.dy;
+}
 
 balPolyInterp1D::~balPolyInterp1D() {}
 
@@ -229,11 +255,22 @@ void balSplineInterp1D::Destroy() {
 balSplineInterp1D * balSplineInterp1D::Create(double * xv, double * yv, int length, double yp1, double ypn) {
   return new balSplineInterp1D(xv,yv,length,yp1,ypn);
 }
+
+balSplineInterp1D * balSplineInterp1D::Copy(balSplineInterp1D *interp) {
+  return new balSplineInterp1D(*interp);
+}
   
 balSplineInterp1D::balSplineInterp1D(double * xv, double * yv, int length, double yp1, double ypn) :
   balBaseInterp1D(xv,yv,length,2) {
   y2 = new double[length];
   sety2(xv,yv,yp1,ypn);
+}
+
+balSplineInterp1D::balSplineInterp1D(const balSplineInterp1D & interp) :
+  balBaseInterp1D(interp) {
+  y2 = new double[n];
+  //sety2(xv,yv,yp1,ypn);
+  memcpy(y2,interp.y2,n*sizeof(double));
 }
 
 balSplineInterp1D::~balSplineInterp1D() { delete y2; }
