@@ -46,7 +46,8 @@ class balHindmarshRose : public balDynamicalSystem {
  public:
   virtual const char * GetClassName () const;
   static balHindmarshRose * Create ();
-  virtual balDynamicalSystem * Copy();
+  static balHindmarshRose * Copy (balHindmarshRose *hr);
+  virtual balDynamicalSystem * Clone() const;
   virtual void Destroy ();
   
   int RHS (realtype t, N_Vector x, N_Vector xdot, void * data);

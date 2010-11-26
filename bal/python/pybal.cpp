@@ -1141,14 +1141,14 @@ static int pyBalBifurcationDiagram_setattro(pyBalBifurcationDiagram *self, PyObj
 	}
 	else if(strcmp(n, "tstop") == 0) {
 		double tstop = PyFloat_AsDouble(value);
-		if(tstop > 0)
+		if(tstop >= 0)
 			self->diagram->GetODESolver()->SetFinalTime(tstop);
 		else
 			err = -1;
 	}
 	else if(strcmp(n, "ttran") == 0) {
 		double ttran = PyFloat_AsDouble(value);
-		if(ttran > 0)
+		if(ttran >= 0)
 			self->diagram->GetODESolver()->SetTransientDuration(ttran);
 		else
 			err = -1;
@@ -1273,7 +1273,7 @@ static PyObject * pyBalBifurcationDiagram_compute(pyBalBifurcationDiagram *self)
 	return Py_BuildValue("i",0);
 }
 
-static PyObject * pyBalBifurcationDiagram_classification(pyBalBifurcationDiagram *self, PyObject *args, PyObject *kwds) {
+static PyObject * pyBalBifurcationDiagram_summary(pyBalBifurcationDiagram *self, PyObject *args, PyObject *kwds) {
 	static char *kwlist[] = {"filename",NULL};
 	char *filename = NULL;
 	
@@ -1283,29 +1283,26 @@ static PyObject * pyBalBifurcationDiagram_classification(pyBalBifurcationDiagram
 	PyObject *result;
 
 	if(filename != NULL) {
-		result = (self->diagram->SaveClassificationData(filename) ? Py_True : Py_False);
+		result = (self->diagram->SaveSummaryData(filename) ? Py_True : Py_False);
 	}
 	else {
-		double **data = self->diagram->GetClassificationData();
-	
+		int size[2];
+		double **data = self->diagram->GetSummaryData(size);
 		if(data == NULL) {
 			result = Py_None;
 		}
 		else {
-			int nrows, ncols, i, j;
+			int i, j;
 			PyObject *row;
-			nrows = self->params->bifparams->GetTotalNumberOfTuples();
-			ncols = self->params->bifparams->GetNumber() + 1;
-		
-			result = PyList_New((Py_ssize_t) nrows);
-			for(i=0; i<nrows; i++) {
-				row = PyList_New((Py_ssize_t) ncols);
-				for(j=0; j<ncols-1; j++)
+			result = PyList_New((Py_ssize_t) size[0]);
+			for(i=0; i<size[0]; i++) {
+				row = PyList_New((Py_ssize_t) size[1]);
+				for(j=0; j<size[1]-1; j++)
 					PyList_SET_ITEM(row,j,Py_BuildValue("d",data[i][j]));
-				PyList_SET_ITEM(row,ncols-1,Py_BuildValue("i",(int)data[i][ncols-1]));
+				PyList_SET_ITEM(row,size[1]-1,Py_BuildValue("i",(int)data[i][size[1]-1]));
 				PyList_SET_ITEM(result,i,row);
 			}
-			for(i=0; i<nrows; i++)
+			for(i=0; i<size[0]; i++)
 				delete data[i];
 			delete data;
 		}
@@ -1315,7 +1312,7 @@ static PyObject * pyBalBifurcationDiagram_classification(pyBalBifurcationDiagram
 
 static PyMethodDef pyBalBifurcationDiagram_methods[] = {
 	{"run", (PyCFunction) pyBalBifurcationDiagram_compute, METH_NOARGS, "Compute the bifurcation diagram"},
-	{"classification", (PyCFunction) pyBalBifurcationDiagram_classification, 
+	{"summary", (PyCFunction) pyBalBifurcationDiagram_summary, 
 		METH_VARARGS | METH_KEYWORDS, "Return or save to file the bifurcation diagram"},
 	{NULL}	/* Sentinel */
 };

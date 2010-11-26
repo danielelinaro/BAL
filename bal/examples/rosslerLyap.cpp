@@ -37,7 +37,7 @@ int main(int argc, char *argv[]) {
   bifd->SetNumberOfThreads(argc > 1 ? atoi(argv[1]) : 2);
 	
   bifd->ComputeDiagram();
-  bifd->SaveClassificationData("Rossler2.classified");
+  bifd->SaveSummaryData("Rossler2.classified");
 	
   bifd->Destroy();
   ros->Destroy();

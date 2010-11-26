@@ -78,7 +78,7 @@ int main(int argc, char *argv[]) {
   bifd->SetMode(balIC);
   bifd->SetInitialConditions(nX0,X0);
   bifd->ComputeDiagram();
-  bifd->SaveClassificationData("hr-basin.classified");
+  bifd->SaveSummaryData("hr-basin.classified");
   bifd->Destroy();
   hr->Destroy();
   par->Destroy();

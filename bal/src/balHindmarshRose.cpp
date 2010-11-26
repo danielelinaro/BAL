@@ -52,7 +52,11 @@ balHindmarshRose * balHindmarshRose::Create () {
   return new balHindmarshRose;
 }
 
-balDynamicalSystem * balHindmarshRose::Copy() {
+balHindmarshRose * balHindmarshRose::Copy (balHindmarshRose *hr) {
+  return new balHindmarshRose(*hr);
+}
+
+balDynamicalSystem * balHindmarshRose::Clone() const {
   return new balHindmarshRose(*this);
 }
 

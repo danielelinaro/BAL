@@ -33,28 +33,12 @@ balLogger::balLogger() : opened(false), cols(-1), params(NULL) {}
 
 balLogger::~balLogger() {}
 
-bool balLogger::OpenFile() {
-  return false;
-}
-
-bool balLogger::CloseFile() {
-  return false;
-}
-
 void balLogger::SetFileIsOpen(bool open) {
   opened = open;
 }
 
 const char * balLogger::GetClassName () const {
   return "balLogger";
-}
-
-balLogger * balLogger::Create() {
-  return new balLogger;
-}
-
-void balLogger::Destroy() {
-  delete this;
 }
 
 const char * balLogger::GetFilename() const {
@@ -163,15 +147,8 @@ bool balLogger::SortAndWriteSolutionList(list <balSolution *> * sol_list) {
   return true;
 }
 
-bool balLogger::SetFilename(const char *fname, bool open) {
-  if(IsFileOpen())
-    CloseFile();
+void balLogger::SetFilename(const char *fname, bool compress) {
   strncpy(filename, fname, FILENAME_LENGTH);
-  if(open) {
-    opened = OpenFile();
-    return opened;
-  }
-  return true;
 }
 
 ///// BALH5LOGGER /////
@@ -191,46 +168,6 @@ void balH5Logger::Destroy() {
 balH5Logger::balH5Logger() {
   h5_fid = -1;
   chunk[0] = chunk[1] = -1;
-
-  htri_t avail;
-  herr_t status;
-  unsigned int filter_info;
-
-#ifdef DONTCOMPRESS
-  printf("Disabling compression...\n");
-  compressed = false;
-  return;
-#endif
-
-  // check if gzip compression is available
-  avail = H5Zfilter_avail (H5Z_FILTER_DEFLATE);
-  if (!avail) {
-    printf("Disabling compression...\n");
-    compressed = false;
-    return;
-  }
-  status = H5Zget_filter_info (H5Z_FILTER_DEFLATE, &filter_info);
-  if ( !(filter_info & H5Z_FILTER_CONFIG_ENCODE_ENABLED) ) {
-    printf("Disabling compression...\n");
-    compressed = false;
-    return;
-  }
-
-  // check for availability of the shuffle filter.
-  avail = H5Zfilter_avail(H5Z_FILTER_SHUFFLE);
-  if (!avail) {
-    printf("Disabling compression...\n");
-    compressed = false;
-    return;
-  }
-  status = H5Zget_filter_info (H5Z_FILTER_SHUFFLE, &filter_info);
-  if ( !(filter_info & H5Z_FILTER_CONFIG_ENCODE_ENABLED) ) {
-    printf("Disabling compression...\n");
-    compressed = false;
-    return;
-  }
-  // enable gzip compression
-  compressed = true;
 }
 
 balH5Logger::~balH5Logger() {
@@ -238,7 +175,54 @@ balH5Logger::~balH5Logger() {
     CloseFile();
 }
 
+void balH5Logger::SetFilename(const char * fname, bool compress) {
+  balLogger::SetFilename(fname,compress);
+
+  compressed = false;
+  if(compress) {
+    htri_t avail;
+    herr_t status;
+    unsigned int filter_info;
+
+    printf("Checking whether GZIP compression is available...");
+    // check if gzip compression is available
+    avail = H5Zfilter_avail (H5Z_FILTER_DEFLATE);
+    if (!avail) {
+      printf("\nGZIP compression is not available on this system.\n");
+      return;
+    }
+    printf(" ok.\nGetting filter info...");
+    status = H5Zget_filter_info (H5Z_FILTER_DEFLATE, &filter_info);
+    if ( !(filter_info & H5Z_FILTER_CONFIG_ENCODE_ENABLED) ) {
+      printf("\nUnable to get filter info: disabling compression.\n");
+      return;
+    }
+    
+    printf(" ok.\nChecking whether the shuffle filter is available...");
+    // check for availability of the shuffle filter.
+    avail = H5Zfilter_avail(H5Z_FILTER_SHUFFLE);
+    if (!avail) {
+      printf("\nThe shuffle filter is not available on this system.\n");
+      return;
+    }
+    printf(" ok.\nGetting filter info...");
+    status = H5Zget_filter_info (H5Z_FILTER_SHUFFLE, &filter_info);
+    if ( !(filter_info & H5Z_FILTER_CONFIG_ENCODE_ENABLED) ) {
+      printf("Unable to get filter info: disabling compression.\n");
+      return;
+    }
+    printf(" ok.\nCompression is enabled.\n");
+    // enable gzip compression
+    compressed = true;
+  }
+  else {
+    printf("Compression is disabled.\n");
+  }
+}
+
 bool balH5Logger::OpenFile() {
+  if(IsFileOpen()) CloseFile();
+
   h5_fid = H5Fcreate(GetFilename(), H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
   if(h5_fid == -1) {
     SetFileIsOpen(false);

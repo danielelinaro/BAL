@@ -63,8 +63,6 @@
 #define FILENAME_LENGTH (200)
 #define DATASETNAME_LENGTH (10)
 
-#define DONTCOMPRESS
-
 using std::list;
 
 /**
@@ -75,10 +73,8 @@ using std::list;
 class balLogger : public balObject {
  public:
   virtual const char * GetClassName () const;
-  static balLogger * Create();
-  virtual void Destroy();
   
-  virtual bool SetFilename(const char * fname, bool open = false);
+  virtual void SetFilename(const char * fname, bool compress = false);
   const char * GetFilename() const;
   void SetParameters(balParameters * p);
   balParameters * GetParameters() const;
@@ -96,8 +92,8 @@ class balLogger : public balObject {
  protected:
   balLogger();
   virtual ~balLogger();
-  virtual bool OpenFile();
-  virtual bool CloseFile();
+  virtual bool OpenFile() = 0;
+  virtual bool CloseFile() = 0;
   void SetFileIsOpen(bool open);
 
   virtual bool SortAndWriteSolutionList(list <balSolution *> * sol_list);
@@ -121,6 +117,7 @@ class balH5Logger : public balLogger {
   static balH5Logger * Create();
   virtual void Destroy();
   
+  virtual void SetFilename(const char * fname, bool compress = false);
   virtual bool SaveBuffer(realtype * buffer, int rows, int id = 1);
   
  protected:
@@ -136,7 +133,7 @@ class balH5Logger : public balLogger {
   hid_t dcpl;
   // chunk size
   hsize_t chunk[2];
-  // whether data compression should be enabled (default: yes)
+  // whether data compression should be enabled (default: no)
   bool compressed;
   // the name of the dataset in the H5 file
   char datasetname[DATASETNAME_LENGTH];

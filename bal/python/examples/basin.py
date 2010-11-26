@@ -23,4 +23,4 @@ bifdiag.x0 = [[2,-4,1.5],[0,-4,1.5]]
 bifdiag.nthreads = 2
 
 bifdiag.run()
-bifdiag.classification('hr.classified')
+bifdiag.summary('hr.classified')

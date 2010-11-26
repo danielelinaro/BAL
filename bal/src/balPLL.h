@@ -55,6 +55,8 @@ class balPLL : public balDynamicalSystem {
  public:
   virtual const char * GetClassName () const;
   static balPLL * Create ();
+  static balPLL * Copy(balPLL *pll);
+  virtual balDynamicalSystem * Clone() const;
   virtual void Destroy ();
   
   int RHS (realtype t, N_Vector X, N_Vector Xdot, void * data);

@@ -61,7 +61,8 @@ class balDynamicalSystem : public balObject {
  public:
   virtual const char * GetClassName () const;
   static balDynamicalSystem * Create ();
-  virtual balDynamicalSystem * Copy ();
+  static balDynamicalSystem * Copy (balDynamicalSystem *sys);
+  virtual balDynamicalSystem * Clone() const;
   virtual void Destroy ();
   
   virtual int RHS (realtype t, N_Vector x, N_Vector xdot, void * data);

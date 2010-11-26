@@ -58,7 +58,8 @@ class balEye : public balDynamicalSystem {
  public:
   virtual const char * GetClassName () const;
   static balEye * Create ();
-  virtual balDynamicalSystem * Copy();
+  static balEye * Copy (balEye *eye);
+  virtual balDynamicalSystem * Clone() const;
   virtual void Destroy ();
   
   int RHS (realtype t, N_Vector x, N_Vector xdot, void * data);

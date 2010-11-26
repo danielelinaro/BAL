@@ -35,13 +35,13 @@ void ResetColours(int d) {
   exit(1);
 }
 
-bool CompareBalClassificationEntries(balClassificationEntry *entry1, balClassificationEntry *entry2) {
+bool CompareBalSummaryEntries(balSummaryEntry *entry1, balSummaryEntry *entry2) {
   return entry1->GetID() < entry2->GetID();
 }
 
-/***** balClassificationEntry *****/
+/***** balSummaryEntry *****/
 
-balClassificationEntry::balClassificationEntry(balSolution *sol, int mode) {
+balSummaryEntry::balSummaryEntry(balSolution *sol, int mode) {
   int r, c, np, nx;
   realtype *buffer;
   np = sol->GetParameters()->GetNumber();
@@ -51,7 +51,7 @@ balClassificationEntry::balClassificationEntry(balSolution *sol, int mode) {
     nx = c-2;
     n += 2*nx; // initial and final condition
   }
-  n++; // classification
+  n++; // classification field
   data = new double[n];
   id = sol->GetID();
   for(int i=0; i<np; i++)
@@ -73,19 +73,19 @@ balClassificationEntry::balClassificationEntry(balSolution *sol, int mode) {
   }
 }
 
-balClassificationEntry::~balClassificationEntry() {
+balSummaryEntry::~balSummaryEntry() {
   delete data;
 }
 
-int balClassificationEntry::GetN() const {
+int balSummaryEntry::GetN() const {
   return n;
 }
 
-int balClassificationEntry::GetID() const {
+int balSummaryEntry::GetID() const {
   return id;
 }
 
-double* balClassificationEntry::GetData() const {
+double* balSummaryEntry::GetData() const {
   return data;
 }
 
@@ -112,11 +112,11 @@ balBifurcationDiagram::balBifurcationDiagram() {
   nthreads = 2;
   mode = balPARAMS;
   solutions = NULL;
-  classification = NULL;
+  summary = NULL;
   destroy_lists = false;
   nX0 = 0;
   X0 = NULL;
-  SetFilename("balBifurcationDiagram.h5",false);
+  //SetFilename("balBifurcationDiagram.h5",false,false);
   signal(SIGINT, ResetColours);
 }
 
@@ -136,7 +136,7 @@ balBifurcationDiagram::~balBifurcationDiagram() {
     solver->Destroy();
   if(destroy_lists) {
     delete solutions;
-    delete classification;
+    delete summary;
   }
 }
 
@@ -176,30 +176,30 @@ balODESolver * balBifurcationDiagram::GetODESolver() const {
   return solver;
 }
 
-void balBifurcationDiagram::SetFilename(const char * filename, bool openFile) {
-  logger->SetFilename(filename,openFile);
+void balBifurcationDiagram::SetFilename(const char * filename, bool compress) {
+  logger->SetFilename(filename,compress);
 }
 
 const char * balBifurcationDiagram::GetFilename() {
   return logger->GetFilename();
 }
 
-bool balBifurcationDiagram::SaveClassificationData(const char *filename) const {
+bool balBifurcationDiagram::SaveSummaryData(const char *filename) const {
   if(!destroy_lists)
     return false;
   
-  classification->sort(CompareBalClassificationEntries);
+  summary->sort(CompareBalSummaryEntries);
   
   int i;
   double *entry;
-  list<balClassificationEntry *>::iterator it;
+  list<balSummaryEntry *>::iterator it;
   FILE *fid;
   
   fid = fopen(filename,"w"); 
   if(fid == NULL)
     return false;
   
-  for(it=classification->begin(); it!=classification->end(); it++) {
+  for(it=summary->begin(); it!=summary->end(); it++) {
     entry = (*it)->GetData();
     for(i=0; i<(*it)->GetN()-1; i++)
       fprintf(fid, "%e ", entry[i]);
@@ -213,18 +213,23 @@ bool balBifurcationDiagram::SaveClassificationData(const char *filename) const {
   return true;
 }
 
-double** balBifurcationDiagram::GetClassificationData() const {
+double** balBifurcationDiagram::GetSummaryData(int *size) const {
   if(!destroy_lists)
     return NULL;
   
-  classification->sort(CompareBalClassificationEntries);
+  summary->sort(CompareBalSummaryEntries);
   
   int i, j;
   double **data, *entry;
-  list<balClassificationEntry *>::iterator it;
+  list<balSummaryEntry *>::iterator it;
 
-  data = new double*[classification->size()];
-  for(it=classification->begin(), i=0; it!=classification->end(); it++, i++) {
+  data = new double*[summary->size()];
+  it = summary->begin();
+  if(size != NULL) {
+    size[0] = summary->size();
+    size[1] = (*it)->GetN();
+  }
+  for(i=0; it!=summary->end(); it++, i++) {
     entry = (*it)->GetData();
     data[i] = new double[(*it)->GetN()];
     for(j=0; j<(*it)->GetN(); j++)
@@ -268,10 +273,10 @@ int balBifurcationDiagram::GetMode() const {
 void balBifurcationDiagram::ComputeDiagram() {
   if(destroy_lists) {
     delete solutions;
-    delete classification;
+    delete summary;
   }
   solutions = new list<balSolution *>;
-  classification = new list<balClassificationEntry *>;
+  summary = new list<balSummaryEntry *>;
   destroy_lists = true;
 
   /* this switch is really not necessary: it is safe to always *
@@ -300,7 +305,7 @@ void balBifurcationDiagram::ComputeDiagramSingleThread() {
     printf("%c%s", ESC, NORMAL);
     solver->Solve();
     solution = solver->GetSolution();
-    classification->push_back(new balClassificationEntry(solution));
+    summary->push_back(new balSummaryEntry(solution));
     logger->SaveSolution(solution);
     solution->Destroy();
     if(! restart_from_x0) {
@@ -457,8 +462,8 @@ void balBifurcationDiagram::IntegrateAndEnqueue(balODESolver * sol, int solution
     // insert a new solution into the list
     if (solver->GetIntegrationMode() != balLYAP)
       solutions->push_back(solution);
-    // insert a new classification into the list
-    classification->push_back(new balClassificationEntry(solution,mode));
+    // insert a new summary into the list
+    summary->push_back(new balSummaryEntry(solution,mode));
   }	
   
   if (solver->GetIntegrationMode() == balLYAP)

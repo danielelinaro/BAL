@@ -64,7 +64,7 @@ int main(int argc, char *argv[]) {
   bifd->SetNumberOfThreads(argc > 1 ? atoi(argv[1]) : 2);
   bifd->RestartFromX0(true);
   bifd->ComputeDiagram();
-  bifd->SaveClassificationData("dynasty.classified");
+  bifd->SaveSummaryData("dynasty.classified");
 
   bifd->Destroy();
   dynasty->Destroy();

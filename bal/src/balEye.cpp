@@ -79,12 +79,16 @@ balEye * balEye::Create () {
   return new balEye;
 }
 
+balDynamicalSystem * balEye::Clone() const {
+  return new balEye(*this);
+}
+
 void balEye::Destroy () {
   delete this;
 }
 
-balDynamicalSystem * balEye::Copy() {
-  return new balEye(*this);
+balEye * balEye::Copy (balEye *eye) {
+  return new balEye(*eye);
 }
   
 const char * balEye::GetClassName () const { 

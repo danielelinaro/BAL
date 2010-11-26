@@ -53,13 +53,13 @@ void ResetColours(int d);
 enum { balPARAMS, balIC };
 
 /**
- * \class balClassificationEntry
- * \brief Object used to store an entry of the classification list.
+ * \class balSummaryEntry
+ * \brief Object used to store an entry of the summary list.
  */
-class balClassificationEntry : public balObject {
+class balSummaryEntry : public balObject {
  public:
-  balClassificationEntry(balSolution *sol, int mode = balPARAMS);
-  virtual ~balClassificationEntry();
+  balSummaryEntry(balSolution *sol, int mode = balPARAMS);
+  virtual ~balSummaryEntry();
   int GetN() const;
   int GetID() const;
   double* GetData() const;
@@ -70,7 +70,7 @@ class balClassificationEntry : public balObject {
   int id;
 };
 
-bool CompareBalClassificationEntry(balClassificationEntry *entry1, balClassificationEntry *entry2);
+bool CompareBalSummaryEntry(balSummaryEntry *entry1, balSummaryEntry *entry2);
 
 /**
  * \class balBifurcationDiagram
@@ -144,10 +144,9 @@ class balBifurcationDiagram : public balObject {
   /**
    * Sets the name of the file where data will be saved.
    * @param filename File where the bifurcation diagram will be saved.
-   * @param openFile Flag that tells wheter the file should be opened immediately
-   * or only when data is ready to be written.
+   * @param compress Flag that tells wheter the file should be compressed.
    */
-  void SetFilename(const char * filename, bool openFile = true);
+  void SetFilename(const char * filename, bool compress = false);
 
   /**
    * @return The name of the file where data is saved.
@@ -186,8 +185,8 @@ class balBifurcationDiagram : public balObject {
    */
   int GetNumberOfThreads() const;
 
-  bool SaveClassificationData(const char *filename) const;
-  double** GetClassificationData() const;
+  bool SaveSummaryData(const char *filename) const;
+  double** GetSummaryData(int *size = NULL) const;
 
   bool SetMode(int _mode);
   int GetMode() const;
@@ -202,7 +201,7 @@ class balBifurcationDiagram : public balObject {
   //void ComputeDiagramSingleThread();
   void ComputeDiagramMultiThread();
   void IntegrateAndEnqueue(balODESolver *sol, int solutionId);
-  double* BuildClassificationEntry(balSolution *sol);
+  double* BuildSummaryEntry(balSolution *sol);
 
   /** The ODE solver used to integrate the system */
   balODESolver * solver;
@@ -246,15 +245,15 @@ class balBifurcationDiagram : public balObject {
    */
   list<balSolution *> *solutions;
   /**
-   * A list containing the classification of the bifurcation diagram in
+   * A list containing the summary of the bifurcation diagram in
    * terms of number of turns of the solution. Each entry contains
    * (n+1) values, where n is the number of parameters of the system.
    * The first n values are the values of the parameters, the last value
    * is the number of turns of the limit cycle. The value '0' corresponds
    * to an equilibrium solution.
    */
-  list<balClassificationEntry *> *classification;
-  /** tells whether solutions and classification have been allocated */
+  list<balSummaryEntry *> *summary;
+  /** tells whether solutions and summary have been allocated */
   bool destroy_lists;
 
   boost::thread * logger_thread;

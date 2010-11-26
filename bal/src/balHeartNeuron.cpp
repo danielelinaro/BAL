@@ -50,7 +50,15 @@ balHeartNeuron::~balHeartNeuron(){
 }
 
 balHeartNeuron * balHeartNeuron::Create () {
-    return new balHeartNeuron;
+  return new balHeartNeuron;
+}
+
+balHeartNeuron * balHeartNeuron::Copy (balHeartNeuron *hn) {
+  return new balHeartNeuron(*hn);
+}
+
+balDynamicalSystem * balHeartNeuron::Clone() const {
+  return new balHeartNeuron(*this);
 }
 
 void balHeartNeuron::Destroy () {

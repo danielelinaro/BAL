@@ -42,6 +42,14 @@ balPLL * balPLL::Create () {
   return new balPLL;
 }
 
+balPLL * balPLL::Copy(balPLL *pll) {
+  return new balPLL(*pll);
+}
+
+balDynamicalSystem * balPLL::Clone() const {
+  return new balPLL(*this);
+}
+
 void balPLL::Destroy () {
   delete this;
 }

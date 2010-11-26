@@ -49,7 +49,11 @@ balLorenz * balLorenz::Create () {
   return new balLorenz;
 }
 
-balDynamicalSystem * balLorenz::Copy() {
+balLorenz * balLorenz::Copy (balLorenz *lor) {
+  return new balLorenz(*lor);
+}
+
+balDynamicalSystem * balLorenz::Clone() const {
   return new balLorenz(*this);
 }
 

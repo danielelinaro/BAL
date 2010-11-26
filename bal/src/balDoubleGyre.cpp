@@ -48,7 +48,11 @@ balDoubleGyre * balDoubleGyre::Create () {
   return new balDoubleGyre;
 }
 
-balDynamicalSystem * balDoubleGyre::Copy() {
+balDoubleGyre * balDoubleGyre::Copy(balDoubleGyre *gyre) {
+  return new balDoubleGyre(*gyre);
+}
+
+balDynamicalSystem * balDoubleGyre::Clone() const {
   return new balDoubleGyre(*this);
 }
 

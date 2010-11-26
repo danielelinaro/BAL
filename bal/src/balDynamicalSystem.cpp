@@ -72,7 +72,11 @@ balDynamicalSystem * balDynamicalSystem::Create () {
   return new balDynamicalSystem;
 }
 
-balDynamicalSystem * balDynamicalSystem::Copy () {
+balDynamicalSystem * balDynamicalSystem::Copy (balDynamicalSystem *sys) {
+  return new balDynamicalSystem(*sys);
+}
+
+balDynamicalSystem * balDynamicalSystem::Clone() const {
   return new balDynamicalSystem(*this);
 }
 

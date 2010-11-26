@@ -61,7 +61,7 @@ int main(int argc, char *argv[]) {
   bifd->SetNumberOfThreads(argc > 1 ? atoi(argv[1]) : 2);
   
   bifd->ComputeDiagram();
-  bifd->SaveClassificationData("LyapDiagTest.classified");
+  bifd->SaveSummaryData("LyapDiagTest.classified");
 
   bifd->Destroy();
   hr->Destroy();

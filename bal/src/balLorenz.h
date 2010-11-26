@@ -42,7 +42,8 @@ class balLorenz : public balDynamicalSystem {
  public:
   virtual const char * GetClassName () const;
   static balLorenz * Create ();
-  virtual balDynamicalSystem * Copy();
+  static balLorenz * Copy (balLorenz *lor);
+  virtual balDynamicalSystem * Clone() const;
   virtual void Destroy ();
   
   int RHS (realtype t, N_Vector x, N_Vector xdot, void * data);

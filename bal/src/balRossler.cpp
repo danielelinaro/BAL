@@ -52,7 +52,11 @@ balRossler * balRossler::Create () {
   return new balRossler;
 }
 
-balDynamicalSystem * balRossler::Copy() {
+balRossler * balRossler::Copy (balRossler *ros) {
+  return new balRossler(*ros);
+}
+
+balDynamicalSystem * balRossler::Clone() const {
   return new balRossler(*this);
 }
 

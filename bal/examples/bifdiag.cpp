@@ -31,8 +31,7 @@
 
 // TEST balBifurcationDiagram
 int main(int argc, char *argv[]) {
-
-  int steps[4] = {29,1,1,1};
+  int steps[4] = {100,1,1,1};
   realtype x0[3] = {0.5,0.5,0.5};
   balBifurcationParameters * bp = balBifurcationParameters::Create();
   bp->SetNumber(4);
@@ -46,6 +45,7 @@ int main(int argc, char *argv[]) {
   hr->SetParameters(bp);
   balBifurcationDiagram * bifd = balBifurcationDiagram::Create();
   bifd->SetDynamicalSystem(hr);
+  bifd->RestartFromX0(true);
   bifd->GetODESolver()->SetIntegrationMode(balEVENTS);
   bifd->GetODESolver()->HaltAtEquilibrium(true);
   bifd->GetODESolver()->HaltAtCycle(true);
@@ -53,11 +53,12 @@ int main(int argc, char *argv[]) {
   bifd->GetODESolver()->SetFinalTime(1e4);
   bifd->GetODESolver()->SetMaxNumberOfIntersections(500);
   bifd->GetODESolver()->SetX0(x0);
-  bifd->SetFilename("hr.h5");
+  bifd->SetFilename("hr_comp.h5",true);
   bifd->SetNumberOfThreads(argc > 1 ? atoi(argv[1]) : 2);
+  bifd->SetNumberOfThreads(1);
 
   bifd->ComputeDiagram();
-  bifd->SaveClassificationData("hr.classified");
+  bifd->SaveSummaryData("hr_comp.classified");
 
   bifd->Destroy();
   hr->Destroy();

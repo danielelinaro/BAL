@@ -55,7 +55,11 @@ balDynasty * balDynasty::Create () {
   return new balDynasty;
 }
 
-balDynamicalSystem * balDynasty::Copy() {
+balDynasty * balDynasty::Copy(balDynasty *dynasty) {
+  return new balDynasty(*dynasty);
+}
+
+balDynamicalSystem * balDynasty::Clone() const {
   return new balDynasty(*this);
 }
 

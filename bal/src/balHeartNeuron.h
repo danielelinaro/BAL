@@ -44,6 +44,8 @@ class balHeartNeuron : public balDynamicalSystem {
  public:
   virtual const char * GetClassName () const;
   static balHeartNeuron * Create ();
+  static balHeartNeuron * Copy(balHeartNeuron * hn);
+  virtual balDynamicalSystem * Clone() const;
   virtual void Destroy ();
   
   int RHS (realtype t, N_Vector x, N_Vector xdot, void * data);

@@ -19,4 +19,4 @@ bifdiag.x0 = [0.5,0.5,0.5]
 bifdiag.nthreads = 2
 
 bifdiag.run()
-bifdiag.classification('hr.lyap')
+bifdiag.summary('hr.lyap')

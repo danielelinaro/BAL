@@ -43,7 +43,8 @@ class balDoubleGyre : public balDynamicalSystem {
  public:
   virtual const char * GetClassName () const;
   static balDoubleGyre * Create ();
-  virtual balDynamicalSystem * Copy();
+  static balDoubleGyre * Copy(balDoubleGyre *gyre);
+  virtual balDynamicalSystem * Clone() const;
   virtual void Destroy ();
   
   int RHS (realtype t, N_Vector x, N_Vector xdot, void * data);

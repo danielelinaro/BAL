@@ -88,7 +88,7 @@ balODESolver::balODESolver(const balODESolver& solver) {
   delete_buffer = false;
   rows = 0;
   nvectors_allocated = false;
-  SetDynamicalSystem((solver.GetDynamicalSystem())->Copy());
+  SetDynamicalSystem((solver.GetDynamicalSystem())->Clone());
   for(i=0; i<dynsys->GetDimension(); i++)
     Ith(x0,i) = Ith(solver.x0,i);
   
