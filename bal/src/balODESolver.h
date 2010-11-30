@@ -198,8 +198,8 @@ class balODESolver : public balObject {
   void SetX0(N_Vector X0, int n = -1);
   void SetX0(realtype * X0, int n = -1);
   
-  bool Setup();
-  bool Solve();
+  virtual bool Setup();
+  virtual bool Solve();
   
  protected:
   balODESolver();
