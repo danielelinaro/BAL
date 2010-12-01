@@ -2,6 +2,7 @@
 
 from pybal import bal
 import numpy as np
+import sys
 
 def createGrid(xlim,ylim,n,delta):
     dx = np.diff(xlim)/(n[0]-1)
@@ -47,7 +48,7 @@ par.setpars([A,omega,eps])
 
 xlim = [0.,2.]
 ylim = [0.,1.]
-n = [50,50]
+n = [10,10]
 N = np.prod(n)
 delta = [.005,.005]
 X0 = createGrid(xlim,ylim,n,delta)
@@ -58,23 +59,25 @@ bifdiag.diagram_mode = 'ic'
 bifdiag.equilbreak = False
 bifdiag.cyclebreak = False
 bifdiag.t0 = T0
-bifdiag.ttran = T-dt
+bifdiag.ttran = T0
 bifdiag.tstop = T
 bifdiag.dt = dt
 bifdiag.x0 = X0.tolist()
-bifdiag.nthreads = 4
+bifdiag.nthreads = 16
 
 bifdiag.run()
 bifdiag.summary('gyre.ic')
 data = np.loadtxt('gyre.ic')
 X1 = data[:,5:7]
 
-print('Computing finite time Lyapunov exponents...')
+sys.stdout.write('Computing finite time Lyapunov exponents...')
 ftle = np.zeros(N)
 for k in range(N):
     ftle[k] = computeFTLE(X0[3*k:3*(k+1)],X1[3*k:3*(k+1)],T)
-    
+sys.stdout.write(' done\n')
+
 buffer = np.zeros((N,3))
 buffer[:,0:2] = X0[::3]
 buffer[:,2] = ftle
-np.savetxt('ftle.dat',buffer,'%.6f')
+filename = 'ftle_' + str(n[0]) + 'x' + str(n[1]) + '_T0=' + str(T0) + '_T=' + str(T) + '.dat'
+np.savetxt(filename,buffer,'%.6f')

@@ -1303,9 +1303,7 @@ static PyObject * pyBalBifurcationDiagram_summary(pyBalBifurcationDiagram *self,
 	PyObject *result;
 
 	if(filename != NULL) {
-		printf("Saving summary to file...");
 		result = (self->diagram->SaveSummaryData(filename) ? Py_True : Py_False);
-		printf(" done.\n");
 	}
 	else {
 		int size[2];

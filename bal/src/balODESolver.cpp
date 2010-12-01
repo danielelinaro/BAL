@@ -48,7 +48,9 @@ balODESolver::balODESolver() {
   buffer = NULL;
   delete_buffer = false;
   events = NULL;
+  delete_events = false;
   events_constraints = NULL;
+  delete_events_constraints = false;
   dynsys = NULL;
   params = NULL;
   reltol = RTOL;
@@ -89,10 +91,10 @@ balODESolver::balODESolver(const balODESolver& solver) {
   delete_buffer = false;
   rows = 0;
   nvectors_allocated = false;
+  delete_events = delete_events_constraints = false;
   SetDynamicalSystem((solver.GetDynamicalSystem())->Clone());
   for(i=0; i<dynsys->GetDimension(); i++)
     Ith(x0,i) = Ith(solver.x0,i);
-  
   reltol = solver.GetRelativeTolerance();
   abstol = solver.GetAbsoluteTolerance();
   mode = solver.GetIntegrationMode();
@@ -127,10 +129,10 @@ balODESolver::~balODESolver() {
   if(delete_buffer || buffer != NULL) {
     delete buffer;
   }
-  if(events != NULL) {
+  if(delete_events) {
     delete events;
   }
-  if(events_constraints != NULL) {
+  if(delete_events_constraints) {
     delete events_constraints;
   }
   if(nvectors_allocated) {
@@ -143,10 +145,8 @@ balODESolver::~balODESolver() {
     CVodeFree(&cvode_mem);
   }
   fclose(errfp);
-
-  if(delete_lyapunov_exponents){
+  if(delete_lyapunov_exponents)
     delete lyapunov_exponents;
-  }
 }
 
 double * balODESolver::GetBuffer() const {
@@ -166,15 +166,25 @@ void balODESolver::SetDynamicalSystem(balDynamicalSystem * ds) {
   if(ds != NULL) {
     dynsys = ds;
     neq	= dynsys->GetDimension();
+    if(delete_events) {
+      delete events;
+      delete_events = false;
+    }
+    if(delete_events_constraints) {
+      delete events_constraints;
+      delete_events_constraints = false;
+    }
     if(dynsys->HasEvents()) {
       nev = dynsys->GetNumberOfEvents();
       events = new int[nev];
+      delete_events = true;
       if(dynsys->HasEventsConstraints()) {
 	// if constraints are presents, their number must be equal to the
 	// number of events. if, for some reason, the i-th constraint makes
 	// no sense, then it is sufficient that the dynamical system class
 	// always return events_constraints[i] = 1.
 	events_constraints = new int[nev];
+	delete_events_constraints = true;
       }
     }
     params = dynsys->GetParameters();

@@ -48,6 +48,8 @@
 
 using std::list;
 
+#define DEBUG
+
 void ResetColours(int d);
 
 enum { balPARAMS, balIC };

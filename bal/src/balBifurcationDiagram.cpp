@@ -316,8 +316,6 @@ void balBifurcationDiagram::ComputeDiagramSingleThread() {
 }
 */
 
-int PROLOGUE;
-
 void balBifurcationDiagram::ComputeDiagramMultiThread() {
   int i, idx, cnt, solutionId;
   // the total number of integrations
@@ -351,7 +349,6 @@ void balBifurcationDiagram::ComputeDiagramMultiThread() {
   
   nloops = total / nthreads;
   prologue = total % nthreads;
-  PROLOGUE = prologue;
 
   /**
    * launching the thread of the writing routine: it activates only when list size >= LIST_MAX_SIZE
@@ -366,7 +363,14 @@ void balBifurcationDiagram::ComputeDiagramMultiThread() {
   for(cnt = 0, solutionId = 1; cnt < prologue; cnt++, solutionId++) {
     IntegrateAndEnqueue(solver,solutionId);
     printf("%c%s", ESC, GREEN);
+#ifdef DEBUG
+    if(mode == balIC)
+      printf("[%05d/%05d]\r", idx+1, total);
+    else
+      printf("[%05d/%05d]\r", cnt+1, total);
+#else
     printf("[%05d/%05d]\r", cnt+1, total);
+#endif
     printf("%c%s", ESC, NORMAL); fflush(stdout);
     switch(mode) {
     case balPARAMS:
@@ -413,7 +417,14 @@ void balBifurcationDiagram::ComputeDiagramMultiThread() {
     for (i = 0; i < nthreads; i++) {
       threads[i]->join();
       printf("%c%s", ESC, GREEN);
+#ifdef DEBUG
+      if(mode == balIC)
+	printf("[%05d/%05d]\r", idx-nthreads+i+1, total);
+      else
+	printf("[%05d/%05d]\r", (prologue + cnt*nthreads + i + 1), total);
+#else
       printf("[%05d/%05d]\r", (prologue + cnt*nthreads + i + 1), total);
+#endif
       printf("%c%s", ESC, NORMAL); fflush(stdout);
     }
   }
@@ -427,8 +438,8 @@ void balBifurcationDiagram::ComputeDiagramMultiThread() {
     lsol[i]->Destroy();
     lpar[i]->Destroy();
   }
-  delete lsol;
-  delete lpar;
+  delete [] lsol;
+  delete [] lpar;
 
   if (solver->GetIntegrationMode() != balLYAP) {
     /* interrupting logger_thread */

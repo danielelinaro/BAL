@@ -283,9 +283,11 @@ class balODESolver : public balObject {
   /** Event location array (each element has value 1 when the corresponding
    * event has been located */
   int *events;
+  bool delete_events;
   /** Constraints on the location of events */
   int *events_constraints;
-  
+  bool delete_events_constraints;
+
   /** Initial state */
   N_Vector x0; // SG
   /** Current state */
