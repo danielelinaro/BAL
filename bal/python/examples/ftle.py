@@ -34,7 +34,7 @@ def computeFTLE(X0,X1,T):
     ftle = 1./T*np.log(np.sqrt(np.max(w)))
     return ftle
 
-T0 = 0
+T0 = 5
 T = 15
 dt = 0.01
 gyre = bal.DynamicalSystem()
@@ -59,7 +59,7 @@ bifdiag.diagram_mode = 'ic'
 bifdiag.equilbreak = False
 bifdiag.cyclebreak = False
 bifdiag.t0 = T0
-bifdiag.ttran = T0
+bifdiag.ttran = 1
 bifdiag.tstop = T
 bifdiag.dt = dt
 bifdiag.x0 = X0.tolist()

@@ -603,7 +603,7 @@ void balODESolver::SkipTransient(bool *equilibrium, bool *error) {
   *equilibrium = false;
   *error = false;
 
-  tout = t0 + ttran; // the duration of the transient is relative to t0
+  tout = t0 + ttran;
   while (t < tout) {
     flag = CVode (cvode_mem, tout, x, &t, CV_NORMAL);
     if (flag < 0 && flag != CV_TOO_MUCH_WORK && (flag != CV_ILL_INPUT || mode == balTRAJ)) {
@@ -773,10 +773,10 @@ bool balODESolver::ResetCVode() {
   }
 
 #ifdef CVODE25
-  flag = CVodeReInit (cvode_mem, balDynamicalSystem::RHSWrapper, 0.0, x, CV_SS, reltol, &abstol);
+  flag = CVodeReInit (cvode_mem, balDynamicalSystem::RHSWrapper, t0, x, CV_SS, reltol, &abstol);
 #endif
 #ifdef CVODE26:
-  flag = CVodeReInit (cvode_mem, 0.0, x);
+  flag = CVodeReInit (cvode_mem, t0, x);
 #endif
   if (flag != CV_SUCCESS) {
     fprintf (stderr, "Error on CVodeReInit.\n");
