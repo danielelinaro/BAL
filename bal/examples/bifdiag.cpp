@@ -31,7 +31,7 @@
 
 // TEST balBifurcationDiagram
 int main(int argc, char *argv[]) {
-  int steps[4] = {100,1,1,1};
+  int steps[4] = {10,1,1,1};
   realtype x0[3] = {0.5,0.5,0.5};
   balBifurcationParameters * bp = balBifurcationParameters::Create();
   bp->SetNumber(4);
@@ -46,10 +46,11 @@ int main(int argc, char *argv[]) {
   balBifurcationDiagram * bifd = balBifurcationDiagram::Create();
   bifd->SetDynamicalSystem(hr);
   bifd->RestartFromX0(true);
-  bifd->GetODESolver()->SetIntegrationMode(balEVENTS);
+  bifd->GetODESolver()->SetIntegrationMode(balBOTH);
   bifd->GetODESolver()->HaltAtEquilibrium(true);
   bifd->GetODESolver()->HaltAtCycle(true);
-  bifd->GetODESolver()->SetTransientDuration(5e3);
+  bifd->GetODESolver()->SetInitialTime(10.);
+  bifd->GetODESolver()->SetTransientDuration(10);
   bifd->GetODESolver()->SetFinalTime(1e4);
   bifd->GetODESolver()->SetMaxNumberOfIntersections(500);
   bifd->GetODESolver()->SetX0(x0);

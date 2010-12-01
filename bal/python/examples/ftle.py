@@ -28,54 +28,53 @@ def computeFTLE(X0,X1,T):
     dy = X0[2,1] - X0[0,1]
     J = np.array([[(X1[1,0]-X1[0,0])/dx,(X1[2,0]-X1[0,0])/dy],\
                   [(X1[1,1]-X1[0,1])/dx,(X1[2,1]-X1[0,1])/dy]])
-    #print J
     delta = np.dot(J.transpose(),J)
     w,v = np.linalg.eig(delta)
-    ftle = 1./T * np.log(np.sqrt(np.max(w)))
+    ftle = 1./T*np.log(np.sqrt(np.max(w)))
     return ftle
 
-outfile = 'gyre.h5'
+T0 = 0
 T = 15
-
+dt = 0.01
 gyre = bal.DynamicalSystem()
 gyre.create('balDoubleGyre')
 
-A = 0.25
+A = 0.1
 omega = 2*np.pi/10
-eps = 0.1
+eps = 0.25
 par = bal.Parameters(gyre.npar)
 par.setpars([A,omega,eps])
 
 xlim = [0.,2.]
 ylim = [0.,1.]
-#n = [201,101]
-n = [5,5]
+n = [50,50]
 N = np.prod(n)
-delta = [.001,.001]
+delta = [.005,.005]
 X0 = createGrid(xlim,ylim,n,delta)
 bifdiag = bal.BifurcationDiagram(gyre,par)
-bifdiag.outfile = outfile
+bifdiag.outfile = 'gyre.h5'
 bifdiag.mode = 'trajectory'
 bifdiag.diagram_mode = 'ic'
 bifdiag.equilbreak = False
 bifdiag.cyclebreak = False
-bifdiag.ttran = 0
+bifdiag.t0 = T0
+bifdiag.ttran = T-dt
 bifdiag.tstop = T
-bifdiag.dt = 0.05
+bifdiag.dt = dt
 bifdiag.x0 = X0.tolist()
-bifdiag.nthreads = 2
+bifdiag.nthreads = 4
 
 bifdiag.run()
 bifdiag.summary('gyre.ic')
 data = np.loadtxt('gyre.ic')
 X1 = data[:,5:7]
 
-#print('Computing finite time Lyapunov exponents...')
-#ftle = np.zeros(N)
-#for k in range(N):
-#    ftle[k] = computeFTLE(X0[3*k:3*(k+1)],X1[3*k:3*(k+1)],T)
+print('Computing finite time Lyapunov exponents...')
+ftle = np.zeros(N)
+for k in range(N):
+    ftle[k] = computeFTLE(X0[3*k:3*(k+1)],X1[3*k:3*(k+1)],T)
     
-#buffer = np.zeros((N,3))
-#buffer[:,0:2] = X0[::3]
-#buffer[:,2] = ftle
-#np.savetxt('ftle.dat',buffer,'%.6f')
+buffer = np.zeros((N,3))
+buffer[:,0:2] = X0[::3]
+buffer[:,2] = ftle
+np.savetxt('ftle.dat',buffer,'%.6f')

@@ -55,7 +55,8 @@ balODESolver::balODESolver() {
   abstol = ATOL;
   mode = balTRAJ;
   stiff = true;
-  t = 0.0;
+  t0 = 0.0;
+  t = t0;
   tstep = STEP;
   ttran = T_TRAN;
   tfinal = T_END;
@@ -96,7 +97,8 @@ balODESolver::balODESolver(const balODESolver& solver) {
   abstol = solver.GetAbsoluteTolerance();
   mode = solver.GetIntegrationMode();
   stiff = solver.stiff;
-  t = 0.0;
+  t0 = solver.t0;
+  t = t0;
   tstep = solver.GetTimeStep();
   ttran = solver.GetTransientDuration();
   tfinal = solver.GetFinalTime();
@@ -218,6 +220,15 @@ balSolution * balODESolver::GetSolution() const {
   else 
     solution->SetNumberOfTurns(nturns);
   return solution;
+}
+
+realtype balODESolver::GetInitialTime() const {
+  return t0;
+}
+
+void balODESolver::SetInitialTime(realtype T0) {
+  if(T0 >= 0)
+    t0 = T0;
 }
 
 realtype balODESolver::GetTransientDuration () const {
@@ -534,7 +545,7 @@ bool balODESolver::AllocateSolutionBuffer() {
       lrows = (int) ceil ((tfinal - ttran) / tstep);
       // the number of detected intersections is increased only after
       // transient evolution.
-      if(lrows < 0) 
+      if(lrows < 0)
 	lrows = 2;
       else
 	lrows += max_intersections + 2;
@@ -551,7 +562,7 @@ bool balODESolver::AllocateSolutionBuffer() {
 }
 
 void balODESolver::ResetInitialCondition() {
-  t = 0.0;
+  t = t0;
   for(int i=0; i<neq; i++) {
     Ith(x,i) = Ith(x0,i);
   }
@@ -578,11 +589,13 @@ void balODESolver::ChangeCurrentLabel(int lbl) {
 
 void balODESolver::SkipTransient(bool *equilibrium, bool *error) {
   int flag;
+  realtype tout;
   *equilibrium = false;
   *error = false;
 
-  while (t < ttran) {
-    flag = CVode (cvode_mem, ttran, x, &t, CV_NORMAL);
+  tout = t0 + ttran; // the duration of the transient is relative to t0
+  while (t < tout) {
+    flag = CVode (cvode_mem, tout, x, &t, CV_NORMAL);
     if (flag < 0 && flag != CV_TOO_MUCH_WORK && (flag != CV_ILL_INPUT || mode == balTRAJ)) {
       *error = true;
       break;
@@ -704,21 +717,6 @@ bool balODESolver::GramSchmidtOrthonorm(realtype * x, realtype * xnorm, realtype
       xnorm[n*i+k] = tmp[k]/znorm[i];
   }
 
-  /*
-#ifdef DEBUG
-  fprintf(stderr, "norms: %e %e %e\n", Norm(n,xnorm), Norm(n,xnorm+n), Norm(n,xnorm+2*n));
-  fprintf(stderr, "dots: %e %e %e\n", DotProduct(n,xnorm,xnorm+n), DotProduct(n,xnorm,xnorm+2*n), DotProduct(n,xnorm+n,xnorm+2*n));
-#endif
-  */
-
-  /*
-  for(i=0; i<n; i++) {
-    for(j=0; j<n; j++)
-      fprintf(stderr, "%f ", xnorm[i*n+j]);
-    fprintf(stderr, "\n");
-  }
-  */
-
   delete tmp;
   return true;
 } 
@@ -807,13 +805,8 @@ bool balODESolver::Solve() {
     retval = SolveWithEvents();
     break;
   case balLYAP:
-#ifdef DANIELE
     retval = SolveWithoutEventsLyapunov();
     break;
-#else
-    retval = SolveLyapunov();
-    break;
-#endif
   }
   return retval;
 }
@@ -870,8 +863,8 @@ bool balODESolver::SolveWithoutEventsLyapunov() {
   
   /************* TRAJECTORY *****************/
   if(!err) {
-    tout = ttran + lyap_tstep;
-    while (tout < tfinal+lyap_tstep) {
+    tout = t0 + ttran + lyap_tstep;
+    while (tout < t0+tfinal+lyap_tstep) {
       // the integrator must be re-initialised every time the state is modified
 #ifdef CVODE25
       flag = CVodeReInit (cvode_mem, balDynamicalSystem::RHSWrapper, t, x, CV_SS, reltol, &abstol);
@@ -930,7 +923,9 @@ bool balODESolver::SolveWithoutEventsLyapunov() {
   return true;
 }
 
+/*** DEPRECATED ***/
 bool balODESolver::SolveLyapunov() {
+  fprintf(stderr, "balODESolver::SolveLyapunov>> This function is deprecated.\n");
   SetIntegrationMode(balTRAJ);
 
   int i;
@@ -1033,7 +1028,7 @@ bool balODESolver::SolveWithoutEvents() {
   /************* TRAJECTORY *****************/
   if(!(eq && halt_at_equilibrium) && !err) {
     tout = t+tstep;
-    while (tout < tfinal+tstep) {
+    while (tout < t0+tfinal+tstep) {
       flag = CVode (cvode_mem, tout, x, &t, CV_NORMAL);
       StoreRecordInBuffer(balSTEP);
       
@@ -1102,14 +1097,14 @@ bool balODESolver::SolveWithEvents() {
   restart = false;
   if(!(eq && halt_at_equilibrium) && !err) {
     if(mode == balEVENTS)
-      tout = tfinal;
+      tout = t0+tfinal;
     else if(mode == balBOTH)
       tout = t+tstep;
     intersections = 0;
     class_inters = 0;
     nturns_guess = -1;
     cycle = false;
-    while (intersections < max_intersections && t < tfinal) {
+    while (intersections < max_intersections && t < t0+tfinal) {
       flag = CVode (cvode_mem, tout, x, &t, CV_NORMAL);
       if (flag < 0 && flag != CV_TOO_MUCH_WORK && flag != CV_ILL_INPUT) {
 	/*

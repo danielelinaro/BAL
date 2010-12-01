@@ -668,6 +668,9 @@ static PyObject * pyBalODESolver_getattro(pyBalODESolver *self, PyObject *name) 
 	else if(strcmp(n, "lyap_dt") == 0) {
 		result = Py_BuildValue("d",self->solver->GetLyapunovTimeStep());
 	}
+	else if(strcmp(n, "t0") == 0) {
+		result = Py_BuildValue("d",self->solver->GetInitialTime());
+	}
 	else if(strcmp(n, "tstop") == 0) {
 		result = Py_BuildValue("d",self->solver->GetFinalTime());
 	}
@@ -739,16 +742,23 @@ static int pyBalODESolver_setattro(pyBalODESolver *self, PyObject *name, PyObjec
 		else
 			err = -1;
 	}
+	else if(strcmp(n, "t0") == 0) {
+		double t0 = PyFloat_AsDouble(value);
+		if(t0 >= 0)
+			self->solver->SetInitialTime(t0);
+		else
+			err = -1;
+	}
 	else if(strcmp(n, "tstop") == 0) {
 		double tstop = PyFloat_AsDouble(value);
-		if(tstop > 0)
+		if(tstop >= 0)
 			self->solver->SetFinalTime(tstop);
 		else
 			err = -1;
 	}
 	else if(strcmp(n, "ttran") == 0) {
 		double ttran = PyFloat_AsDouble(value);
-		if(ttran > 0)
+		if(ttran >= 0)
 			self->solver->SetTransientDuration(ttran);
 		else
 			err = -1;
@@ -1043,6 +1053,9 @@ static PyObject * pyBalBifurcationDiagram_getattro(pyBalBifurcationDiagram *self
 	else if(strcmp(n, "lyap_dt") == 0) {
 		result = Py_BuildValue("d",self->diagram->GetODESolver()->GetLyapunovTimeStep());
 	}
+	else if(strcmp(n, "t0") == 0) {
+		result = Py_BuildValue("d",self->diagram->GetODESolver()->GetInitialTime());
+	}
 	else if(strcmp(n, "tstop") == 0) {
 		result = Py_BuildValue("d",self->diagram->GetODESolver()->GetFinalTime());
 	}
@@ -1136,6 +1149,13 @@ static int pyBalBifurcationDiagram_setattro(pyBalBifurcationDiagram *self, PyObj
 		double dt = PyFloat_AsDouble(value);
 		if(dt > 0)
 			self->diagram->GetODESolver()->SetLyapunovTimeStep(dt);
+		else
+			err = -1;
+	}
+	else if(strcmp(n, "t0") == 0) {
+		double t0 = PyFloat_AsDouble(value);
+		if(t0 >= 0)
+			self->diagram->GetODESolver()->SetInitialTime(t0);
 		else
 			err = -1;
 	}
@@ -1283,7 +1303,9 @@ static PyObject * pyBalBifurcationDiagram_summary(pyBalBifurcationDiagram *self,
 	PyObject *result;
 
 	if(filename != NULL) {
+		printf("Saving summary to file...");
 		result = (self->diagram->SaveSummaryData(filename) ? Py_True : Py_False);
+		printf(" done.\n");
 	}
 	else {
 		int size[2];

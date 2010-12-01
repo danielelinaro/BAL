@@ -46,8 +46,6 @@
 #include <sundials/sundials_direct.h>
 #endif
 
-#define DANIELE
-
 /** Default relative tolerance */
 #define RTOL (1.0E-7)
 
@@ -160,6 +158,8 @@ class balODESolver : public balObject {
   
   balSolution * GetSolution() const;
   
+  realtype GetInitialTime() const;
+  void SetInitialTime(realtype T0);
   realtype GetTransientDuration () const;
   void SetTransientDuration (realtype tran);
   realtype GetFinalTime () const;
@@ -246,6 +246,8 @@ class balODESolver : public balObject {
   /** The actual position in the buffer */
   int position_in_buffer;
   
+  /** Initial integration time */
+  realtype t0;
   /** Current time */
   realtype t;
   /** Transient duration */
