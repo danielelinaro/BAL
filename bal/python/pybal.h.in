@@ -78,6 +78,8 @@ static void pyBalODESolver_dealloc(pyBalODESolver *self);
 static PyObject * pyBalODESolver_getattro(pyBalODESolver *self, PyObject *name);
 static int pyBalODESolver_setattro(pyBalODESolver *self, PyObject *name, PyObject *value);
 static PyObject * pyBalODESolver_solve(pyBalODESolver *self);
+static PyObject * pyBalODESolver_getsolution(pyBalODESolver * self);
+static PyObject * pyBalODESolver_writeorbit(pyBalODESolver *self, PyObject *args, PyObject *kwds);
 
 /******************** pyBalSolution ********************/
 	
