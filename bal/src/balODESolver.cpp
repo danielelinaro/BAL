@@ -335,6 +335,42 @@ void balODESolver::SetMaxNumberOfIntersections(int intersections) {
   }
 }
 
+bool balODESolver::SaveOrbit(const char *filename) const {
+  int i, cnt, start, stop;
+  FILE *fp;
+
+  if(mode != balEVENTS && mode != balBOTH)
+    return false;
+
+  fp = fopen(filename,"w");
+  if(fp == NULL)
+    return false;
+
+  cnt = nturns;
+  i = rows*cols-1;
+  while(cnt >= 0 && i >= 0) {
+    i--;
+    if(buffer[i] == class_event) {
+      if(cnt == nturns)
+	stop = i;
+      cnt--;
+    }
+  }
+  start = i+1;
+
+  for(i=start; i<stop; i++) {
+    if(((i+1) % (neq+2)) == 0)
+      fprintf(fp, "\n");
+    else if((i % (neq+2)) == 0)
+      fprintf(fp, "%e ", buffer[i]-buffer[start]);
+    else
+      fprintf(fp, "%e ", buffer[i]);
+  }
+    
+  fclose(fp);
+  return true;
+}
+
 void balODESolver::HaltAtEquilibrium(bool halt) {
   halt_at_equilibrium = halt;
 }
@@ -775,7 +811,7 @@ bool balODESolver::ResetCVode() {
 #ifdef CVODE25
   flag = CVodeReInit (cvode_mem, balDynamicalSystem::RHSWrapper, t0, x, CV_SS, reltol, &abstol);
 #endif
-#ifdef CVODE26:
+#ifdef CVODE26
   flag = CVodeReInit (cvode_mem, t0, x);
 #endif
   if (flag != CV_SUCCESS) {
@@ -879,7 +915,7 @@ bool balODESolver::SolveWithoutEventsLyapunov() {
 #ifdef CVODE25
       flag = CVodeReInit (cvode_mem, balDynamicalSystem::RHSWrapper, t, x, CV_SS, reltol, &abstol);
 #endif
-#ifdef CVODE26:
+#ifdef CVODE26
       flag = CVodeReInit (cvode_mem, t, x);
 #endif
       if (flag != CV_SUCCESS) {

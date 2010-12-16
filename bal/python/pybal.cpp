@@ -810,9 +810,20 @@ static PyObject * pyBalODESolver_getsolution(pyBalODESolver * self) {
 	return (PyObject *) pbs;
 }
 
+static PyObject * pyBalODESolver_writeorbit(pyBalODESolver *self, PyObject *args, PyObject *kwds) {
+	static char *kwlist[] = {"filename",NULL};
+	char *filename = NULL;
+	
+	if (! PyArg_ParseTupleAndKeywords(args, kwds, "|s", kwlist, &filename))
+		return NULL;
+	
+	return Py_BuildValue("i", self->solver->SaveOrbit(filename) ? 0 : -1);
+}
+
 static PyMethodDef pyBalODESolver_methods[] = {
 	{"run", (PyCFunction) pyBalODESolver_solve, METH_NOARGS, "Integrate the dynamical system"},
 	{"solution", (PyCFunction) pyBalODESolver_getsolution, METH_NOARGS, "Get the solution of the integration"},
+	{"write_orbit", (PyCFunction) pyBalODESolver_writeorbit, METH_VARARGS | METH_KEYWORDS, "Write a closed orbit to file"},
 	{NULL}	/* Sentinel */
 };
 
