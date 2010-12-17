@@ -378,7 +378,8 @@ void balBifurcationDiagram::ComputeDiagramMultiThread() {
       break;
     case balIC:
       idx++;
-      solver->SetX0(X0[idx]);
+      if (idx<total)
+        solver->SetX0(X0[idx]);
       break;
     }
   }

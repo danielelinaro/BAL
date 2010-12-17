@@ -22,56 +22,887 @@
 
 /**
  *  \file balInterp2D.cpp
- *  \brief Implementation of the class balBilinearInterp2D 
+ *  \brief Implementation of the classes balBaseInterp2D balLinearInterp2D 
  */
 
 #include "balInterp2D.h"
 
-balBilinearInterp2D::balBilinearInterp2D(double *x1v, double *x2v, double **yy, int mm, int nn)
-  : m(mm), n(nn), y(yy) { 
-  x1terp = balLinearInterp1D::Create(x1v,x1v,m);
-  x2terp = balLinearInterp1D::Create(x2v,x2v,n);
+balBaseInterp2D::balBaseInterp2D() {
+  nnx1 = 0;
+  nnx2 = 0;
+  yy = NULL;
+  xx1 = NULL;
+  xx2 = NULL;
+  nnd = 2;
 }
 
-balBilinearInterp2D::balBilinearInterp2D(const balBilinearInterp2D & interp) {
-  m = interp.m;
-  n = interp.n;
-  y = interp.y;
-  x1terp = balLinearInterp1D::Copy(interp.x1terp);
-  x2terp = balLinearInterp1D::Copy(interp.x2terp);
+balBaseInterp2D::balBaseInterp2D(const balBaseInterp2D &interp) : balInterpolator(interp) {
+  nnx1 = interp.nnx1;
+  nnx2 = interp.nnx2;
+  yy = interp.yy;
+  xx1 = interp.xx1;
+  xx2 = interp.xx2;
 }
 
-balBilinearInterp2D::~balBilinearInterp2D() {
-  x1terp->Destroy();
-  x2terp->Destroy();
+const char * balBaseInterp2D::GetClassName() const {
+  return "balBaseInterp2D";
 }
 
-const char * balBilinearInterp2D::GetClassName() const {
-  return "balBilinearInterp2D";
-}
-
-void balBilinearInterp2D::Destroy() {
+void balBaseInterp2D::Destroy() {
   delete this;
 }
 
-balBilinearInterp2D * balBilinearInterp2D::Create(double *x1v, double *x2v, double **yy, int mm, int nn) {
-  return new balBilinearInterp2D(x1v,x2v,yy,mm,nn);
+
+balBaseInterp2D::~balBaseInterp2D() { }
+
+void balBaseInterp2D::SetInterpolationPoints(double * xi1, double *xi2, double **yi, int nx1, int nx2, int nf) {
+  nnx1 = nx1;
+  nnx2 = nx2;
+  nnf = nf;
+  yy = yi;
+  xx1 = xi1;
+  xx2 = xi2;
 }
 
-balBilinearInterp2D * balBilinearInterp2D::Copy(balBilinearInterp2D *interp) {
-  return new balBilinearInterp2D(*interp);
+
+// balLinearInterp2D
+
+balLinearInterp2D::balLinearInterp2D(): balBaseInterp2D() {
+  x1terp = NULL;
+  x2terp = NULL;
 }
 
-double balBilinearInterp2D::interp(double x1p, double x2p) {
-  int i, j;
-  double yy, t, u;
+balLinearInterp2D::balLinearInterp2D(const balLinearInterp2D &interp):balBaseInterp2D(interp) {
+  if (interp.x1terp!=NULL)
+    x1terp = balLinearInterp1D::Copy(interp.x1terp);
+  else
+    x1terp = NULL;
+  if (interp.x2terp!=NULL)
+    x2terp = balLinearInterp1D::Copy(interp.x2terp);
+  else
+    x2terp = NULL;
+}
 
-  i = x1terp->cor ? x1terp->hunt(x1p) : x1terp->locate(x1p);
-  j = x2terp->cor ? x2terp->hunt(x2p) : x2terp->locate(x2p);
+const char * balLinearInterp2D::GetClassName() const {
+  return "balLinearInterp2D";
+}
 
-  t = (x1p-x1terp->xx[i])/(x1terp->xx[i+1]-x1terp->xx[i]); 
-  u = (x2p-x2terp->xx[j])/(x2terp->xx[j+1]-x2terp->xx[j]); 
-  yy = (1.-t)*(1.-u)*y[i][j] + t*(1.-u)*y[i+1][j]
-    + (1.-t)*u*y[i][j+1] + t*u*y[i+1][j+1];
-  return yy;
+void balLinearInterp2D::Destroy() {
+  delete this;
+}
+
+balLinearInterp2D::~balLinearInterp2D() {
+  if (x1terp != NULL)
+    x1terp->Destroy();
+  if (x2terp != NULL)
+    x2terp->Destroy();
+}
+
+balLinearInterp2D * balLinearInterp2D::Create() {
+  return new balLinearInterp2D();
+}
+
+balLinearInterp2D * balLinearInterp2D::Copy(balLinearInterp2D *interp) {
+  return new balLinearInterp2D(*interp);
+}
+
+balLinearInterp2D * balLinearInterp2D::Clone() const {
+  return new balLinearInterp2D(*this);
+}
+
+int balLinearInterp2D::Init() {
+  if ((xx1==NULL)||(xx2==NULL)||(yy==NULL)) {
+    cerr<<"balLinearInterp2D::Init() - Interpolation points not set\n";
+    return -1;
+  }
+  if (x1terp != NULL)
+    x1terp->Destroy();
+  if (x2terp != NULL)
+    x2terp->Destroy();
+  x1terp = balLinearInterp1D::Create();
+  x2terp = balLinearInterp1D::Create();
+  x1terp->SetInterpolationPoints(xx1,&xx1,nnx1,1);
+  x2terp->SetInterpolationPoints(xx2,&xx2,nnx2,1);
+  return 0;
+}
+
+int balLinearInterp2D::Evaluate(double *x, double *y) {
+
+  if ((x1terp == NULL)||(x2terp == NULL)) {
+    cerr<<"balLinearInterp2D::Evaluate() - Interpolator not initialized. Call method Init()\n";
+    return -1;
+  }
+  
+  int i;
+  int idx1, idx2;
+  double t, u, d1, d2;
+
+  idx1 = x1terp->nextHunt() ? x1terp->Hunt(x[0]) : x1terp->Locate(x[0]);
+  idx2 = x2terp->nextHunt() ? x2terp->Hunt(x[1]) : x2terp->Locate(x[1]);
+
+  if ((d1 = xx1[idx1+1]-xx1[idx1]) == 0) {
+    cerr<<"Bad input to balLinearInterp2D::Evaluate()\n";
+    return -1;
+  }
+  if ((d2 = xx2[idx2+1]-xx2[idx2]) == 0) {
+    cerr<<"Bad input to balLinearInterp2D::Evaluate()\n";
+    return -1;
+  }
+
+  t = (x[0]-xx1[idx1])/(d1);
+  u = (x[1]-xx2[idx2])/(d2); 
+  for (i=0; i<nnf; i++) {
+    y[i] = (1.-t)*(1.-u)*yy[i][idx1+nnx1*idx2] + t*(1.-u)*yy[i][(idx1+1)+nnx1*idx2] + (1.-t)*u*yy[i][idx1+nnx1*(idx2+1)] + t*u*yy[i][(idx1+1)+nnx1*(idx2+1)];
+  }
+  return 0;
+}
+
+int balLinearInterp2D::EvaluateDerivative(double *x, double *y) {
+  // NOT IMPLEMENTED
+  return 0;
+}
+
+
+// balPolyInterp2D
+
+balPolyInterp2D::balPolyInterp2D(): balBaseInterp2D() {
+  mm1 = 2;
+  mm2 = 2;
+  interpsx = NULL;
+  interpy = NULL;
+  x2terp = NULL;
+  yloc = NULL;
+}
+
+balPolyInterp2D::balPolyInterp2D(const balPolyInterp2D &interp):balBaseInterp2D(interp) {
+  mm1 = interp.mm1;
+  mm2 = interp.mm2;
+  if (interp.interpsx != NULL) {
+    interpsx = new balPolyInterp1D * [nnx2];
+    for (int i=0; i<nnx2; i++) 
+      interpsx[i] = balPolyInterp1D::Copy(interp.interpsx[i]);
+  }
+  else
+    interpsx = NULL;
+  if (interp.interpy != NULL) {
+    interpy = balPolyInterp1D::Copy(interp.interpy);
+  }
+  else
+    interpy = NULL;
+  if (interp.x2terp!=NULL)
+    x2terp = balPolyInterp1D::Copy(interp.x2terp);
+  else 
+    x2terp = NULL;
+  if (interp.yloc != NULL) {
+    yloc = new double ** [nnx2];
+    for (int i=0; i<nnx2; i++) {
+      yloc[i] = new double * [nnf];
+      for (int j=0; j<nnf; j++) {
+        yloc[i][j] = new double [nnx1];
+	memcpy(yloc[i][j],interp.yloc[i][j],nnx1*sizeof(double));
+      }
+    }
+  }
+  else
+    yloc = NULL;
+}
+
+const char * balPolyInterp2D::GetClassName() const {
+  return "balPolyInterp2D";
+}
+
+void balPolyInterp2D::Destroy() {
+  delete this;
+}
+
+balPolyInterp2D::~balPolyInterp2D() {
+  if (interpsx != NULL) {
+    for (int i=0; i<nnx2; i++)
+      interpsx[i]->Destroy();
+    delete [] interpsx;
+  }
+  if (interpy != NULL)
+    interpy->Destroy();
+  if (x2terp != NULL)
+    x2terp->Destroy();
+  if (yloc != NULL){
+    for (int i=0; i<nnx2; i++) {
+      for (int j=0; j<nnf; j++)
+        delete [] yloc[i][j];
+      delete [] yloc[i];
+    }
+    delete [] yloc;
+  }
+}
+
+balPolyInterp2D * balPolyInterp2D::Copy(balPolyInterp2D *interp) {
+  return new balPolyInterp2D(*interp);
+}
+
+balPolyInterp2D * balPolyInterp2D::Clone() const {
+  return new balPolyInterp2D(*this);
+}
+
+balPolyInterp2D * balPolyInterp2D::Create() {
+  return new balPolyInterp2D();
+}
+
+void balPolyInterp2D::SetInterpolationOrder(int m1, int m2) {
+  mm1 = m1;
+  mm2 = m2;
+}
+
+int balPolyInterp2D::Init() {
+  if ((xx1 == NULL)||(xx2 == NULL) || (yy == NULL)) {
+    cerr<<"balPolyInterp2D::Init() - Interpolation points not set\n";
+    return -1;
+  }
+  if ((mm1 < 0) || (mm1 > nnx1) || (mm2 < 0) || (mm2 > nnx2))  {
+    cerr<<"balPolyInterp2D::Init() - Invalid interpolation order\n"; 
+  }
+  int i,j;
+
+  if (yloc != NULL){
+    for (int i=0; i<nnx2; i++) {
+      for (int j=0; j<nnf; j++)
+        delete [] yloc[i][j];
+      delete [] yloc[i];
+    }
+    delete [] yloc;
+  }
+  
+  yloc = new double ** [nnx2];
+  for (i=0; i<nnx2; i++) {
+    yloc[i] = new double * [nnf];
+    for (j=0; j<nnf; j++)
+      yloc[i][j] = new double[nnx1];
+  }
+  interpsx = new balPolyInterp1D * [nnx2];
+  for (i = 0; i<nnx2; i++) {
+     for (j=0; j<nnf; j++) {
+       memcpy(yloc[i][j],&yy[j][i*nnx1],nnx1*sizeof(double));
+     }
+     interpsx[i] = balPolyInterp1D::Create();
+     interpsx[i]->SetInterpolationPoints(xx1,yloc[i],nnx1,nnf);
+     interpsx[i]->SetInterpolationOrder(mm1);
+  } 
+  if (interpy != NULL)
+    interpy->Destroy();
+  interpy = balPolyInterp1D::Create();
+  interpy->SetInterpolationOrder(mm2);
+  
+  if (x2terp != NULL)
+    x2terp->Destroy();
+  
+  x2terp = balPolyInterp1D::Create();
+  x2terp->SetInterpolationPoints(xx2,&xx2,nnx2,1);
+  x2terp->SetInterpolationOrder(mm2);
+  return 0;
+}
+
+int balPolyInterp2D::Evaluate(double *x, double *y) {
+
+  if (xx1 == NULL) {
+    cerr<<"balPolyInterp2D::Evaluate() - Interpolation points not set\n";
+    return -1;
+  }
+  
+  int i,j;
+  int idx2;
+  double **yrow, *tmp;
+  
+  tmp = new double [nnf];
+  yrow = new double * [nnf];
+  for (i=0; i<nnf; i++)
+    yrow[i] = new double[mm1];
+  
+  idx2 = x2terp->nextHunt() ? x2terp->Hunt(x[1]) : x2terp->Locate(x[1]);
+  
+  for(i=0; i<mm2; i++) {
+    interpsx[idx2+i]->Evaluate(&x[0],tmp);
+    for (j=0; j<nnf; j++)
+      yrow[j][i] = tmp[j];
+  }
+  interpy->SetInterpolationPoints(&xx2[idx2],yrow,mm2,nnf);
+  interpy->Evaluate(&x[1],y);
+  delete [] tmp;
+  for (i=0; i<nnf; i++)
+    delete [] yrow[i];
+  delete [] yrow;
+  return 0;
+}
+
+int balPolyInterp2D::EvaluateDerivative(double *x, double *y) {
+  // NOT IMPLEMENTED
+  return 0;
+}
+
+// balSplineInterp2D
+
+balSplineInterp2D::balSplineInterp2D(): balBaseInterp2D() {
+  x1terp = NULL;
+  x2terp = NULL;
+  y1d = NULL;
+  y2d = NULL;
+  y12d = NULL;
+  c = NULL;
+  wt = {{1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+        {0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0},
+	{-3, 0, 0, 3, 0, 0, 0, 0,-2, 0, 0,-1, 0, 0, 0, 0},
+	{2, 0, 0,-2, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0},
+	{0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0},
+	{0, 0, 0, 0,-3, 0, 0, 3, 0, 0, 0, 0,-2, 0, 0,-1},
+	{0, 0, 0, 0, 2, 0, 0,-2, 0, 0, 0, 0, 1, 0, 0, 1},
+	{-3, 3, 0, 0,-2,-1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0,-3, 3, 0, 0,-2,-1, 0, 0},
+	{9,-9, 9,-9, 6, 3,-3,-6, 6,-6,-3, 3, 4, 2, 1, 2},
+	{-6, 6,-6, 6,-4,-2, 2, 4,-3, 3, 3,-3,-2,-1,-1,-2},
+	{2,-2, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 0, 0, 0, 0, 2,-2, 0, 0, 1, 1, 0, 0},
+	{-6, 6,-6, 6,-3,-3, 3, 3,-4, 4, 2,-2,-2,-2,-1,-1},
+	{4,-4, 4,-4, 2, 2,-2,-2, 2,-2,-2, 2, 1, 1, 1, 1}};
+}
+
+balSplineInterp2D::balSplineInterp2D(const balSplineInterp2D &interp):balBaseInterp2D(interp) { 
+  int i,j;
+  for (i=0; i<16; i++)
+    for (j=0; j<16; j++)
+      wt[i][j] = interp.wt[i][j];
+  if (interp.x1terp != NULL)
+    x1terp = balPolyInterp1D::Copy(interp.x1terp);
+  else
+    x1terp = NULL;
+  if (interp.x2terp != NULL)
+    x2terp = balPolyInterp1D::Copy(interp.x2terp);
+  else
+    x2terp = NULL;
+  if (interp.y1d != NULL) {
+    y1d = new double ** [nnf];
+    for (i=0; i<nnf; i++) {
+      y1d[i] = new double * [nnx1];
+      for(j=0; j<nnx1; j++) {
+	y1d[i][j] = new double [nnx2];
+	memcpy(y1d[i][j],interp.y1d[i][j],nnx2*sizeof(double));
+      }
+    }
+  }
+  else
+    y1d = NULL;
+  if (interp.y2d != NULL) {
+    y2d = new double ** [nnf];
+    for (i=0; i<nnf; i++) {
+      y2d[i] = new double * [nnx1];
+      for(j=0; j<nnx1; j++) {
+	y2d[i][j] = new double [nnx2];
+	memcpy(y2d[i][j],interp.y2d[i][j],nnx2*sizeof(double));
+      }
+    }
+  }
+  else
+    y2d = NULL;
+  if (interp.y12d != NULL) {
+    y12d = new double ** [nnf];
+    for (i=0; i<nnf; i++) {
+      y12d[i] = new double * [nnx1];
+      for(j=0; j<nnx1; j++) {
+	y12d[i][j] = new double [nnx2];
+	memcpy(y12d[i][j],interp.y12d[i][j],nnx2*sizeof(double));
+      }
+    }
+  }
+  else
+    y12d = NULL;
+  
+  if (interp.c != NULL) {
+    c = new double ** [nnf];
+    for (i=0; i<nnf; i++) {
+      c[i] = new double * [4];
+      for(j=0; j<4; j++) {
+	c[i][j] = new double [4];
+	memcpy(c[i][j],interp.c[i][j],4*sizeof(double));
+      }
+    }
+  }
+  else
+    c = NULL;
+
+}
+
+
+const char * balSplineInterp2D::GetClassName() const {
+  return "balSplineInterp2D";
+}
+
+void balSplineInterp2D::Destroy() {
+  delete this;
+}
+
+balSplineInterp2D::~balSplineInterp2D() {
+  if (x1terp != NULL)
+    x1terp->Destroy();
+  if (x2terp != NULL)
+    x2terp->Destroy();
+  if (y1d != NULL) {
+    for (int i=0; i<nnf; i++) {
+      for (int j=0; j<nnx1; j++) {
+        delete [] y1d[i][j];
+      }
+      delete [] y1d[i];
+    }
+    delete [] y1d;
+  }
+  if (y2d != NULL) {
+    for (int i=0; i<nnf; i++) {
+      for (int j=0; j<nnx1; j++) {
+        delete [] y2d[i][j];
+      }
+      delete [] y2d[i];
+    }
+    delete [] y2d;
+  }
+  if (y12d != NULL) {
+    for (int i=0; i<nnf; i++) {
+      for (int j=0; j<nnx1; j++) {
+        delete [] y12d[i][j];
+      }
+      delete [] y12d[i];
+    }
+    delete [] y12d;
+  }
+  
+  if (c != NULL) {
+    for (int i=0; i<nnf; i++) {
+      for (int j=0; j<4; j++) 
+        delete [] c[i][j];
+      delete [] c[i];
+    }
+    delete [] c;
+  }
+
+}
+
+balSplineInterp2D * balSplineInterp2D::Copy(balSplineInterp2D *interp) {
+  return new balSplineInterp2D(*interp);
+}
+
+balSplineInterp2D * balSplineInterp2D::Clone() const {
+  return new balSplineInterp2D(*this);
+}
+
+balSplineInterp2D * balSplineInterp2D::Create() {
+  return new balSplineInterp2D();
+}
+
+int balSplineInterp2D::Init() {
+
+  int i, j, k;
+  
+  if (y1d != NULL) {
+    for (int i=0; i<nnf; i++) {
+      for (int j=0; j<nnx1; j++) {
+        delete [] y1d[i][j];
+      }
+      delete [] y1d[i];
+    }
+    delete [] y1d;
+  }
+  if (y2d != NULL) {
+    for (int i=0; i<nnf; i++) {
+      for (int j=0; j<nnx1; j++) {
+        delete [] y2d[i][j];
+      }
+      delete [] y2d[i];
+    }
+    delete [] y2d;
+  }
+  if (y12d != NULL) {
+    for (int i=0; i<nnf; i++) {
+      for (int j=0; j<nnx1; j++) {
+        delete [] y12d[i][j];
+      }
+      delete [] y12d[i];
+    }
+    delete [] y12d;
+  }
+  
+  y1d = new double ** [nnf];
+  y2d = new double ** [nnf];
+  y12d = new double ** [nnf];
+
+  for (i=0; i<nnf; i++) {
+    y1d[i] = new double * [nnx1];
+    y2d[i] = new double * [nnx1];
+    y12d[i] = new double * [nnx1];
+    y1d[i][0] = new double [nnx2];
+    y2d[i][0] = new double [nnx2];
+    y12d[i][0] = new double [nnx2];
+    y1d[i][nnx1-1] = new double [nnx2];
+    y2d[i][nnx1-1] = new double [nnx2];
+    y12d[i][nnx1-1] = new double [nnx2];
+    for(j=1; j<nnx1-1; j++) {
+      y1d[i][j] = new double [nnx2];
+      y2d[i][j] = new double [nnx2];
+      y12d[i][j] = new double [nnx2];
+      for(k=1; k<nnx2-1; k++) {
+      	y1d[i][j][k] = (yy[i][(j+1)+nnx1*k]-yy[i][(j-1)+nnx1*k])/(xx1[j+1]-xx1[j-1]); 
+	y2d[i][j][k] = (yy[i][j+nnx1*(k+1)]-yy[i][j+nnx1*(k-1)])/(xx2[k+1]-xx2[k-1]); 
+	y12d[i][j][k] = (yy[i][(j+1)+nnx1*(k+1)]-yy[i][(j+1)+nnx1*(k-1)]-yy[i][(j-1)+nnx1*(k+1)]+yy[i][(j-1)+nnx1*(k-1)]) / ((xx1[j+1]-xx1[j-1])*(xx2[k+1]-xx2[k-1])); 
+      }
+    }
+  }
+  
+  if (x1terp != NULL)
+    x1terp->Destroy();
+  if (x2terp != NULL)
+    x2terp->Destroy();
+  
+  x1terp = balPolyInterp1D::Create();
+  x1terp->SetInterpolationPoints(xx1,&xx1,nnx1,1);
+  x1terp->SetInterpolationOrder(2);
+  x2terp = balPolyInterp1D::Create();
+  x2terp->SetInterpolationPoints(xx2,&xx2,nnx2,1);
+  x2terp->SetInterpolationOrder(2);
+  
+  if (c != NULL) {
+    for (i=0; i<nnf; i++) {
+      for (j=0; j<4; j++) 
+        delete [] c[i][j];
+      delete [] c[i];
+    }
+    delete [] c;
+  }
+  
+  c = new double ** [nnf];
+  for (i=0; i<nnf; i++) {
+    c[i] = new double * [4];
+    for(j=0; j<4; j++) 
+      c[i][j] = new double [4];
+  }
+  
+  return 0;
+}
+
+int balSplineInterp2D::Evaluate(double *x, double *y) {
+
+  if (xx1 == NULL) {
+    cerr<<"balSplineInterp2D::Evaluate() - Interpolation points not set\n";
+    return -1;
+  }
+
+  if (y1d == NULL) {
+    cerr<<"balSplineInterp2D::Evaluate() - Spline not initialized. Call method Init()\n";
+    return -1;
+  }
+  
+  int i,j,k;
+  int idx1, idx2, l;
+  double x1l, x1u, x2l, x2u;
+  double **ya, **y1a, **y2a, **y12a;
+  double t, u, d1, d2; 
+  double *xxa, d1d2; 
+  double **cl, **xa; 
+
+  // Find the grid square. 
+  idx1 = x1terp->nextHunt() ? x1terp->Hunt(x[0]) : x1terp->Locate(x[0]);
+  idx2 = x2terp->nextHunt() ? x2terp->Hunt(x[1]) : x2terp->Locate(x[1]);
+
+  x1l = xx1[idx1];
+  x1u = xx1[idx1+1];
+  x2l = xx2[idx2];
+  x2u = xx2[idx2+1];
+  
+  if ((x1u == x1l) || (x2u == x2l)) {
+    cerr<<"Bad input to balSplineInterp2D::Evaluate()\n";
+    return -1;
+  }
+  ya = new double * [nnf];
+  y1a = new double * [nnf];
+  y2a = new double * [nnf];
+  y12a = new double * [nnf];
+  
+  for (i=0; i<nnf; i++) {
+    ya[i] = new double [4];
+    y1a[i] = new double [4];
+    y2a[i] = new double [4];
+    y12a[i] = new double [4];
+    ya[i][0] = yy[i][idx1+nnx1*idx2];
+    ya[i][1] = yy[i][(idx1+1)+nnx1*idx2];
+    ya[i][2] = yy[i][(idx1+1)+nnx1*(idx2+1)];
+    ya[i][3] = yy[i][idx1+nnx1*(idx2+1)];
+    y1a[i][0] = y1d[i][idx1][idx2];
+    y1a[i][1] = y1d[i][idx1+1][idx2];
+    y1a[i][2] = y1d[i][idx1+1][idx2+1];
+    y1a[i][3] = y1d[i][idx1][idx2+1];
+    y2a[i][0] = y2d[i][idx1][idx2];
+    y2a[i][1] = y2d[i][idx1+1][idx2];
+    y2a[i][2] = y2d[i][idx1+1][idx2+1];
+    y2a[i][3] = y2d[i][idx1][idx2+1];
+    y12a[i][0] = y12d[i][idx1][idx2];
+    y12a[i][1] = y12d[i][idx1+1][idx2];
+    y12a[i][2] = y12d[i][idx1+1][idx2+1];
+    y12a[i][3] = y12d[i][idx1][idx2+1];
+  
+  }
+  
+  d1 = x1u - x1l;
+  d2 = x2u - x2l;
+
+  xxa = new double [nnf];
+
+  cl = new double * [nnf];
+  xa = new double * [nnf];
+  for (i=0; i<nnf; i++) {
+    cl[i] = new double [16];
+    xa[i] = new double [16];
+  }
+
+  d1d2 = d1*d2;
+
+  for(i=0; i<4; i++) { // Pack a temporary vector x.
+    for (j=0; j<nnf; j++) {
+      xa[j][i] = ya[j][i]; 
+      xa[j][i+4] = y1a[j][i]*d1; 
+      xa[j][i+8] = y2a[j][i]*d2; 
+      xa[j][i+12] = y12a[j][i]*d1d2;
+    }
+  } 
+  for(i=0; i<16; i++) { // Matrix-multiply by the stored table. 
+    for (j=0; j<nnf; j++) {
+      xxa[j] = 0.0; 
+      for(k=0; k<16; k++) 
+	xxa[j] += wt[i][k]*xa[j][k]; 
+      cl[j][i] = xxa[j]; 
+    }
+  } 
+  l = 0; 
+  for (i=0; i<4; i++) { // Unpack the result into the output table. 
+    for (j=0;j<4;j++) {
+      for (k=0; k<nnf; k++)
+	c[k][i][j]=cl[k][l];
+      l++;
+    }
+  }
+  for (i=0; i<nnf; i++) {
+    delete [] cl[i];
+    delete [] xa[i];
+  }
+  delete [] cl;
+  delete [] xa;
+
+  for (i=0; i<nnf; i++) {
+    delete [] ya[i];
+    delete [] y1a[i];
+    delete [] y2a[i];
+    delete [] y12a[i];
+  }
+  delete [] ya;
+  delete [] y1a;
+  delete [] y2a;
+  delete [] y12a;
+
+
+  t = (x[0]-x1l) / d1; // Equation (3.6.4) in NR. 
+  u = (x[1]-x2l) / d2; 
+  for (j=0; j<nnf; j++)
+    y[j] = 0.0; 
+  for (i=3;i>=0;i--) { // Equation (3.6.6) in NR. 
+    for (j=0; j<nnf; j++)
+      y[j]  = t*(y[j])+((c[j][i][3]*u+c[j][i][2])*u+c[j][i][1])*u+c[j][i][0]; 
+  } 
+
+  delete [] xxa;
+
+  return 0;
+}
+
+int balSplineInterp2D::EvaluateDerivative(double *x, double *y) {
+  // NOT IMPLEMENTED
+  return 0;
+}
+
+// balSmoothingSplineInterp2D
+
+balSmoothingSplineInterp2D::balSmoothingSplineInterp2D(): balBaseInterp2D() {
+  interpsx = NULL;
+  interpy = NULL;
+  x2terp = NULL;
+  yloc = NULL;
+  SS = 0;
+  window = 2;
+}
+
+balSmoothingSplineInterp2D::balSmoothingSplineInterp2D(const balSmoothingSplineInterp2D &interp):balBaseInterp2D(interp) {
+  if (interp.interpsx != NULL) {
+    interpsx = new balSmoothingSplineInterp1D * [nnx2];
+    for (int i=0; i<nnx2; i++) 
+      interpsx[i] = balSmoothingSplineInterp1D::Copy(interp.interpsx[i]);
+  }
+  else
+    interpsx = NULL;
+  if (interp.interpy != NULL) {
+    interpy = balSmoothingSplineInterp1D::Copy(interp.interpy);
+  }
+  else
+    interpy = NULL;
+  if (interp.x2terp!=NULL)
+    x2terp = balPolyInterp1D::Copy(interp.x2terp);
+  else
+    x2terp = NULL;
+  if (interp.yloc != NULL) {
+    yloc = new double ** [nnx2];
+    for (int i=0; i<nnx2; i++) {
+      yloc[i] = new double * [nnf];
+      for (int j=0; j<nnf; j++) {
+        yloc[i][j] = new double [nnx1];
+	memcpy(yloc[i][j],interp.yloc[i][j],nnx1*sizeof(double));
+      }
+    }
+  }
+  else
+    yloc = NULL;
+  SS = interp.SS;
+  window = interp.window;
+}
+
+const char * balSmoothingSplineInterp2D::GetClassName() const {
+  return "balSmoothingSplineInterp2D";
+}
+
+void balSmoothingSplineInterp2D::Destroy() {
+  delete this;
+}
+
+balSmoothingSplineInterp2D::~balSmoothingSplineInterp2D() {
+  if (interpsx != NULL) {
+    for (int i=0; i<nnx2; i++)
+      interpsx[i]->Destroy();
+    delete [] interpsx;
+  }
+  if (interpy != NULL)
+    interpy->Destroy();
+  if (x2terp != NULL)
+    x2terp->Destroy();
+  if (yloc != NULL){
+    for (int i=0; i<nnx2; i++) {
+      for (int j=0; j<nnf; j++)
+        delete [] yloc[i][j];
+      delete [] yloc[i];
+    }
+    delete [] yloc;
+  }
+}
+
+balSmoothingSplineInterp2D * balSmoothingSplineInterp2D::Copy(balSmoothingSplineInterp2D *interp) {
+  return new balSmoothingSplineInterp2D(*interp);
+}
+
+balSmoothingSplineInterp2D * balSmoothingSplineInterp2D::Clone() const {
+  return new balSmoothingSplineInterp2D(*this);
+}
+
+balSmoothingSplineInterp2D * balSmoothingSplineInterp2D::Create() {
+  return new balSmoothingSplineInterp2D();
+}
+
+void balSmoothingSplineInterp2D::SetSmoothingParameter(double S) {
+  SS = S;
+}
+
+void balSmoothingSplineInterp2D::SetWindow(int w) {
+  window = w;
+}
+
+int balSmoothingSplineInterp2D::Init() {
+  if ((xx1 == NULL)||(xx2 == NULL) || (yy == NULL)) {
+    cerr<<"balSmoothingSplineInterp2D::Init() - Interpolation points not set\n";
+    return -1;
+  }
+  if ((window < 0) || (window > nnx2)) {
+    cerr<<"balSmoothingSplineInterp2D::Init() - Windows size must be smaller than number of interpolation points along x axis\n";
+    return -1;
+  }
+  int i,j;
+
+  if (yloc != NULL){
+    for (int i=0; i<nnx2; i++) {
+      for (int j=0; j<nnf; j++)
+        delete [] yloc[i][j];
+      delete [] yloc[i];
+    }
+    delete [] yloc;
+  }
+  
+  yloc = new double ** [nnx2];
+  for (i=0; i<nnx2; i++) {
+    yloc[i] = new double * [nnf];
+    for (j=0; j<nnf; j++)
+      yloc[i][j] = new double[nnx1];
+  }
+
+  if (interpsx != NULL) {
+    for (int i=0; i<nnx2; i++)
+      interpsx[i]->Destroy();
+    delete [] interpsx;
+  }
+
+  interpsx = new balSmoothingSplineInterp1D * [nnx2];
+  for (i = 0; i<nnx2; i++) {
+     for (j=0; j<nnf; j++) {
+       memcpy(yloc[i][j],&yy[j][i*nnx1],nnx1*sizeof(double));
+     }
+     interpsx[i] = balSmoothingSplineInterp1D::Create();
+     interpsx[i]->SetInterpolationPoints(xx1,yloc[i],nnx1,nnf);
+     interpsx[i]->SetSmoothingParameters(SS);
+     interpsx[i]->Init();
+  } 
+  
+  if (interpy != NULL)
+    interpy->Destroy();
+  interpy = balSmoothingSplineInterp1D::Create();
+  
+  if (x2terp != NULL)
+    x2terp->Destroy();
+  x2terp = balPolyInterp1D::Create();
+  x2terp->SetInterpolationPoints(xx2,&xx2,nnx2,1);
+  x2terp->SetInterpolationOrder(window);
+  return 0;
+}
+
+int balSmoothingSplineInterp2D::Evaluate(double *x, double *y) {
+
+  if (xx1 == NULL) {
+    cerr<<"balSmoothingSplineInterp2D::Evaluate() - Interpolation points not set\n";
+    return -1;
+  }
+  
+  int i,j;
+  int idx2;
+  double **yrow, *tmp;
+  
+  tmp = new double [nnf];
+  yrow = new double * [nnf];
+  for (i=0; i<nnf; i++)
+    yrow[i] = new double[window];
+  
+  idx2 = x2terp->nextHunt() ? x2terp->Hunt(x[1]) : x2terp->Locate(x[1]);
+  
+  for(i=0; i<window; i++) {
+    interpsx[idx2+i]->Evaluate(&x[0],tmp);
+    for (j=0; j<nnf; j++)
+      yrow[j][i] = tmp[j];
+  }
+  interpy->SetInterpolationPoints(&xx2[idx2],yrow,window,nnf);
+  interpy->Init();
+  interpy->Evaluate(&x[1],y);
+  delete [] tmp;
+  for (i=0; i<nnf; i++)
+    delete [] yrow[i];
+  delete [] yrow;
+  return 0;
+}
+
+int balSmoothingSplineInterp2D::EvaluateDerivative(double *x, double *y) {
+  // NOT IMPLEMENTED
+  return 0;
 }

@@ -316,7 +316,9 @@ bool balH5Logger::SaveBuffer(realtype * buffer, int rows, int id) {
   if(status < 0)
     return false;
 
-  status = H5LTset_attribute_double(h5_fid, datasetname, "parameters", GetParameters()->GetParameters(), GetParameters()->GetNumber());
+  // If there are no parameters the function is not called
+  if (GetParameters()->GetNumber() > 0)
+    status = H5LTset_attribute_double(h5_fid, datasetname, "parameters", GetParameters()->GetParameters(), GetParameters()->GetNumber());
 
   return status >= 0;
 }

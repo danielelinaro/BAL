@@ -36,13 +36,8 @@ const char * balBaseInterp1D::GetClassName() const {
 void balBaseInterp1D::Destroy() {
   delete this;
 }
-  
-double balBaseInterp1D::interp(double x) {
-  int jlo = cor ? hunt(x) : locate(x);
-  return rawinterp(jlo,x);
-}
 
-int balBaseInterp1D::locate(const double x) {
+int balBaseInterp1D::Locate(const double x) {
   int ju, jm, jl, ascnd;
   
   if (n < 2 || mm < 2 || mm > n) {
@@ -62,7 +57,7 @@ int balBaseInterp1D::locate(const double x) {
   return MAX(0,MIN(n-mm,jl-((mm-2)>>1))); 
 }
 
-int balBaseInterp1D::hunt(const double x) {
+int balBaseInterp1D::Hunt(const double x) {
   int jl=jsav, jm, ju, inc=1;
   if (n < 2 || mm < 2 || mm > n) 
     throw("hunt size error");
@@ -115,12 +110,29 @@ int balBaseInterp1D::hunt(const double x) {
   return MAX(0,MIN(n-mm,jl-((mm-2)>>1)));
 }
 
-balBaseInterp1D::balBaseInterp1D(double * x, const double *y, int length, int m)
-  : n(length), mm(m), jsav(0), cor(0), xx(&x[0]), yy(y) { 
-  dj = MIN(1, (int)pow((double)n,0.25));
+bool balBaseInterp1D::nextHunt() {
+  if (cor)
+    return true;
+  else
+    return false;
 }
 
-balBaseInterp1D::balBaseInterp1D(const balBaseInterp1D & interp) {
+balBaseInterp1D::balBaseInterp1D()
+  : n(0), mm(0), jsav(0), cor(0) { 
+  dj = MIN(1, (int)pow((double)n,0.25));
+  xx = NULL;
+  yy = NULL;
+  nnd = 1;
+}
+
+void balBaseInterp1D::SetInterpolationPoints(double * xi, double **yi, int length, int nf) {
+  n = length;
+  nnf = nf;
+  xx = xi; 
+  yy = yi;  
+}
+
+balBaseInterp1D::balBaseInterp1D(const balBaseInterp1D & interp) : balInterpolator(interp) {
   n = interp.n;
   mm = interp.mm;
   xx = interp.xx;
@@ -143,26 +155,63 @@ void balLinearInterp1D::Destroy() {
   delete this;
 }
 
-balLinearInterp1D * balLinearInterp1D::Create(double * xv, double * yv, int length) {
-  return new balLinearInterp1D(xv,yv,length);
+balLinearInterp1D * balLinearInterp1D::Create() {
+  return new balLinearInterp1D();
 }
 
 balLinearInterp1D * balLinearInterp1D::Copy(balLinearInterp1D *interp) {
   return new balLinearInterp1D(*interp);
 }
 
-balLinearInterp1D::balLinearInterp1D(double * xv, double * yv, int length) :
-  balBaseInterp1D(xv,yv,length,2) {}
+balLinearInterp1D * balLinearInterp1D::Clone() const {
+  return new balLinearInterp1D(*this);
+}
+
+balLinearInterp1D::balLinearInterp1D() :
+  balBaseInterp1D() {
+  mm = 2;
+}
 
 balLinearInterp1D::balLinearInterp1D(const balLinearInterp1D & interp) :
   balBaseInterp1D(interp) {}
 
 balLinearInterp1D::~balLinearInterp1D() {}
+
+int balLinearInterp1D::Evaluate(double *x, double *y) {
   
-double balLinearInterp1D::rawinterp(int j, double x) {
-  if (xx[j]==xx[j+1]) 
-    return yy[j];
-  return yy[j] + ((x-xx[j])/(xx[j+1]-xx[j]))*(yy[j+1]-yy[j]);
+  if ((xx == NULL) || (yy == NULL)) {
+    cerr<<"balLinearInterp1D::Evaluate() - Interpolation points not set\n";
+    return -1;
+  }
+  
+  int i;
+  int jlo = cor ? Hunt(x[0]) : Locate(x[0]);
+ 
+  if (xx[jlo]==xx[jlo+1]) {
+    //The xa’s must be distinct. 
+    cerr<<"Bad input to balLinearInterp1D::Evaluate()\n";
+    return -1;
+  }
+  for (i=0; i<nnf; i++)
+    y[i] = yy[i][jlo] + ((x[0]-xx[jlo])/(xx[jlo+1]-xx[jlo]))*(yy[i][jlo+1]-yy[i][jlo]);
+  return 0;
+}
+  
+int balLinearInterp1D::EvaluateDerivative(double *x, double *y) {
+  if ((xx == NULL) || (yy == NULL)) {
+    cerr<<"balLinearInterp1D::EvaluateDerivative() - Interpolation points not set\n";
+    return -1;
+  }
+  int i;
+  int jlo = cor ? Hunt(x[0]) : Locate(x[0]);
+  if (xx[jlo]==xx[jlo+1])  {
+    //The xa’s must be distinct. 
+    cerr<<"Bad input to balLinearInterp1D::EvaluateDerivative()\n";
+    return -1;
+  }
+  for (i=0; i<nnf; i++)
+    y[i] = (yy[i][jlo+1]-yy[i][jlo])/(xx[jlo+1]-xx[jlo]);
+  return 0;
 }
 
 /***** balPolyInterp1D *****/
@@ -175,16 +224,27 @@ void balPolyInterp1D::Destroy() {
   delete this;
 }
 
-balPolyInterp1D * balPolyInterp1D::Create(double * xv, double * yv, int length, int m) {
-  return new balPolyInterp1D(xv,yv,length,m);
+balPolyInterp1D * balPolyInterp1D::Create() {
+  return new balPolyInterp1D();
 }
 
 balPolyInterp1D * balPolyInterp1D::Copy(balPolyInterp1D *interp) {
   return new balPolyInterp1D(*interp);
 }
 
-balPolyInterp1D::balPolyInterp1D(double * xv, double * yv, int length, int m) :
-  balBaseInterp1D(xv,yv,length,m), dy(0.0) {}
+balPolyInterp1D * balPolyInterp1D::Clone() const {
+  return new balPolyInterp1D(*this);
+}
+
+balPolyInterp1D::balPolyInterp1D() :
+  balBaseInterp1D() {
+  dy = 0.0;
+  mm = 2;
+}
+
+void balPolyInterp1D::SetInterpolationOrder(int m) {
+  mm = m;
+}
 
 balPolyInterp1D::balPolyInterp1D(const balPolyInterp1D & interp) :
   balBaseInterp1D(interp) {
@@ -193,53 +253,93 @@ balPolyInterp1D::balPolyInterp1D(const balPolyInterp1D & interp) :
 
 balPolyInterp1D::~balPolyInterp1D() {}
 
-double balPolyInterp1D::rawinterp(int j, double x) {
-  int i, m, ns; 
-  double y, den, dif, dift, ho, hp, w; 
-  const double *xa, *ya;
-  double *c, *d;
-  
-  c = new double[mm];
-  if(c == NULL)
-    throw("Memory allocation error");
-  d = new double[mm];
-  if(d == NULL) {
-    delete c;
-    throw("Memory allocation error");
+
+int balPolyInterp1D::Evaluate(double *x, double *y) {
+  if ((xx == NULL) || (yy == NULL)) {
+    cerr<<"balPolyInterp1D::Evaluate() - Interpolation points not set\n";
+    return -1;
   }
-  ns = 0;
-  xa = &xx[j];
-  ya = &yy[j];
+  int jlo = cor ? Hunt(x[0]) : Locate(x[0]);
+  int i, j, m, ns; 
+  double *den, dif, dift, ho, hp, *w; 
+  double *xa;
+  double **c, **d;
   
-  dif = fabs(x-xa[0]); 
+  c = new double * [mm];
+  for (i=0; i<mm; i++) 
+    c[i] = new double[nnf];
+  d = new double * [mm];
+  for (i=0; i<mm; i++) 
+    d[i] = new double[nnf];
+  w = new double[nnf];
+  den = new double[nnf];
+
+  ns = 0;
+  xa = &xx[jlo];
+  
+  dif = fabs(x[0]-xa[0]); 
   for (i=0;i<mm;i++) { // Here we ﬁnd the index ns of the closest table entry, 
-    if ((dift=fabs(x-xa[i])) < dif) { 
+    if ((dift=fabs(x[0]-xa[i])) < dif) { 
       ns=i; 
       dif=dift; 
     } 
-    c[i] = ya[i]; // and initialize the tableau of c’s and d’s. 
-    d[i] = ya[i]; 
+    for (j=0; j<nnf; j++) {
+      c[i][j] = yy[j][i+jlo]; // and initialize the tableau of c’s and d’s. 
+      d[i][j] = yy[j][i+jlo]; 
+    }
   } 
-  y = ya[ns--]; // This is the initial approximation to y. 
+  for (j=0; j<nnf; j++)
+    y[j] = yy[j][ns+jlo]; // This is the initial approximation to y. 
+  ns--;
   for (m=1; m<mm; m++) { // For each column of the tableau,
     for (i=0;i<mm-m;i++) { // we loop over the current c’s and d’s and update them.
-      ho = xa[i]-x; 
-      hp = xa[i+m]-x; 
-      w = c[i+1]-d[i]; 
-      if ((den=ho-hp) == 0.0) { // This error can occur only if two input xa’s are (to within roundoﬀ ) identical. 
-	delete c;
-	delete d;
+      ho = xa[i]-x[0]; 
+      hp = xa[i+m]-x[0]; 
+      for (j=0; j<nnf; j++) {
+        w[j] = c[i+1][j]-d[i][j];
+        den[j] = ho-hp;
+      }       
+      if (den[0] == 0.0) { // This error can occur only if two input xa’s are (to within roundoﬀ ) identical. 
+	for (j=0; j<mm; j++) {
+          delete [] c[j];
+	  delete [] d[j];
+	}
+	delete [] c;
+	delete [] d;
+	delete [] w;
+	delete [] den;
 	throw("PolyInterp1D error");
       }
-      den = w/den; 
-      d[i] = hp*den; // Here the c’s and d’s are updated. 
-      c[i] = ho*den; 
+      for (j=0; j<nnf; j++) {
+	den[j] = w[j]/den[j]; 
+	d[i][j] = hp*den[j]; // Here the c’s and d’s are updated. 
+	c[i][j] = ho*den[j]; 
+      }
     } 
-    y += (dy=(2*(ns+1) < (mm-m) ? c[ns+1] : d[ns--])); 
+    if (2*(ns+1) < (mm-m))
+      for (j=0; j<nnf; j++)
+	y[j] += c[ns+1][j];
+    else {
+      for (j=0; j<nnf; j++) {
+	y[j] += d[ns][j];
+      }
+      ns--;
+    }
   }
-  delete c;
-  delete d;
-  return y;
+  for (j=0; j<mm; j++) {
+    delete [] c[j];
+    delete [] d[j];
+  }
+  delete [] c;
+  delete [] d;
+  delete [] w;
+  delete [] den;
+  return 0;
+}
+
+int balPolyInterp1D::EvaluateDerivative(double *x, double *y) { 
+// NOT IMPLEMENTED
+  return -1;
 }
 
 /***** balSplineInterp1D *****/
@@ -252,43 +352,88 @@ void balSplineInterp1D::Destroy() {
   delete this;
 }
 
-balSplineInterp1D * balSplineInterp1D::Create(double * xv, double * yv, int length, double yp1, double ypn) {
-  return new balSplineInterp1D(xv,yv,length,yp1,ypn);
+balSplineInterp1D * balSplineInterp1D::Create() {
+  return new balSplineInterp1D();
 }
 
 balSplineInterp1D * balSplineInterp1D::Copy(balSplineInterp1D *interp) {
   return new balSplineInterp1D(*interp);
 }
   
-balSplineInterp1D::balSplineInterp1D(double * xv, double * yv, int length, double yp1, double ypn) :
-  balBaseInterp1D(xv,yv,length,2) {
-  y2 = new double[length];
-  sety2(xv,yv,yp1,ypn);
+balSplineInterp1D * balSplineInterp1D::Clone() const {
+  return new balSplineInterp1D(*this);
+}
+
+balSplineInterp1D::balSplineInterp1D() :
+  balBaseInterp1D() {
+  yyp1 = NATURAL_SPLINE;
+  yypn = NATURAL_SPLINE;
+  y2 = NULL;
+  mm = 2;
 }
 
 balSplineInterp1D::balSplineInterp1D(const balSplineInterp1D & interp) :
   balBaseInterp1D(interp) {
-  y2 = new double[n];
-  //sety2(xv,yv,yp1,ypn);
-  memcpy(y2,interp.y2,n*sizeof(double));
+  if (interp.y2!=NULL) {
+    y2 = new double * [n];
+//    memcpy(y2,interp.y2,n*sizeof(double));
+    for (int i=0; i<n; i++) { 
+      y2[i] = new double[nnf];
+      memcpy(y2[i],interp.y2[i],nnf*sizeof(double));
+    }
+  }
+  else
+    y2 = NULL;
 }
 
-balSplineInterp1D::~balSplineInterp1D() { delete y2; }
+balSplineInterp1D::~balSplineInterp1D() { 
+  if (y2!=NULL) {
+    for (int i=0; i<n; i++) 
+      delete [] y2[i];
+    delete [] y2;
+  }
+}
 
-void balSplineInterp1D::sety2(double *xv, double *yv, double yp1, double ypn) {
-  int i, k; 
-  double p, qn, sig, un; 
-  double *u; 
+int balSplineInterp1D::Init() {
+  if ((xx == NULL)||(yy == NULL)) {
+    cerr<<"balSplineInterp1D::Init() - Interpolation points not set\n";
+    return -1;
+  }
+  if (y2!=NULL) {
+    for (int i=0; i<n; i++) 
+      delete [] y2[i];
+    delete [] y2;
+  }
+  y2 = new double * [n];
+  for (int i=0; i<n; i++) 
+    y2[i] = new double[nnf];
+  balSplineInterp1D::Sety2();
+  return 0;
+}
+
+void balSplineInterp1D::SetBoundaryConditions(double yp1, double ypn) {
+  yyp1 = yp1;
+  yypn = ypn;
+}
+
+void balSplineInterp1D::Sety2() {
+  int i, j, k; 
+  double p, qn, sig, *un; 
+  double **u; 
   
-  u = new double[n-1];
-  if(u == NULL)
-    throw("Memory allocation failure");
+  u = new double * [n-1];
+  for (j=0; j<n-1; j++)
+    u[j] = new double[nnf];
+  un = new double[nnf];
   
-  if (yp1 > 0.99e99)	// The lower boundary condition is set either to be ``natural'' 
-    y2[0] = u[0]= 0.0;
+  if (yyp1 > 0.99e99)	// The lower boundary condition is set either to be ``natural'' 
+    for (j=0; j<nnf; j++)
+      y2[0][j] = u[0][j]= 0.0;
   else {							// or else to have a speciﬁed ﬁrst derivative. 
-    y2[0] = -0.5; 
-    u[0] = (3.0/(xv[1]-xv[0]))*((yv[1]-yv[0])/(xv[1]-xv[0])-yp1); 
+    for (j=0; j<nnf; j++) {
+      y2[0][j] = -0.5; 
+      u[0][j] = (3.0/(xx[1]-xx[0]))*((yy[j][1]-yy[j][0])/(xx[1]-xx[0])-yyp1); 
+    }
 	} 
   for (i=1;i<n-1;i++) { 
     /*
@@ -296,41 +441,444 @@ void balSplineInterp1D::sety2(double *xv, double *yv, double yp1, double ypn) {
      * y2 and u are used for temporary storage of the decomposed 
      * factors. 
      */
-    sig = (xv[i]-xv[i-1])/(xv[i+1]-xv[i-1]); 
-    p = sig*y2[i-1]+2.0; 
-    y2[i] = (sig-1.0)/p; 
-    u[i] = (yv[i+1]-yv[i])/(xv[i+1]-xv[i]) - (yv[i]-yv[i-1])/(xv[i]-xv[i-1]); 
-    u[i] = (6.0*u[i]/(xv[i+1]-xv[i-1])-sig*u[i-1])/p; 
+    sig = (xx[i]-xx[i-1])/(xx[i+1]-xx[i-1]); 
+    
+    for (j=0; j<nnf; j++) {
+      p = sig*y2[i-1][j]+2.0; 
+      y2[i][j] = (sig-1.0)/p; 
+      u[i][j] = (yy[j][i+1]-yy[j][i])/(xx[i+1]-xx[i]) - (yy[j][i]-yy[j][i-1])/(xx[i]-xx[i-1]); 
+      u[i][j] = (6.0*u[i][j]/(xx[i+1]-xx[i-1])-sig*u[i-1][j])/p; 
+    }
   } 
-  if (ypn > 0.99e99)	// The upper boundary condition is set either to be ``natural''
-    qn = un = 0.0; 
+  if (yypn > 0.99e99) {	// The upper boundary condition is set either to be ``natural''
+    qn = 0.0;
+    for (j=0; j<nnf; j++)
+      un[j] = 0.0;
+  }
   else {							// or else to have a speciﬁed ﬁrst derivative. 
     qn = 0.5; 
-    un = (3.0/(xv[n-1]-xv[n-2]))*(ypn-(yv[n-1]-yv[n-2])/(xv[n-1]-xv[n-2])); 
+    for (j=0; j<nnf; j++) 
+      un[j] = (3.0/(xx[n-1]-xx[n-2]))*(yypn-(yy[j][n-1]-yy[j][n-2])/(xx[n-1]-xx[n-2])); 
   } 
-  y2[n-1] = (un-qn*u[n-2])/(qn*y2[n-2]+1.0); 
-  // This is the backsubstitution loop of the tridiagonal algorithm. 
-  for (k=n-2;k>=0;k--) 
-    y2[k]=y2[k]*y2[k+1]+u[k];
-  
-  delete u;
+  for (j=0; j<nnf; j++) {
+    y2[n-1][j] = (un[j]-qn*u[n-2][j])/(qn*y2[n-2][j]+1.0); 
+    // This is the backsubstitution loop of the tridiagonal algorithm. 
+    for (k=n-2;k>=0;k--) 
+      y2[k][j]=y2[k][j]*y2[k+1][j]+u[k][j];
+  }
+  for (i=0; i<n-1; i++)
+    delete [] u[i];
+  delete [] u;
+  delete [] un;
 }
 
-double balSplineInterp1D::rawinterp(int j, double x) {
+int balSplineInterp1D::Evaluate(double *x, double *y) {
+  if ((xx == NULL) || (yy == NULL)) {
+    cerr<<"balSplineInterp1D::Evaluate() - Interpolation points not set\n";
+    return -1;
+  }
+  if (y2 == NULL) {
+    cerr<<"balSplineInterp1D::Evaluate() - Spline not initialized. Call method Init()\n";
+    return -1;
+  }
+  int jlo = cor ? Hunt(x[0]) : Locate(x[0]);
+  int i;
   int klo, khi; 
-  double y, h, b, a;
+  double h, b, a;
   
-  klo = j;
-  khi = j+1;
+  klo = jlo;
+  khi = jlo+1;
   h = xx[khi]-xx[klo];
   
   if (h == 0.0) {
     //The xa’s must be distinct. 
-    throw("Bad input to balSplineInterp1D::rawinterp");
+    cerr<<"Bad input to balSplineInterp1D::Evaluate()\n";
+    return -1;
   }
-  a = (xx[khi]-x)/h;
-  b = (x-xx[klo])/h; // Cubic spline polynomial is now evaluated. 
-  y = a*yy[klo] + b*yy[khi] + ((a*a*a-a)*y2[klo] + (b*b*b-b)*y2[khi])*(h*h)/6.0; 
-  return y;
+  a = (xx[khi]-x[0])/h;
+  b = (x[0]-xx[klo])/h; // Cubic spline polynomial is now evaluated. 
+  for (i=0; i<nnf; i++)
+    y[i] = a*yy[i][klo] + b*yy[i][khi] + ((a*a*a-a)*y2[klo][i] + (b*b*b-b)*y2[khi][i])*(h*h)/6.0; 
+  return 0;
 }
+
+int balSplineInterp1D::EvaluateDerivative(double *x, double *y) { 
+  
+  if ((xx == NULL) || (yy == NULL)) {
+    cerr<<"balSplineInterp1D::EvaluateDerivative() - Interpolation points not set\n";
+    return -1;
+  }
+  
+  if (y2 == NULL) {
+    cerr<<"balSplineInterp1D::EvaluateDerivative() - Spline not initialized. Call method Init()\n";
+    return -1;
+  }
+  int jlo = cor ? Hunt(x[0]) : Locate(x[0]);
+  int i;
+  int klo,khi;
+  double h, b, a, adot, bdot;
+
+  klo = jlo;
+  khi = jlo+1;
+  h = xx[khi]-xx[klo];
+  
+  if (h == 0.0) {
+    //The xa’s must be distinct. 
+    cerr<<"Bad input to balSplineInterp1D::EvaluateDerivative()\n";
+    return -1;
+  }
+
+  a = (xx[khi]-x[0])/h;
+  b = (x[0]-xx[klo])/h;
+  adot = -1/h;
+  bdot = 1/h;
+  for (i=0; i<nnf; i++)
+    y[i] = adot*yy[i][klo]+bdot*yy[i][khi]+((3*a*a*adot-adot)*y2[klo][i]+(3*b*b*bdot-bdot)*y2[khi][i])*(h*h)/6.0; 
+  return 0;
+}
+
+/***** balSmoothingSplineInterp1D *****/
+
+const char * balSmoothingSplineInterp1D::GetClassName() const {
+  return "balSmoothingSplineInterp1D";
+}
+
+void balSmoothingSplineInterp1D::Destroy() {
+  delete this;
+}
+
+balSmoothingSplineInterp1D * balSmoothingSplineInterp1D::Create() {
+  return new balSmoothingSplineInterp1D();
+}
+
+balSmoothingSplineInterp1D * balSmoothingSplineInterp1D::Copy(balSmoothingSplineInterp1D *interp) {
+  return new balSmoothingSplineInterp1D(*interp);
+}
+
+balSmoothingSplineInterp1D * balSmoothingSplineInterp1D::Clone() const {
+  return new balSmoothingSplineInterp1D(*this);
+}
+  
+balSmoothingSplineInterp1D::balSmoothingSplineInterp1D() :
+  balBaseInterp1D() {
+  mm = 2;
+  SS = 0;
+  a = NULL;
+  b = NULL;
+  c = NULL;
+  d = NULL;
+  ddy = NULL;
+  _DEALLOC_DDY = 0;
+}
+
+int balSmoothingSplineInterp1D::Init() {
+ if ((xx==NULL)||(yy==NULL)) {
+   cerr<<"balSmoothingSplineInterp1D::Init() - Interpolation points not set\n";
+   return -1;
+ }
+  int i;
+  if (a!=NULL)
+    for (i=0; i<nnf; i++)
+      delete [] a[i];
+    delete [] a;
+  if (b!=NULL)
+    for (i=0; i<nnf; i++)
+      delete [] b[i];
+    delete [] b; 
+  if (c!=NULL)
+    for (i=0; i<nnf; i++)
+      delete [] c[i];
+    delete [] c; 
+  if (d!=NULL)
+    for (i=0; i<nnf; i++)
+      delete [] d[i];
+    delete [] d; 
+  a = new double * [nnf];
+  b = new double * [nnf];
+  c = new double * [nnf];
+  d = new double * [nnf];
+  for (int i=0; i<nnf; i++) {
+    a[i] = new double[n];
+    b[i] = new double[n];
+    c[i] = new double[n];
+    d[i] = new double[n];
+    balSmoothingSplineInterp1D::ComputeCoefficients(i);
+  }
+  return 0;
+}
+ 
+int balSmoothingSplineInterp1D::ComputeCoefficients(int index) {
+
+  if (SS == 0) {
+    ddy = new double [n];
+    for (int i=0; i<n; i++) 
+      ddy[i] = 1.0;
+  }
+
+  int i;
+  double *r,*r1,*r2,*t,*t1,*u,*v,p,h,f,f2,g,e;
+
+  r = new double[n];
+  r1 = new double[n+1];
+  r2 = new double[n+2];
+  t = new double[n-2];
+  t1 = new double[n-2];
+  u = new double[n+2];
+  v = new double[n+2];
+
+  r[0] = 0.0; 
+  r[1] = 0.0; 
+  r1[n] = 0.0; 
+  r2[n] = 0.0; 
+  r2[n+1] = 0.0; 
+  u[0] = 0.0; 
+  u[1] = 0.0; 
+  u[n] = 0.0; 
+  u[n+1] = 0.0; 
+  p = 0.0;
+
+  h = xx[1]-xx[0];
+  f = (yy[index][1]-yy[index][0])/h;
+ 
+  for (i=2; i<=n-1; i++) {
+    g = h;
+    h = xx[i]-xx[i-1];
+    e = f;
+    f = (yy[index][i]-yy[index][i-1])/h;
+    a[index][i-1] = f-e;
+    t[i-2] = 2*(g+h)/3.0;
+    t1[i-2] = h/3.0;
+    r2[i] = ddy[i-2]/g;
+    r[i] = ddy[i]/h;
+    r1[i] = -ddy[i-1]/g-ddy[i-1]/h;
+  }
+
+  for (i=2; i<=n-1; i++) {
+    b[index][i-1] = r[i]*r[i]+r1[i]*r1[i]+r2[i]*r2[i];
+    c[index][i-1] = r[i]*r1[i+1]+r1[i]*r2[i+1];
+    d[index][i-1] = r[i]*r2[i+2];
+  }
+  f2 = -SS;
+
+  // Next iteration
+  while(1) {
+    for (i=2; i<=n-1; i++) {
+      r1[i-1] = f*r[i-1];
+      r2[i-2] = g*r[i-2];
+      r[i] = 1/(p*b[index][i-1]+t[i-2]-f*r1[i-1]-g*r2[i-2]);
+      u[i] = a[index][i-1]-r1[i-1]*u[i-1]-r2[i-2]*u[i-2];
+      f = p*c[index][i-1]+t1[i-2]-h*r1[i-1];
+      g = h;
+      h = d[index][i-1]*p;
+    }
+  
+    for (i=n-1; i>=2; i--) {
+      u[i] = r[i]*u[i]-r1[i]*u[i+1]-r2[i]*u[i+2];
+    }
+    e = 0.0;
+    h = 0.0;
+    
+    for (i=1;i<=n-1;i++) {
+      g = h;
+      h = (u[i+1]-u[i])/(xx[i]-xx[i-1]);
+      v[i] = (h-g)*ddy[i-1]*ddy[i-1];
+      e = e+v[i]*(h-g);
+    }
+  
+    g = -h*ddy[n-1]*ddy[n-1];
+    v[n] = -h*ddy[n-1]*ddy[n-1];
+    e = e-g*h;
+    g = f2;
+    f2 = e*p*p;
+  
+    if ((f2>=f)||(f2<=g)) {
+      for (i=1;i<=n;i++) {
+	a[index][i-1] = yy[index][i-1]-p*v[i];
+	c[index][i-1] = u[i];
+      }
+      for (i=1;i<=n-1;i++) {
+	h = xx[i]-xx[i-1];
+	d[index][i-1] = (c[index][i]-c[index][i-1])/(3.0*h);
+	b[index][i-1] = (a[index][i]-a[index][i-1])/h-(h*d[index][i-1]+c[index][i-1])*h;
+      }
+
+      delete [] r;
+      delete [] r1;
+      delete [] r2;
+      delete [] t;
+      delete [] t1;
+      delete [] u;
+      delete [] v;
+      if (SS == 0) {
+        delete [] ddy;
+	ddy = NULL;
+      }
+      return 0;
+    }
+
+    f = 0.0;
+    h = (v[2]-v[1])/(xx[1]-xx[0]);
+    for (i=2;i<=n-1;i++) {
+      g = h;
+      h = (v[i+1]-v[i])/(xx[i]-xx[i-1]);
+      g = h-g-r1[i-1]*r[i-1]-r2[i-2]*r[i-2];
+      f = f+g*r[i]*g;
+      r[i] = g;
+    }
+    h = e-p*f;
+    if (h<=0) {
+      for (i=1;i<=n;i++) {
+	a[index][i-1] = yy[index][i-1]-p*v[i];
+	c[index][i-1] = u[i];
+      }
+      for (i=1;i<=n-1;i++) {
+	h = xx[i]-xx[i-1];
+	d[index][i-1] = (c[index][i]-c[index][i-1])/(3*h);
+	b[index][i-1] = (a[index][i]-a[index][i-1])/h-(h*d[index][i-1]+c[index][i-1])*h;
+      }
+      delete [] r;
+      delete [] r1;
+      delete [] r2;
+      delete [] t;
+      delete [] t1;
+      delete [] u;
+      delete [] v;
+      if (SS == 0) {
+        delete [] ddy;
+	ddy = NULL;
+      }
+      return 0;
+    } 
+     	p = p+(SS-f2)/((sqrt(SS/e)+p)*h);
+  }
+}
+
+balSmoothingSplineInterp1D::balSmoothingSplineInterp1D(const balSmoothingSplineInterp1D & interp) :
+  balBaseInterp1D(interp) {
+  int i;
+  if (interp.a!=NULL) {
+    a = new double * [nnf];
+    //memcpy(a,interp.a,nnf*sizeof(double));
+    for (i=0; i<nnf; i++) {
+      a[i] = new double[n];
+      memcpy(a[i],interp.a[i],n*sizeof(double));
+    } 
+  }
+  else
+    a = NULL;
+  if (interp.b!=NULL) {
+    b = new double * [nnf];
+    //memcpy(b,interp.b,nnf*sizeof(double));
+    for (i=0; i<nnf; i++) {
+      b[i] = new double[n];
+      memcpy(b[i],interp.b[i],n*sizeof(double));
+    } 
+  }
+  else
+    b = NULL;
+  if (interp.c!=NULL) {
+    c = new double * [nnf];
+    //memcpy(c,interp.c,nnf*sizeof(double));
+    for (i=0; i<nnf; i++) {
+      c[i] = new double[n];
+      memcpy(c[i],interp.c[i],n*sizeof(double));
+    } 
+  }
+  else
+    c = NULL;
+  if (interp.d!=NULL) {
+    d = new double * [nnf];
+    //memcpy(d,interp.d,nnf*sizeof(double));
+    for (i=0; i<nnf; i++) {
+      d[i] = new double[n];
+      memcpy(d[i],interp.d[i],n*sizeof(double));
+    } 
+  }
+  else
+    d = NULL;
+  ddy = interp.ddy;
+}
+
+balSmoothingSplineInterp1D::~balSmoothingSplineInterp1D() { 
+  int i;
+  if (a!=NULL)
+    for (i=0; i<nnf; i++)
+      delete [] a[i];
+    delete [] a;
+  if (b!=NULL)
+    for (i=0; i<nnf; i++)
+      delete [] b[i];
+    delete [] b; 
+  if (c!=NULL)
+    for (i=0; i<nnf; i++)
+      delete [] c[i];
+    delete [] c; 
+  if (d!=NULL)
+    for (i=0; i<nnf; i++)
+      delete [] d[i];
+    delete [] d; 
+  if (_DEALLOC_DDY)
+    delete [] ddy;
+
+}
+
+void balSmoothingSplineInterp1D::SetSmoothingParameters(double *dy, double S) {
+  SS = S;
+  if (_DEALLOC_DDY)
+    delete [] ddy;
+  ddy = dy;
+  _DEALLOC_DDY = 0;
+}
+
+void balSmoothingSplineInterp1D::SetSmoothingParameters(double smooth) {
+  SS = 1;
+  if (_DEALLOC_DDY)
+    delete [] ddy;
+  ddy = new double[n];
+  for (int i=0; i<n; i++)
+    ddy[i] = smooth;
+  _DEALLOC_DDY = 1;
+}
+
+int balSmoothingSplineInterp1D::Evaluate(double *x, double *y) {
+  if ((xx == NULL) || (yy == NULL)) {
+    cerr<<"balSmoothingSplineInterp1D::Evaluate() - Interpolation points not set\n";
+    return -1;
+  }
+  if ((a == NULL) || (b == NULL) || (c == NULL) || (d == NULL)) {
+    cerr<<"balSmoothingSplineInterp1D::Evaluate() - Spline not initilized. Call method Init(). \n";
+    return -1;
+  }
+  int i;
+  double h;
+  
+  int jlo = cor ? Hunt(x[0]) : Locate(x[0]);
+
+  h = x[0]-xx[jlo];
+  
+  for (i=0; i<nnf; i++)
+    y[i] = ((d[i][jlo]*h+c[i][jlo])*h+b[i][jlo])*h+a[i][jlo];
+  return 0;
+}
+
+int balSmoothingSplineInterp1D::EvaluateDerivative(double *x, double *y) { 
+  if ((xx == NULL) || (yy == NULL)) {
+    cerr<<"balSmoothingSplineInterp1D::EvaluateDerivative() - Interpolation points not set\n";
+    return -1;
+  }
+  if ((a == NULL) || (b == NULL) || (c == NULL) || (d == NULL)) {
+    cerr<<"balSmoothingSplineInterp1D::EvaluateDerivative() - Spline not initilized. Call method Init(). \n";
+    return -1;
+  }
+  int i;
+  double h;
+  int jlo = cor ? Hunt(x[0]) : Locate(x[0]);
+
+  h = x[0]-xx[jlo];
+  
+  for (i=0; i<nnf; i++)
+    y[i] = (3*d[i][jlo]*h+2*c[i][jlo])*h+b[i][jlo];
+  return 0;
+}
+
 
