@@ -36,6 +36,7 @@ balInterpSystem::balInterpSystem() {
   SetNumberOfParameters(0);
   //xderiv = N_VNew_Serial(GetDimension());
   interpolator = NULL;
+  backward = false;
 }
 
 balInterpSystem::balInterpSystem(const balInterpSystem& interpsystem) : balDynamicalSystem( interpsystem ) {
@@ -43,6 +44,7 @@ balInterpSystem::balInterpSystem(const balInterpSystem& interpsystem) : balDynam
     interpolator = interpsystem.interpolator->Clone();
   else
     interpolator = NULL;
+  backward = interpsystem.backward;
   //xderiv = N_VNew_Serial(eye.GetDimension());
   /*for(int i = 0; i < eye.GetDimension(); i++)
     Ith(xderiv,i)=Ith(eye.xderiv,i);
@@ -71,7 +73,7 @@ const char * balInterpSystem::GetClassName () const {
 }
 
 bool balInterpSystem::HasEvents() const {
-  return true;
+  return false;
 }
 
 int balInterpSystem::SetInterpolator(balInterpolator *interp) {
@@ -88,11 +90,17 @@ int balInterpSystem::SetInterpolator(balInterpolator *interp) {
 int balInterpSystem::RHS (realtype t, N_Vector x, N_Vector xdot, void * data) { 
   int i;
   int n = GetDimension();
+  // NV_DATA_S gets a pointer to data conteined in N_Vector object
   int res = interpolator->Evaluate(NV_DATA_S(x),NV_DATA_S(xdot));
   if (res==-1)
     return ! CV_SUCCESS;
   //for (i=0; i<n; i++)
   //  Ith(xdot,i) = y[i];
+  if (backward) {    
+    for (i=0; i<n; i++) {
+      Ith(xdot,i) = -Ith(xdot,i);
+    }
+  }
   return CV_SUCCESS;
 }
 
@@ -101,4 +109,10 @@ int balInterpSystem::Events (realtype t, N_Vector x, realtype * event, void * da
   for(int i=0; i<GetNumberOfEvents(); i++)
     event[i] = Ith(xderiv,i);
   */return CV_SUCCESS;
+}
+
+bool balInterpSystem::SpecialOptions(const void *opt) {
+  bool *b = (bool*) opt;
+  backward = *b;
+  return true;
 }

@@ -228,8 +228,33 @@ int balLinearInterp3D::Evaluate(double *x, double *y) {
   return 0;
 }
 
-int balLinearInterp3D::EvaluateDerivative(double *x, double *y) {
-  // NOT IMPLEMENTED
+int balLinearInterp3D::EvaluateDerivative(double *x, double **y) {
+  // Implemented with finite differences
+  if (xx1 == NULL) {
+    cerr<<"balLinearInterp3D::Evaluate() - Interpolation points not set\n";
+    return -1;
+  }
+  
+  double xr[3],xf[3],xt[3],yc[nnf],yr[nnf],yf[nnf],yt[nnf];
+  xr[0] = x[0]+FINITE_DIFFERENCES_STEP;
+  xr[1] = x[1];
+  xr[2] = x[2];
+  xf[0] = x[0];
+  xf[1] = x[1]+FINITE_DIFFERENCES_STEP;
+  xf[2] = x[2];
+  xt[0] = x[0];
+  xt[1] = x[1];
+  xt[2] = x[2]+FINITE_DIFFERENCES_STEP;
+  Evaluate(x,yc);
+  Evaluate(xr,yr);
+  Evaluate(xf,yf);
+  Evaluate(xt,yt);
+
+  for (int i=0; i<nnf; i++) {
+    y[i][0] = (yr[i]-yc[i])/FINITE_DIFFERENCES_STEP;
+    y[i][1] = (yf[i]-yc[i])/FINITE_DIFFERENCES_STEP;
+    y[i][2] = (yt[i]-yc[i])/FINITE_DIFFERENCES_STEP;
+  }
   return 0;
 }
 
@@ -410,8 +435,33 @@ int balPolyInterp3D::Evaluate(double *x, double *y) {
   return 0;
 }
 
-int balPolyInterp3D::EvaluateDerivative(double *x, double *y) {
-  // NOT IMPLEMENTED
+int balPolyInterp3D::EvaluateDerivative(double *x, double **y) {
+  // Implemented with finite differences
+  if (xx1 == NULL) {
+    cerr<<"balPolyInterp3D::Evaluate() - Interpolation points not set\n";
+    return -1;
+  }
+  
+  double xr[3],xf[3],xt[3],yc[nnf],yr[nnf],yf[nnf],yt[nnf];
+  xr[0] = x[0]+FINITE_DIFFERENCES_STEP;
+  xr[1] = x[1];
+  xr[2] = x[2];
+  xf[0] = x[0];
+  xf[1] = x[1]+FINITE_DIFFERENCES_STEP;
+  xf[2] = x[2];
+  xt[0] = x[0];
+  xt[1] = x[1];
+  xt[2] = x[2]+FINITE_DIFFERENCES_STEP;
+  Evaluate(x,yc);
+  Evaluate(xr,yr);
+  Evaluate(xf,yf);
+  Evaluate(xt,yt);
+
+  for (int i=0; i<nnf; i++) {
+    y[i][0] = (yr[i]-yc[i])/FINITE_DIFFERENCES_STEP;
+    y[i][1] = (yf[i]-yc[i])/FINITE_DIFFERENCES_STEP;
+    y[i][2] = (yt[i]-yc[i])/FINITE_DIFFERENCES_STEP;
+  }
   return 0;
 }
 
@@ -586,8 +636,33 @@ int balSplineInterp3D::Evaluate(double *x, double *y) {
   return 0;
 }
 
-int balSplineInterp3D::EvaluateDerivative(double *x, double *y) {
-  // NOT IMPLEMENTED
+int balSplineInterp3D::EvaluateDerivative(double *x, double **y) {
+  // Implemented with finite differences
+  if (xx1 == NULL) {
+    cerr<<"balSplineInterp3D::Evaluate() - Interpolation points not set\n";
+    return -1;
+  }
+  
+  double xr[3],xf[3],xt[3],yc[nnf],yr[nnf],yf[nnf],yt[nnf];
+  xr[0] = x[0]+FINITE_DIFFERENCES_STEP;
+  xr[1] = x[1];
+  xr[2] = x[2];
+  xf[0] = x[0];
+  xf[1] = x[1]+FINITE_DIFFERENCES_STEP;
+  xf[2] = x[2];
+  xt[0] = x[0];
+  xt[1] = x[1];
+  xt[2] = x[2]+FINITE_DIFFERENCES_STEP;
+  Evaluate(x,yc);
+  Evaluate(xr,yr);
+  Evaluate(xf,yf);
+  Evaluate(xt,yt);
+
+  for (int i=0; i<nnf; i++) {
+    y[i][0] = (yr[i]-yc[i])/FINITE_DIFFERENCES_STEP;
+    y[i][1] = (yf[i]-yc[i])/FINITE_DIFFERENCES_STEP;
+    y[i][2] = (yt[i]-yc[i])/FINITE_DIFFERENCES_STEP;
+  }
   return 0;
 }
 
@@ -770,7 +845,32 @@ int balSmoothingSplineInterp3D::Evaluate(double *x, double *y) {
   return 0;
 }
 
-int balSmoothingSplineInterp3D::EvaluateDerivative(double *x, double *y) {
-  // NOT IMPLEMENTED
+int balSmoothingSplineInterp3D::EvaluateDerivative(double *x, double **y) {
+  // Implemented with finite differences
+  if (xx1 == NULL) {
+    cerr<<"balSmoothingSplineInterp3D::Evaluate() - Interpolation points not set\n";
+    return -1;
+  }
+  
+  double xr[3],xf[3],xt[3],yc[nnf],yr[nnf],yf[nnf],yt[nnf];
+  xr[0] = x[0]+FINITE_DIFFERENCES_STEP;
+  xr[1] = x[1];
+  xr[2] = x[2];
+  xf[0] = x[0];
+  xf[1] = x[1]+FINITE_DIFFERENCES_STEP;
+  xf[2] = x[2];
+  xt[0] = x[0];
+  xt[1] = x[1];
+  xt[2] = x[2]+FINITE_DIFFERENCES_STEP;
+  Evaluate(x,yc);
+  Evaluate(xr,yr);
+  Evaluate(xf,yf);
+  Evaluate(xt,yt);
+
+  for (int i=0; i<nnf; i++) {
+    y[i][0] = (yr[i]-yc[i])/FINITE_DIFFERENCES_STEP;
+    y[i][1] = (yf[i]-yc[i])/FINITE_DIFFERENCES_STEP;
+    y[i][2] = (yt[i]-yc[i])/FINITE_DIFFERENCES_STEP;
+  }
   return 0;
 }

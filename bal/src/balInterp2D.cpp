@@ -157,8 +157,20 @@ int balLinearInterp2D::Evaluate(double *x, double *y) {
   return 0;
 }
 
-int balLinearInterp2D::EvaluateDerivative(double *x, double *y) {
-  // NOT IMPLEMENTED
+int balLinearInterp2D::EvaluateDerivative(double *x, double **y) {
+  if ((x1terp == NULL)||(x2terp == NULL)) {
+    cerr<<"balLinearInterp2D::EvaluateDerivative() - Interpolator not initialized. Call method Init()\n";
+    return -1;
+  }
+  
+  int idx1, idx2;
+  idx1 = x1terp->nextHunt() ? x1terp->Hunt(x[0]) : x1terp->Locate(x[0]);
+  idx2 = x2terp->nextHunt() ? x2terp->Hunt(x[1]) : x2terp->Locate(x[1]);
+  
+  for (int i=0; i<nnf; i++) {
+    y[i][0] = (yy[i][(idx1+1)+nnx1*idx2]-yy[i][idx1+nnx1*idx2])/(xx1[idx1+1]-xx1[idx1]);
+    y[i][1] = (yy[i][idx1+nnx1*(idx2+1)]-yy[i][idx1+nnx1*idx2])/(xx2[idx2+1]-xx2[idx2]);
+  }
   return 0;
 }
 
@@ -332,8 +344,28 @@ int balPolyInterp2D::Evaluate(double *x, double *y) {
   return 0;
 }
 
-int balPolyInterp2D::EvaluateDerivative(double *x, double *y) {
-  // NOT IMPLEMENTED
+int balPolyInterp2D::EvaluateDerivative(double *x, double **y) {
+  // Implemented with finite differences
+  
+  if (xx1 == NULL) {
+    cerr<<"balPolyInterp2D::EvaluateDerivative() - Interpolation points not set\n";
+    return -1;
+  }
+
+  double xr[2],xt[2],yc[nnf],yr[nnf],yt[nnf];
+  xr[0] = x[0]+FINITE_DIFFERENCES_STEP;
+  xr[1] = x[1];
+  xt[0] = x[0];
+  xt[1] = x[1]+FINITE_DIFFERENCES_STEP;
+  Evaluate(x,yc);
+  Evaluate(xr,yr);
+  Evaluate(xt,yt);
+
+  for (int i=0; i<nnf; i++) {
+    y[i][0] = (yr[i]-yc[i])/FINITE_DIFFERENCES_STEP;
+    y[i][1] = (yt[i]-yc[i])/FINITE_DIFFERENCES_STEP;
+  }
+
   return 0;
 }
 
@@ -957,8 +989,27 @@ int balSplineInterp2D::Evaluate(double *x, double *y) {
   return 0;
 }
 
-int balSplineInterp2D::EvaluateDerivative(double *x, double *y) {
-  // NOT IMPLEMENTED
+int balSplineInterp2D::EvaluateDerivative(double *x, double **y) {
+  // Implemented with finite differences
+  
+  if (xx1 == NULL) {
+    cerr<<"balSplineInterp2D::EvaluateDerivative() - Interpolation points not set\n";
+    return -1;
+  }
+
+  double xr[2],xt[2],yc[nnf],yr[nnf],yt[nnf];
+  xr[0] = x[0]+FINITE_DIFFERENCES_STEP;
+  xr[1] = x[1];
+  xt[0] = x[0];
+  xt[1] = x[1]+FINITE_DIFFERENCES_STEP;
+  Evaluate(x,yc);
+  Evaluate(xr,yr);
+  Evaluate(xt,yt);
+
+  for (int i=0; i<nnf; i++) {
+    y[i][0] = (yr[i]-yc[i])/FINITE_DIFFERENCES_STEP;
+    y[i][1] = (yt[i]-yc[i])/FINITE_DIFFERENCES_STEP;
+  }
   return 0;
 }
 
@@ -1143,7 +1194,26 @@ int balSmoothingSplineInterp2D::Evaluate(double *x, double *y) {
   return 0;
 }
 
-int balSmoothingSplineInterp2D::EvaluateDerivative(double *x, double *y) {
-  // NOT IMPLEMENTED
+int balSmoothingSplineInterp2D::EvaluateDerivative(double *x, double **y) {
+  // Implemented with finite differences
+  
+  if (xx1 == NULL) {
+    cerr<<"balSmoothingSplineInterp2D::EvaluateDerivative() - Interpolation points not set\n";
+    return -1;
+  }
+
+  double xr[2],xt[2],yc[nnf],yr[nnf],yt[nnf];
+  xr[0] = x[0]+FINITE_DIFFERENCES_STEP;
+  xr[1] = x[1];
+  xt[0] = x[0];
+  xt[1] = x[1]+FINITE_DIFFERENCES_STEP;
+  Evaluate(x,yc);
+  Evaluate(xr,yr);
+  Evaluate(xt,yt);
+
+  for (int i=0; i<nnf; i++) {
+    y[i][0] = (yr[i]-yc[i])/FINITE_DIFFERENCES_STEP;
+    y[i][1] = (yt[i]-yc[i])/FINITE_DIFFERENCES_STEP;
+  }
   return 0;
 }

@@ -54,9 +54,9 @@ class balInterpolator : public balObject {
      *  If an error has occurred the return value is -1, otherwise it is 0. */ 
     virtual int Evaluate(double *x,double *y) = 0;
     
-    /** Evaluates the derivative of the function in point x. The result is stored in array y. 
+    /** Evaluates the Jacobian matrix of the function in point x. The result is stored in matrix y (of dimensions nf x nd). 
      *  If an error has occurred the return value is -1, otherwise it is 0. */ 
-    virtual int EvaluateDerivative(double *x, double *y) = 0;
+    virtual int EvaluateDerivative(double *x, double **y) = 0;
     
     /** Initializes the balInterpolator. You have to perform this operation before evaluating the function. 
      *  If an error has occurred the return value is -1, otherwise it is 0. */

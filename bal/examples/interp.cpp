@@ -41,28 +41,74 @@ using namespace std;
 
 int main(int argc, char *argv[]) {
 
-  balBaseInterp1D *interp[3];
-  double x[10], y[10];
+  balBaseInterp1D *interp[4];
+  double *x, **y;
   int i;
-  
-  for(i=0; i<10; i++) {
+  double * yy;
+  double ** dyy;
+ 
+  int n = 10;
+  int nf = 1;
+
+  x = new double [n];
+  y = new double * [nf];
+  for (i=0; i<nf; i++)
+    y[i] = new double [n];
+
+  for(i=0; i<n; i++) {
     x[i] = i;
-    y[i] = i*i;
+    y[0][i] = i*i*i;
   }
+  yy = new double [nf];
+  dyy = new double * [nf];
+  for (i=0; i<nf; i++)
+    dyy[i] = new double[1];
+
   
-  interp[0] = balLinearInterp1D::Create(x,y,10);
-  interp[1] = balPolyInterp1D::Create(x,y,10,3);
-  interp[2] = balSplineInterp1D::Create(x,y,10);
+  balLinearInterp1D *lin = balLinearInterp1D::Create();
+  lin -> SetInterpolationPoints(x,y,n,nf);
+  //lin -> Init();
+  interp[0] = lin;
+
+  balPolyInterp1D *pol = balPolyInterp1D::Create();
+  pol -> SetInterpolationPoints(x,y,n,nf);
+  pol -> SetInterpolationOrder(3);
+  pol -> Init();
+  interp[1] = pol;
+
+  balSplineInterp1D *spl = balSplineInterp1D::Create();
+  spl -> SetInterpolationPoints(x,y,n,nf);
+  spl -> Init();
+  interp[2] = spl;
+
+  balSmoothingSplineInterp1D *smooth = balSmoothingSplineInterp1D::Create();
+  smooth -> SetInterpolationPoints(x,y,n,nf);
+  smooth -> SetSmoothingParameters(10);
+  smooth -> Init();
+  interp[3] = smooth;
   
   for(double xx=0.1; xx<=9.9; xx+=0.1) {
     printf("%e", xx);
-    for(i=0; i<3; i++)
-      printf(" %e", interp[i]->interp(xx));  
+    for(i=0; i<4; i++) {
+      interp[i]->Evaluate(&xx,yy);
+      printf(" %e", yy[0]);
+      interp[i]->EvaluateDerivative(&xx,dyy);
+      printf(" %e", dyy[0][0]);
+    }
     printf("\n");
   }
   
-  for(i=0; i<3; i++)
+  for(i=0; i<4; i++)
     interp[i]->Destroy();
+
+  delete [] x;
+  for (i=0; i<nf; i++)
+    delete [] y[i];
+  delete [] y;
+  delete [] yy;
+  for(i=0; i<nf; i++)
+    delete [] dyy[i];
+  delete [] dyy;
   
   return 0;
 }

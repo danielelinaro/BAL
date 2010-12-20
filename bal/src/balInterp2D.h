@@ -99,9 +99,9 @@ class balLinearInterp2D : public balBaseInterp2D {
    *  If an error has occurred the return value is -1, otherwise it is 0. */
   virtual int Evaluate(double *x, double *y);
   
-  /** Evaluates the derivative of the function in point x. The result is stored in array y. 
+  /** Evaluates the Jacobian matrix function in point x. The result is stored in matrix y (of dimensions nf x 2). 
    *  If an error has occurred the return value is -1, otherwise it is 0. */
-  virtual int EvaluateDerivative(double *x, double *y);  
+  virtual int EvaluateDerivative(double *x, double **y);  
   
   /** Initializes the balLinearInterp2D. You have to perform this operation before evaluating the function. 
    *  If an error has occurred the return value is -1, otherwise it is 0. */
@@ -148,9 +148,9 @@ class balPolyInterp2D : public balBaseInterp2D {
    *  If an error has occurred the return value is -1, otherwise it is 0. */
   virtual int Evaluate(double *x, double *y);
   
-  /** Evaluates the derivative of the function in point x. The result is stored in array y. 
+  /** Evaluates the Jacobian matrix of the function in point x. The result is stored in matrix y (of dimensions nf x 2). 
    *  If an error has occurred the return value is -1, otherwise it is 0. */
-  virtual int EvaluateDerivative(double *x, double *y);  
+  virtual int EvaluateDerivative(double *x, double **y);  
  
   /** Sets the interpolation order for each dimension, i.e. the order of the polinomials used to interpolate. Default: m1 = m2 = 2 (linear interpolation) */
   void SetInterpolationOrder(int m1, int m2);
@@ -203,9 +203,9 @@ class balSplineInterp2D : public balBaseInterp2D {
    *  If an error has occurred the return value is -1, otherwise it is 0. */
   virtual int Evaluate(double *x, double *y);
   
-  /** Evaluates the derivative of the function in point x. The result is stored in array y. 
+  /** Evaluates the Jacobian matrix of the function in point x. The result is stored in matrix y (of dimensions nf x 2). 
    *  If an error has occurred the return value is -1, otherwise it is 0. */
-  virtual int EvaluateDerivative(double *x, double *y);  
+  virtual int EvaluateDerivative(double *x, double **y);  
  
   /** Initializes the balSplineInterp2D. You have to perform this operation before evaluating the function. 
    *  If an error has occurred the return value is -1, otherwise it is 0. */
@@ -253,9 +253,9 @@ class balSmoothingSplineInterp2D : public balBaseInterp2D {
    *  If an error has occurred the return value is -1, otherwise it is 0. */
   virtual int Evaluate(double *x, double *y);
   
-  /** Evaluates the derivative of the function in point x. The result is stored in array y. 
+  /** Evaluates the Jacobian matrix of the function in point x. The result is stored in matrix y (of dimensions nf x 2). 
    *  If an error has occurred the return value is -1, otherwise it is 0. */
-  virtual int EvaluateDerivative(double *x, double *y);  
+  virtual int EvaluateDerivative(double *x, double **y);  
   
   /** Sets the smoothing factor. If S = 0 an interpolation is performed.
   * By increasing S the function becomes smoother and smoother.

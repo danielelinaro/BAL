@@ -37,7 +37,7 @@ using namespace std;
 #define MAX(a,b) ((a) > (b) ? (a) : (b))
 
 #define NATURAL_SPLINE 1.0e99
-
+#define FINITE_DIFFERENCES_STEP 1.0e-6
 /**
  * \class balBaseInterp1D 
  * \brief Base class for one dimensional interpolation of vector functions f: R -> R^{nf}.
@@ -129,9 +129,9 @@ class balLinearInterp1D : public balBaseInterp1D {
    *  If an error has occurred the return value is -1, otherwise it is 0. */
   virtual int Evaluate(double *x, double *y);
   
-  /** Evaluates the derivative of the function in point x. The result is stored in array y. 
+  /** Evaluates the Jacobian matrix of the function in point x. The result is stored in matrix y (of dimensions nf x 1). 
    *  If an error has occurred the return value is -1, otherwise it is 0. */
-  virtual int EvaluateDerivative(double *x, double *y);
+  virtual int EvaluateDerivative(double *x, double **y);
 
  protected:
  
@@ -175,10 +175,10 @@ class balPolyInterp1D : public balBaseInterp1D {
    *  If an error has occurred the return value is -1, otherwise it is 0. */
   virtual int Evaluate(double *x, double *y);
   
-  /** Evaluates the derivative of the function in point x. The result is stored in array y.
+  /** Evaluates the Jacobian matrix of the function in point x. The result is stored in matrix y (of dimensions nf x 1).
    *  If an error has occurred the return value is -1, otherwise it is 0. 
-   *  NOT IMPLEMENTED YET. */
-  virtual int EvaluateDerivative(double *x, double *y);
+   *  Implemented with finite differences. */
+  virtual int EvaluateDerivative(double *x, double **y);
   
  protected:
   
@@ -229,9 +229,9 @@ class balSplineInterp1D : public balBaseInterp1D {
    *  If an error has occurred the return value is -1, otherwise it is 0. */
   virtual int Evaluate(double *x, double *y);
   
-  /** Evaluates the derivative of the function in point x. The result is stored in array y. 
+  /** Evaluates the Jacobian matrix of the function in point x. The result is stored in matrix y (of dimensions nf x 1). 
    *  If an error has occurred the return value is -1, otherwise it is 0. */
-  virtual int EvaluateDerivative(double *x, double *y);
+  virtual int EvaluateDerivative(double *x, double **y);
 
   
  protected:
@@ -304,9 +304,9 @@ class balSmoothingSplineInterp1D : public balBaseInterp1D {
    *  If an error has occurred the return value is -1, otherwise it is 0. */
   virtual int Evaluate(double *x, double *y);
   
-  /** Evaluates the derivative of the function in point x. The result is stored in array y. 
+  /** Evaluates the Jacobian matrix of the function in point x. The result is stored in matrix y (of dimensions nf x 1). 
    *  If an error has occurred the return value is -1, otherwise it is 0. */
-  virtual int EvaluateDerivative(double *x, double *y);
+  virtual int EvaluateDerivative(double *x, double **y);
   
  protected:
   

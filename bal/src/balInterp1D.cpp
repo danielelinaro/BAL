@@ -197,7 +197,7 @@ int balLinearInterp1D::Evaluate(double *x, double *y) {
   return 0;
 }
   
-int balLinearInterp1D::EvaluateDerivative(double *x, double *y) {
+int balLinearInterp1D::EvaluateDerivative(double *x, double **y) {
   if ((xx == NULL) || (yy == NULL)) {
     cerr<<"balLinearInterp1D::EvaluateDerivative() - Interpolation points not set\n";
     return -1;
@@ -210,7 +210,7 @@ int balLinearInterp1D::EvaluateDerivative(double *x, double *y) {
     return -1;
   }
   for (i=0; i<nnf; i++)
-    y[i] = (yy[i][jlo+1]-yy[i][jlo])/(xx[jlo+1]-xx[jlo]);
+    y[i][0] = (yy[i][jlo+1]-yy[i][jlo])/(xx[jlo+1]-xx[jlo]);
   return 0;
 }
 
@@ -337,8 +337,20 @@ int balPolyInterp1D::Evaluate(double *x, double *y) {
   return 0;
 }
 
-int balPolyInterp1D::EvaluateDerivative(double *x, double *y) { 
-// NOT IMPLEMENTED
+int balPolyInterp1D::EvaluateDerivative(double *x, double **y) { 
+  // Implemented with finite differences
+  if ((xx == NULL) || (yy == NULL)) {
+    cerr<<"balPolyInterp1D::EvaluateDerivative() - Interpolation points not set\n";
+    return -1;
+  }
+  double x2 = *x+FINITE_DIFFERENCES_STEP; 
+  double y2[nnf], y1[nnf];
+  Evaluate(x,y1);
+  Evaluate(&x2,y2);
+  for (int i=0; i<nnf; i++) {
+      y[i][0] = (y2[i]-y1[i])/FINITE_DIFFERENCES_STEP;
+  }
+    
   return -1;
 }
 
@@ -502,7 +514,7 @@ int balSplineInterp1D::Evaluate(double *x, double *y) {
   return 0;
 }
 
-int balSplineInterp1D::EvaluateDerivative(double *x, double *y) { 
+int balSplineInterp1D::EvaluateDerivative(double *x, double **y) { 
   
   if ((xx == NULL) || (yy == NULL)) {
     cerr<<"balSplineInterp1D::EvaluateDerivative() - Interpolation points not set\n";
@@ -533,7 +545,7 @@ int balSplineInterp1D::EvaluateDerivative(double *x, double *y) {
   adot = -1/h;
   bdot = 1/h;
   for (i=0; i<nnf; i++)
-    y[i] = adot*yy[i][klo]+bdot*yy[i][khi]+((3*a*a*adot-adot)*y2[klo][i]+(3*b*b*bdot-bdot)*y2[khi][i])*(h*h)/6.0; 
+    y[i][0] = adot*yy[i][klo]+bdot*yy[i][khi]+((3*a*a*adot-adot)*y2[klo][i]+(3*b*b*bdot-bdot)*y2[khi][i])*(h*h)/6.0; 
   return 0;
 }
 
@@ -861,7 +873,7 @@ int balSmoothingSplineInterp1D::Evaluate(double *x, double *y) {
   return 0;
 }
 
-int balSmoothingSplineInterp1D::EvaluateDerivative(double *x, double *y) { 
+int balSmoothingSplineInterp1D::EvaluateDerivative(double *x, double **y) { 
   if ((xx == NULL) || (yy == NULL)) {
     cerr<<"balSmoothingSplineInterp1D::EvaluateDerivative() - Interpolation points not set\n";
     return -1;
@@ -877,7 +889,7 @@ int balSmoothingSplineInterp1D::EvaluateDerivative(double *x, double *y) {
   h = x[0]-xx[jlo];
   
   for (i=0; i<nnf; i++)
-    y[i] = (3*d[i][jlo]*h+2*c[i][jlo])*h+b[i][jlo];
+    y[i][0] = (3*d[i][jlo]*h+2*c[i][jlo])*h+b[i][jlo];
   return 0;
 }
 

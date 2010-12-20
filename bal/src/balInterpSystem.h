@@ -66,7 +66,9 @@ class balInterpSystem : public balDynamicalSystem {
   
   bool HasEvents() const;
   int SetInterpolator(balInterpolator *interp);
-
+  
+  // Used to set the direction of the integration (forward or backward in time)
+  bool SpecialOptions(const void *opt); 
  protected:
   balInterpSystem();
   balInterpSystem(const balInterpSystem& interpsystem);
@@ -76,6 +78,7 @@ class balInterpSystem : public balDynamicalSystem {
 
   N_Vector xderiv;
   balInterpolator *interpolator;
+  int backward;
 };
 
 #ifdef __cplusplus

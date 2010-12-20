@@ -33,15 +33,23 @@ balDynamicalSystem::balDynamicalSystem() {
   nev = 0;
   ext = false;
   nExt = 0;
-  pars = NULL;
+  pars = balParameters::Create();
   jac = NULL;
   _dealloc = false;
+  _dealloc_pars = true;
 }
 
 balDynamicalSystem::balDynamicalSystem(const balDynamicalSystem& system) {
   n = system.n;
   nev = system.nev;
-  pars = system.pars; // non rialloco spazio parametri
+  if (system._dealloc_pars) {
+    pars = balParameters::Copy(system.pars); 
+    _dealloc_pars = true;
+  }
+  else {
+    pars = system.pars;// non rialloco spazio parametri
+    _dealloc_pars = false;
+  }
   p = (system.GetParameters())->GetNumber();
   nExt = system.nExt;
   ext = system.ext;
@@ -62,6 +70,8 @@ balDynamicalSystem::~balDynamicalSystem() {
 #ifdef CVODE26
   DestroyMat(jac);
 #endif
+  if (_dealloc_pars)
+    pars->Destroy();
 }
 
 const char * balDynamicalSystem::GetClassName () const {
@@ -213,6 +223,8 @@ void balDynamicalSystem::EventsConstraints (realtype t, N_Vector x, int * constr
 void balDynamicalSystem::SetParameters (balParameters * bp) throw (balException) {
   if(bp->GetNumber() != GetNumberOfParameters())
     throw balException("Wrong number of parameters in balDynamicalSystem::SetParameters");
+  pars->Destroy();
+  _dealloc_pars = false;
   pars = bp;
 }
  

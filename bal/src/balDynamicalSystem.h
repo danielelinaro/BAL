@@ -126,6 +126,7 @@ class balDynamicalSystem : public balObject {
   bool ext;
   
   bool _dealloc;
+  bool _dealloc_pars;
 
 #ifdef CVODE25
   DenseMat jac;
