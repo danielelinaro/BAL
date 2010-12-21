@@ -197,16 +197,16 @@ int balLinearInterp1D::Evaluate(double *x, double *y) {
   return 0;
 }
   
-int balLinearInterp1D::EvaluateDerivative(double *x, double **y) {
+int balLinearInterp1D::EvaluateJacobian(double *x, double **y) {
   if ((xx == NULL) || (yy == NULL)) {
-    cerr<<"balLinearInterp1D::EvaluateDerivative() - Interpolation points not set\n";
+    cerr<<"balLinearInterp1D::EvaluateJacobian() - Interpolation points not set\n";
     return -1;
   }
   int i;
   int jlo = cor ? Hunt(x[0]) : Locate(x[0]);
   if (xx[jlo]==xx[jlo+1])  {
     //The xa’s must be distinct. 
-    cerr<<"Bad input to balLinearInterp1D::EvaluateDerivative()\n";
+    cerr<<"Bad input to balLinearInterp1D::EvaluateJacobian()\n";
     return -1;
   }
   for (i=0; i<nnf; i++)
@@ -214,6 +214,26 @@ int balLinearInterp1D::EvaluateDerivative(double *x, double **y) {
   return 0;
 }
 
+int balLinearInterp1D::EvaluateDivergence(double *x, double *y) {
+  if ((xx == NULL) || (yy == NULL)) {
+    cerr<<"balLinearInterp1D::EvaluateDivergence() - Interpolation points not set\n";
+    return -1;
+  }
+  if (nnf != 1) {
+    cerr<<"balLinearInterp1D::EvaluateDivergence() - Invalid vector field, dimension of codomain must be 1\n";
+    return -1;
+  }
+  int i;
+  int jlo = cor ? Hunt(x[0]) : Locate(x[0]);
+  if (xx[jlo]==xx[jlo+1])  {
+    //The xa’s must be distinct. 
+    cerr<<"Bad input to balLinearInterp1D::EvaluateDivergence()\n";
+    return -1;
+  }
+  y[0] = (yy[0][jlo+1]-yy[0][jlo])/(xx[jlo+1]-xx[jlo]);
+  return 0;
+
+}
 /***** balPolyInterp1D *****/
 
 const char * balPolyInterp1D::GetClassName() const {
@@ -337,10 +357,10 @@ int balPolyInterp1D::Evaluate(double *x, double *y) {
   return 0;
 }
 
-int balPolyInterp1D::EvaluateDerivative(double *x, double **y) { 
+int balPolyInterp1D::EvaluateJacobian(double *x, double **y) { 
   // Implemented with finite differences
   if ((xx == NULL) || (yy == NULL)) {
-    cerr<<"balPolyInterp1D::EvaluateDerivative() - Interpolation points not set\n";
+    cerr<<"balPolyInterp1D::EvaluateJacobian() - Interpolation points not set\n";
     return -1;
   }
   double x2 = *x+FINITE_DIFFERENCES_STEP; 
@@ -351,7 +371,26 @@ int balPolyInterp1D::EvaluateDerivative(double *x, double **y) {
       y[i][0] = (y2[i]-y1[i])/FINITE_DIFFERENCES_STEP;
   }
     
-  return -1;
+  return 0;
+}
+
+int balPolyInterp1D::EvaluateDivergence(double *x, double *y) { 
+  // Implemented with finite differences
+  if ((xx == NULL) || (yy == NULL)) {
+    cerr<<"balPolyInterp1D::EvaluateDivergence() - Interpolation points not set\n";
+    return -1;
+  }
+  if (nnf != 1) {
+    cerr<<"balPolyInterp1D::EvaluateDivergence() - Invalid vector field, dimension of codomain must be 1\n";
+    return -1;
+  }
+  double x2 = *x+FINITE_DIFFERENCES_STEP; 
+  double y2[nnf], y1[nnf];
+  Evaluate(x,y1);
+  Evaluate(&x2,y2);
+  y[0] = (y2[0]-y1[0])/FINITE_DIFFERENCES_STEP;
+    
+  return 0;
 }
 
 /***** balSplineInterp1D *****/
@@ -514,15 +553,15 @@ int balSplineInterp1D::Evaluate(double *x, double *y) {
   return 0;
 }
 
-int balSplineInterp1D::EvaluateDerivative(double *x, double **y) { 
+int balSplineInterp1D::EvaluateJacobian(double *x, double **y) { 
   
   if ((xx == NULL) || (yy == NULL)) {
-    cerr<<"balSplineInterp1D::EvaluateDerivative() - Interpolation points not set\n";
+    cerr<<"balSplineInterp1D::EvaluateJacobian() - Interpolation points not set\n";
     return -1;
   }
   
   if (y2 == NULL) {
-    cerr<<"balSplineInterp1D::EvaluateDerivative() - Spline not initialized. Call method Init()\n";
+    cerr<<"balSplineInterp1D::EvaluateJacobian() - Spline not initialized. Call method Init()\n";
     return -1;
   }
   int jlo = cor ? Hunt(x[0]) : Locate(x[0]);
@@ -536,7 +575,7 @@ int balSplineInterp1D::EvaluateDerivative(double *x, double **y) {
   
   if (h == 0.0) {
     //The xa’s must be distinct. 
-    cerr<<"Bad input to balSplineInterp1D::EvaluateDerivative()\n";
+    cerr<<"Bad input to balSplineInterp1D::EvaluateJacobian()\n";
     return -1;
   }
 
@@ -549,6 +588,38 @@ int balSplineInterp1D::EvaluateDerivative(double *x, double **y) {
   return 0;
 }
 
+int balSplineInterp1D::EvaluateDivergence(double *x, double *y) { 
+  if ((xx == NULL) || (yy == NULL)) {
+    cerr<<"balSplineInterp1D::EvaluateDivergence() - Interpolation points not set\n";
+    return -1;
+  }
+  if (nnf != 1) {
+    cerr<<"balSplineInterp1D::EvaluateDivergence() - Invalid vector field, dimension of codomain must be 1\n";
+    return -1;
+  }
+  int jlo = cor ? Hunt(x[0]) : Locate(x[0]);
+  int i;
+  int klo,khi;
+  double h, b, a, adot, bdot;
+
+  klo = jlo;
+  khi = jlo+1;
+  h = xx[khi]-xx[klo];
+  
+  if (h == 0.0) {
+    //The xa’s must be distinct. 
+    cerr<<"Bad input to balSplineInterp1D::EvaluateDivergence()\n";
+    return -1;
+  }
+
+  a = (xx[khi]-x[0])/h;
+  b = (x[0]-xx[klo])/h;
+  adot = -1/h;
+  bdot = 1/h;
+  y[0] = adot*yy[0][klo]+bdot*yy[0][khi]+((3*a*a*adot-adot)*y2[klo][i]+(3*b*b*bdot-bdot)*y2[khi][0])*(h*h)/6.0; 
+    
+  return 0;
+}
 /***** balSmoothingSplineInterp1D *****/
 
 const char * balSmoothingSplineInterp1D::GetClassName() const {
@@ -873,13 +944,13 @@ int balSmoothingSplineInterp1D::Evaluate(double *x, double *y) {
   return 0;
 }
 
-int balSmoothingSplineInterp1D::EvaluateDerivative(double *x, double **y) { 
+int balSmoothingSplineInterp1D::EvaluateJacobian(double *x, double **y) { 
   if ((xx == NULL) || (yy == NULL)) {
-    cerr<<"balSmoothingSplineInterp1D::EvaluateDerivative() - Interpolation points not set\n";
+    cerr<<"balSmoothingSplineInterp1D::EvaluateJacobian() - Interpolation points not set\n";
     return -1;
   }
   if ((a == NULL) || (b == NULL) || (c == NULL) || (d == NULL)) {
-    cerr<<"balSmoothingSplineInterp1D::EvaluateDerivative() - Spline not initilized. Call method Init(). \n";
+    cerr<<"balSmoothingSplineInterp1D::EvaluateJacobian() - Spline not initilized. Call method Init(). \n";
     return -1;
   }
   int i;
@@ -893,4 +964,21 @@ int balSmoothingSplineInterp1D::EvaluateDerivative(double *x, double **y) {
   return 0;
 }
 
+int balSmoothingSplineInterp1D::EvaluateDivergence(double *x, double *y) { 
+  if ((xx == NULL) || (yy == NULL)) {
+    cerr<<"balSmoothingSplineInterp1D::EvaluateDivergence() - Interpolation points not set\n";
+    return -1;
+  }
+  if (nnf != 1) {
+    cerr<<"balSmoothingSplineInterp1D::EvaluateDivergence() - Invalid vector field, dimension of codomain must be 1\n";
+    return -1;
+  }
+  int i;
+  double h;
+  int jlo = cor ? Hunt(x[0]) : Locate(x[0]);
 
+  h = x[0]-xx[jlo];
+  
+  y[0] = (3*d[0][jlo]*h+2*c[0][jlo])*h+b[0][jlo];
+  return 0;
+}

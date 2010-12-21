@@ -127,7 +127,7 @@ balODESolver::balODESolver(const balODESolver& solver) {
 
 balODESolver::~balODESolver() {
   if(delete_buffer || buffer != NULL) {
-    delete buffer;
+    delete [] buffer;
   }
   if(delete_events) {
     delete events;
@@ -570,7 +570,7 @@ bool balODESolver::AllocateSolutionBuffer() {
   if(delete_buffer || buffer == NULL) {
     int lrows;
     if(delete_buffer) {
-      delete buffer;
+      delete [] buffer; 
       delete_buffer = false;
     }
     switch(mode) {
@@ -732,8 +732,9 @@ bool balODESolver::GramSchmidtOrthonorm(realtype * znorm) const {
   GramSchmidtOrthonorm(xx,xnorm,znorm);
   for(i=0; i<n*n; i++)
     Ith(x,i+n) = xnorm[i];
-  delete xnorm;
-  delete xx;
+  delete [] xnorm;
+  delete [] xx;
+  return true;
 }
 
 bool balODESolver::GramSchmidtOrthonorm(realtype * x, realtype * xnorm, realtype * znorm) const {
@@ -763,7 +764,7 @@ bool balODESolver::GramSchmidtOrthonorm(realtype * x, realtype * xnorm, realtype
       xnorm[n*i+k] = tmp[k]/znorm[i];
   }
 
-  delete tmp;
+  delete [] tmp;
   return true;
 } 
 
@@ -834,7 +835,7 @@ bool balODESolver::Solve() {
       SetDynamicalSystem(dynsys);
       for(i=0; i<n; i++)
 	Ith(x0,i) = x0_tmp[i];
-      delete x0_tmp;
+      delete [] x0_tmp;
     }
   }
 
@@ -892,8 +893,8 @@ bool balODESolver::SolveWithoutEventsLyapunov() {
 
   // reset CVode
   if(! ResetCVode()) {
-    delete znorm;
-    delete cum;
+    delete [] znorm;
+    delete [] cum;
     return false;
   }
   
@@ -920,8 +921,8 @@ bool balODESolver::SolveWithoutEventsLyapunov() {
 #endif
       if (flag != CV_SUCCESS) {
 	fprintf (stderr, "Error on CVodeReInit.\n");
-	delete znorm;
-	delete cum;
+	delete [] znorm;
+	delete [] cum;
 	return false;
       }
 
@@ -956,8 +957,8 @@ bool balODESolver::SolveWithoutEventsLyapunov() {
     }
   }
 
-  delete znorm;
-  delete cum;
+  delete [] znorm;
+  delete [] cum;
 
   /* if the integrator stopped because of an error, we change the label of the last row in
    * the integration buffer and stop the integration procedure */
@@ -1006,7 +1007,7 @@ bool balODESolver::SolveLyapunov() {
     cum[i] = 0.0;
   
   SetX0(new_x0,n);
-  delete new_x0;
+  delete [] new_x0;
   SetOrthonormalBaseIC();
   
   tfinal = lyap_tstep;
@@ -1039,11 +1040,11 @@ bool balODESolver::SolveLyapunov() {
   Setup();
   SetX0(temp_x0);
   
-  delete temp_x0;
-  delete x_;
-  delete xnorm;
-  delete znorm;
-  delete cum;
+  delete [] temp_x0;
+  delete [] x_;
+  delete [] xnorm;
+  delete [] znorm;
+  delete [] cum;
 
   SetIntegrationMode(balLYAP);
   return true;

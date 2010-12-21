@@ -157,9 +157,9 @@ int balLinearInterp2D::Evaluate(double *x, double *y) {
   return 0;
 }
 
-int balLinearInterp2D::EvaluateDerivative(double *x, double **y) {
+int balLinearInterp2D::EvaluateJacobian(double *x, double **y) {
   if ((x1terp == NULL)||(x2terp == NULL)) {
-    cerr<<"balLinearInterp2D::EvaluateDerivative() - Interpolator not initialized. Call method Init()\n";
+    cerr<<"balLinearInterp2D::EvaluateJacobian() - Interpolator not initialized. Call method Init()\n";
     return -1;
   }
   
@@ -171,6 +171,24 @@ int balLinearInterp2D::EvaluateDerivative(double *x, double **y) {
     y[i][0] = (yy[i][(idx1+1)+nnx1*idx2]-yy[i][idx1+nnx1*idx2])/(xx1[idx1+1]-xx1[idx1]);
     y[i][1] = (yy[i][idx1+nnx1*(idx2+1)]-yy[i][idx1+nnx1*idx2])/(xx2[idx2+1]-xx2[idx2]);
   }
+  return 0;
+}
+  
+int balLinearInterp2D::EvaluateDivergence(double *x, double *y) {
+  if ((x1terp == NULL)||(x2terp == NULL)) {
+    cerr<<"balLinearInterp2D::EvaluateDivergence() - Interpolator not initialized. Call method Init()\n";
+    return -1;
+  }
+  if (nnf != 2) {
+    cerr<<"balLinearInterp2D::EvaluateDivergence() - Invalid vector field, dimension of codomain must be 2.\n";
+    return -1;
+  }
+  
+  int idx1, idx2;
+  idx1 = x1terp->nextHunt() ? x1terp->Hunt(x[0]) : x1terp->Locate(x[0]);
+  idx2 = x2terp->nextHunt() ? x2terp->Hunt(x[1]) : x2terp->Locate(x[1]);
+  
+  y[0] = (yy[0][(idx1+1)+nnx1*idx2]-yy[0][idx1+nnx1*idx2])/(xx1[idx1+1]-xx1[idx1]) + (yy[1][idx1+nnx1*(idx2+1)]-yy[1][idx1+nnx1*idx2])/(xx2[idx2+1]-xx2[idx2]);
   return 0;
 }
 
@@ -344,11 +362,11 @@ int balPolyInterp2D::Evaluate(double *x, double *y) {
   return 0;
 }
 
-int balPolyInterp2D::EvaluateDerivative(double *x, double **y) {
+int balPolyInterp2D::EvaluateJacobian(double *x, double **y) {
   // Implemented with finite differences
   
   if (xx1 == NULL) {
-    cerr<<"balPolyInterp2D::EvaluateDerivative() - Interpolation points not set\n";
+    cerr<<"balPolyInterp2D::EvaluateJacobian() - Interpolation points not set\n";
     return -1;
   }
 
@@ -365,6 +383,31 @@ int balPolyInterp2D::EvaluateDerivative(double *x, double **y) {
     y[i][0] = (yr[i]-yc[i])/FINITE_DIFFERENCES_STEP;
     y[i][1] = (yt[i]-yc[i])/FINITE_DIFFERENCES_STEP;
   }
+
+  return 0;
+}
+
+int balPolyInterp2D::EvaluateDivergence(double *x, double *y) {
+  // Implemented with finite differences
+  if (xx1 == NULL) {
+    cerr<<"balPolyInterp2D::EvaluateDivergence() - Interpolation points not set\n";
+    return -1;
+  }
+  if (nnf != 2) {
+    cerr<<"balPolyInterp2D::EvaluateDivergence() - Invalid vector field, dimension of codomain must be 2.\n";
+    return -1;
+  }
+  
+  double xr[2],xt[2],yc[nnf],yr[nnf],yt[nnf];
+  xr[0] = x[0]+FINITE_DIFFERENCES_STEP;
+  xr[1] = x[1];
+  xt[0] = x[0];
+  xt[1] = x[1]+FINITE_DIFFERENCES_STEP;
+  Evaluate(x,yc);
+  Evaluate(xr,yr);
+  Evaluate(xt,yt);
+
+  y[0] = (yr[0]-yc[0])/FINITE_DIFFERENCES_STEP + (yt[1]-yc[1])/FINITE_DIFFERENCES_STEP;
 
   return 0;
 }
@@ -989,11 +1032,11 @@ int balSplineInterp2D::Evaluate(double *x, double *y) {
   return 0;
 }
 
-int balSplineInterp2D::EvaluateDerivative(double *x, double **y) {
+int balSplineInterp2D::EvaluateJacobian(double *x, double **y) {
   // Implemented with finite differences
   
   if (xx1 == NULL) {
-    cerr<<"balSplineInterp2D::EvaluateDerivative() - Interpolation points not set\n";
+    cerr<<"balSplineInterp2D::EvaluateJacobian() - Interpolation points not set\n";
     return -1;
   }
 
@@ -1010,6 +1053,31 @@ int balSplineInterp2D::EvaluateDerivative(double *x, double **y) {
     y[i][0] = (yr[i]-yc[i])/FINITE_DIFFERENCES_STEP;
     y[i][1] = (yt[i]-yc[i])/FINITE_DIFFERENCES_STEP;
   }
+  return 0;
+}
+
+int balSplineInterp2D::EvaluateDivergence(double *x, double *y) {
+  // Implemented with finite differences
+  if (xx1 == NULL) {
+    cerr<<"balSplineInterp2D::EvaluateDivergence() - Interpolation points not set\n";
+    return -1;
+  }
+  if (nnf != 2) {
+    cerr<<"balSplineInterp2D::EvaluateDivergence() - Invalid vector field, dimension of codomain must be 2.\n";
+    return -1;
+  }
+  
+  double xr[2],xt[2],yc[nnf],yr[nnf],yt[nnf];
+  xr[0] = x[0]+FINITE_DIFFERENCES_STEP;
+  xr[1] = x[1];
+  xt[0] = x[0];
+  xt[1] = x[1]+FINITE_DIFFERENCES_STEP;
+  Evaluate(x,yc);
+  Evaluate(xr,yr);
+  Evaluate(xt,yt);
+
+  y[0] = (yr[0]-yc[0])/FINITE_DIFFERENCES_STEP + (yt[1]-yc[1])/FINITE_DIFFERENCES_STEP;
+
   return 0;
 }
 
@@ -1194,11 +1262,11 @@ int balSmoothingSplineInterp2D::Evaluate(double *x, double *y) {
   return 0;
 }
 
-int balSmoothingSplineInterp2D::EvaluateDerivative(double *x, double **y) {
+int balSmoothingSplineInterp2D::EvaluateJacobian(double *x, double **y) {
   // Implemented with finite differences
   
   if (xx1 == NULL) {
-    cerr<<"balSmoothingSplineInterp2D::EvaluateDerivative() - Interpolation points not set\n";
+    cerr<<"balSmoothingSplineInterp2D::EvaluateJacobian() - Interpolation points not set\n";
     return -1;
   }
 
@@ -1215,5 +1283,30 @@ int balSmoothingSplineInterp2D::EvaluateDerivative(double *x, double **y) {
     y[i][0] = (yr[i]-yc[i])/FINITE_DIFFERENCES_STEP;
     y[i][1] = (yt[i]-yc[i])/FINITE_DIFFERENCES_STEP;
   }
+  return 0;
+}
+
+int balSmoothingSplineInterp2D::EvaluateDivergence(double *x, double *y) {
+  // Implemented with finite differences
+  if (xx1 == NULL) {
+    cerr<<"balSmoothingSplineInterp2D::EvaluateDivergence() - Interpolation points not set\n";
+    return -1;
+  }
+  if (nnf != 2) {
+    cerr<<"balSmoothingSplineInterp2D::EvaluateDivergence() - Invalid vector field, dimension of codomain must be 2.\n";
+    return -1;
+  }
+  
+  double xr[2],xt[2],yc[nnf],yr[nnf],yt[nnf];
+  xr[0] = x[0]+FINITE_DIFFERENCES_STEP;
+  xr[1] = x[1];
+  xt[0] = x[0];
+  xt[1] = x[1]+FINITE_DIFFERENCES_STEP;
+  Evaluate(x,yc);
+  Evaluate(xr,yr);
+  Evaluate(xt,yt);
+
+  y[0] = (yr[0]-yc[0])/FINITE_DIFFERENCES_STEP + (yt[1]-yc[1])/FINITE_DIFFERENCES_STEP;
+
   return 0;
 }

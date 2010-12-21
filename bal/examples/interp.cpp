@@ -86,17 +86,19 @@ int main(int argc, char *argv[]) {
   smooth -> SetSmoothingParameters(10);
   smooth -> Init();
   interp[3] = smooth;
-  
+ 
+  FILE *fout = fopen("interp.dat","w");
   for(double xx=0.1; xx<=9.9; xx+=0.1) {
-    printf("%e", xx);
+    fprintf(fout,"%e", xx);
     for(i=0; i<4; i++) {
       interp[i]->Evaluate(&xx,yy);
-      printf(" %e", yy[0]);
-      interp[i]->EvaluateDerivative(&xx,dyy);
-      printf(" %e", dyy[0][0]);
+      fprintf(fout," %e", yy[0]);
+      interp[i]->EvaluateJacobian(&xx,dyy);
+      fprintf(fout," %e", dyy[0][0]);
     }
-    printf("\n");
+    fprintf(fout,"\n");
   }
+  fclose(fout);
   
   for(i=0; i<4; i++)
     interp[i]->Destroy();

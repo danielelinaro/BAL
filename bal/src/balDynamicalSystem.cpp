@@ -223,7 +223,8 @@ void balDynamicalSystem::EventsConstraints (realtype t, N_Vector x, int * constr
 void balDynamicalSystem::SetParameters (balParameters * bp) throw (balException) {
   if(bp->GetNumber() != GetNumberOfParameters())
     throw balException("Wrong number of parameters in balDynamicalSystem::SetParameters");
-  pars->Destroy();
+  if (_dealloc_pars)
+    pars->Destroy();
   _dealloc_pars = false;
   pars = bp;
 }

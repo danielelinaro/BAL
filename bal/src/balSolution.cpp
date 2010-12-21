@@ -49,8 +49,8 @@ balSolution::balSolution(const balSolution& solution) {
 }
 
 balSolution::~balSolution() {
-  if(buffer != NULL) delete buffer;
-	if(lyapunov_exponents !=NULL) delete lyapunov_exponents;
+  if(buffer != NULL) delete [] buffer;
+	if(lyapunov_exponents !=NULL) delete [] lyapunov_exponents;
   if(parameters != NULL) parameters->Destroy();
 }
 
@@ -79,7 +79,7 @@ int balSolution::GetColumns() const {
 }
 
 void balSolution::SetSize(int r, int c) {
-  if(buffer != NULL) delete buffer;
+  if(buffer != NULL) delete [] buffer;
   rows = r;
   columns = c;
   buffer = new realtype[rows*columns];

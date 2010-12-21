@@ -131,7 +131,11 @@ class balLinearInterp1D : public balBaseInterp1D {
   
   /** Evaluates the Jacobian matrix of the function in point x. The result is stored in matrix y (of dimensions nf x 1). 
    *  If an error has occurred the return value is -1, otherwise it is 0. */
-  virtual int EvaluateDerivative(double *x, double **y);
+  virtual int EvaluateJacobian(double *x, double **y);
+  
+  /** Evaluates (if nd = nf) the divergence of the vector field in point x. The result is stored in y (scalar). 
+   *  If an error has occurred the return value is -1, otherwise it is 0. */
+  virtual int EvaluateDivergence(double *x, double *y);  
 
  protected:
  
@@ -178,7 +182,11 @@ class balPolyInterp1D : public balBaseInterp1D {
   /** Evaluates the Jacobian matrix of the function in point x. The result is stored in matrix y (of dimensions nf x 1).
    *  If an error has occurred the return value is -1, otherwise it is 0. 
    *  Implemented with finite differences. */
-  virtual int EvaluateDerivative(double *x, double **y);
+  virtual int EvaluateJacobian(double *x, double **y);
+  
+  /** Evaluates (if nd = nf) the divergence of the vector field in point x. The result is stored in y (scalar). 
+   *  If an error has occurred the return value is -1, otherwise it is 0. */
+  virtual int EvaluateDivergence(double *x, double *y);  
   
  protected:
   
@@ -231,7 +239,11 @@ class balSplineInterp1D : public balBaseInterp1D {
   
   /** Evaluates the Jacobian matrix of the function in point x. The result is stored in matrix y (of dimensions nf x 1). 
    *  If an error has occurred the return value is -1, otherwise it is 0. */
-  virtual int EvaluateDerivative(double *x, double **y);
+  virtual int EvaluateJacobian(double *x, double **y);
+  
+  /** Evaluates (if nd = nf) the divergence of the vector field in point x. The result is stored in y (scalar). 
+   *  If an error has occurred the return value is -1, otherwise it is 0. */
+  virtual int EvaluateDivergence(double *x, double *y);  
 
   
  protected:
@@ -306,7 +318,11 @@ class balSmoothingSplineInterp1D : public balBaseInterp1D {
   
   /** Evaluates the Jacobian matrix of the function in point x. The result is stored in matrix y (of dimensions nf x 1). 
    *  If an error has occurred the return value is -1, otherwise it is 0. */
-  virtual int EvaluateDerivative(double *x, double **y);
+  virtual int EvaluateJacobian(double *x, double **y);
+  
+  /** Evaluates (if nd = nf) the divergence of the vector field in point x. The result is stored in y (scalar). 
+   *  If an error has occurred the return value is -1, otherwise it is 0. */
+  virtual int EvaluateDivergence(double *x, double *y);  
   
  protected:
   

@@ -228,10 +228,10 @@ int balLinearInterp3D::Evaluate(double *x, double *y) {
   return 0;
 }
 
-int balLinearInterp3D::EvaluateDerivative(double *x, double **y) {
+int balLinearInterp3D::EvaluateJacobian(double *x, double **y) {
   // Implemented with finite differences
   if (xx1 == NULL) {
-    cerr<<"balLinearInterp3D::Evaluate() - Interpolation points not set\n";
+    cerr<<"balLinearInterp3D::EvaluateJacobian() - Interpolation points not set\n";
     return -1;
   }
   
@@ -256,6 +256,38 @@ int balLinearInterp3D::EvaluateDerivative(double *x, double **y) {
     y[i][2] = (yt[i]-yc[i])/FINITE_DIFFERENCES_STEP;
   }
   return 0;
+}
+
+int balLinearInterp3D::EvaluateDivergence(double *x, double *y) {
+  // Implemented with finite differences
+  if (xx1 == NULL) {
+    cerr<<"balLinearInterp3D::EvaluateDivergence() - Interpolation points not set\n";
+    return -1;
+  }
+  if (nnf != 3) {
+    cerr<<"balLinearInterp3D::EvaluateDivergence() - Invalid vector field, dimension of codomain must be 2.\n";
+    return -1;
+  }
+  
+  double xr[3],xf[3],xt[3],yc[nnf],yr[nnf],yf[nnf],yt[nnf];
+  xr[0] = x[0]+FINITE_DIFFERENCES_STEP;
+  xr[1] = x[1];
+  xr[2] = x[2];
+  xf[0] = x[0];
+  xf[1] = x[1]+FINITE_DIFFERENCES_STEP;
+  xf[2] = x[2];
+  xt[0] = x[0];
+  xt[1] = x[1];
+  xt[2] = x[2]+FINITE_DIFFERENCES_STEP;
+  Evaluate(x,yc);
+  Evaluate(xr,yr);
+  Evaluate(xf,yf);
+  Evaluate(xt,yt);
+
+  y[0] = (yr[0]-yc[0])/FINITE_DIFFERENCES_STEP + (yf[1]-yc[1])/FINITE_DIFFERENCES_STEP + (yt[2]-yc[2])/FINITE_DIFFERENCES_STEP;
+  
+  return 0;
+
 }
 
 
@@ -435,10 +467,10 @@ int balPolyInterp3D::Evaluate(double *x, double *y) {
   return 0;
 }
 
-int balPolyInterp3D::EvaluateDerivative(double *x, double **y) {
+int balPolyInterp3D::EvaluateJacobian(double *x, double **y) {
   // Implemented with finite differences
   if (xx1 == NULL) {
-    cerr<<"balPolyInterp3D::Evaluate() - Interpolation points not set\n";
+    cerr<<"balPolyInterp3D::EvaluateJacobian() - Interpolation points not set\n";
     return -1;
   }
   
@@ -465,6 +497,37 @@ int balPolyInterp3D::EvaluateDerivative(double *x, double **y) {
   return 0;
 }
 
+int balPolyInterp3D::EvaluateDivergence(double *x, double *y) {
+  // Implemented with finite differences
+  if (xx1 == NULL) {
+    cerr<<"balPolyInterp3D::EvaluateDivergence() - Interpolation points not set\n";
+    return -1;
+  }
+  if (nnf != 3) {
+    cerr<<"balPolyInterp3D::EvaluateDivergence() - Invalid vector field, dimension of codomain must be 2.\n";
+    return -1;
+  }
+  
+  double xr[3],xf[3],xt[3],yc[nnf],yr[nnf],yf[nnf],yt[nnf];
+  xr[0] = x[0]+FINITE_DIFFERENCES_STEP;
+  xr[1] = x[1];
+  xr[2] = x[2];
+  xf[0] = x[0];
+  xf[1] = x[1]+FINITE_DIFFERENCES_STEP;
+  xf[2] = x[2];
+  xt[0] = x[0];
+  xt[1] = x[1];
+  xt[2] = x[2]+FINITE_DIFFERENCES_STEP;
+  Evaluate(x,yc);
+  Evaluate(xr,yr);
+  Evaluate(xf,yf);
+  Evaluate(xt,yt);
+
+  y[0] = (yr[0]-yc[0])/FINITE_DIFFERENCES_STEP + (yf[1]-yc[1])/FINITE_DIFFERENCES_STEP + (yt[2]-yc[2])/FINITE_DIFFERENCES_STEP;
+  
+  return 0;
+
+}
 
 // balSplineInterp3D
 
@@ -636,10 +699,10 @@ int balSplineInterp3D::Evaluate(double *x, double *y) {
   return 0;
 }
 
-int balSplineInterp3D::EvaluateDerivative(double *x, double **y) {
+int balSplineInterp3D::EvaluateJacobian(double *x, double **y) {
   // Implemented with finite differences
   if (xx1 == NULL) {
-    cerr<<"balSplineInterp3D::Evaluate() - Interpolation points not set\n";
+    cerr<<"balSplineInterp3D::EvaluateJacobian() - Interpolation points not set\n";
     return -1;
   }
   
@@ -666,6 +729,37 @@ int balSplineInterp3D::EvaluateDerivative(double *x, double **y) {
   return 0;
 }
 
+int balSplineInterp3D::EvaluateDivergence(double *x, double *y) {
+  // Implemented with finite differences
+  if (xx1 == NULL) {
+    cerr<<"balSplineInterp3D::EvaluateDivergence() - Interpolation points not set\n";
+    return -1;
+  }
+  if (nnf != 3) {
+    cerr<<"balSplineInterp3D::EvaluateDivergence() - Invalid vector field, dimension of codomain must be 2.\n";
+    return -1;
+  }
+  
+  double xr[3],xf[3],xt[3],yc[nnf],yr[nnf],yf[nnf],yt[nnf];
+  xr[0] = x[0]+FINITE_DIFFERENCES_STEP;
+  xr[1] = x[1];
+  xr[2] = x[2];
+  xf[0] = x[0];
+  xf[1] = x[1]+FINITE_DIFFERENCES_STEP;
+  xf[2] = x[2];
+  xt[0] = x[0];
+  xt[1] = x[1];
+  xt[2] = x[2]+FINITE_DIFFERENCES_STEP;
+  Evaluate(x,yc);
+  Evaluate(xr,yr);
+  Evaluate(xf,yf);
+  Evaluate(xt,yt);
+
+  y[0] = (yr[0]-yc[0])/FINITE_DIFFERENCES_STEP + (yf[1]-yc[1])/FINITE_DIFFERENCES_STEP + (yt[2]-yc[2])/FINITE_DIFFERENCES_STEP;
+  
+  return 0;
+
+}
 
 // balSmoothingSplineInterp3D
 
@@ -845,10 +939,10 @@ int balSmoothingSplineInterp3D::Evaluate(double *x, double *y) {
   return 0;
 }
 
-int balSmoothingSplineInterp3D::EvaluateDerivative(double *x, double **y) {
+int balSmoothingSplineInterp3D::EvaluateJacobian(double *x, double **y) {
   // Implemented with finite differences
   if (xx1 == NULL) {
-    cerr<<"balSmoothingSplineInterp3D::Evaluate() - Interpolation points not set\n";
+    cerr<<"balSmoothingSplineInterp3D::EvaluateJacobian() - Interpolation points not set\n";
     return -1;
   }
   
@@ -873,4 +967,36 @@ int balSmoothingSplineInterp3D::EvaluateDerivative(double *x, double **y) {
     y[i][2] = (yt[i]-yc[i])/FINITE_DIFFERENCES_STEP;
   }
   return 0;
+}
+
+int balSmoothingSplineInterp3D::EvaluateDivergence(double *x, double *y) {
+  // Implemented with finite differences
+  if (xx1 == NULL) {
+    cerr<<"balSmoothingSplineInterp3D::EvaluateDivergence() - Interpolation points not set\n";
+    return -1;
+  }
+  if (nnf != 3) {
+    cerr<<"balSmoothingSplineInterp3D::EvaluateDivergence() - Invalid vector field, dimension of codomain must be 2.\n";
+    return -1;
+  }
+  
+  double xr[3],xf[3],xt[3],yc[nnf],yr[nnf],yf[nnf],yt[nnf];
+  xr[0] = x[0]+FINITE_DIFFERENCES_STEP;
+  xr[1] = x[1];
+  xr[2] = x[2];
+  xf[0] = x[0];
+  xf[1] = x[1]+FINITE_DIFFERENCES_STEP;
+  xf[2] = x[2];
+  xt[0] = x[0];
+  xt[1] = x[1];
+  xt[2] = x[2]+FINITE_DIFFERENCES_STEP;
+  Evaluate(x,yc);
+  Evaluate(xr,yr);
+  Evaluate(xf,yf);
+  Evaluate(xt,yt);
+
+  y[0] = (yr[0]-yc[0])/FINITE_DIFFERENCES_STEP + (yf[1]-yc[1])/FINITE_DIFFERENCES_STEP + (yt[2]-yc[2])/FINITE_DIFFERENCES_STEP;
+  
+  return 0;
+
 }
