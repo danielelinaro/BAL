@@ -327,6 +327,8 @@ class balODESolver : public balObject {
   balParameters * params;
   /** The dynamical system that has to be integrated */
   balDynamicalSystem * dynsys;
+
+  bool _dealloc;
 };
 
 

@@ -58,7 +58,8 @@ class balInterpSystem : public balDynamicalSystem {
  public:
   virtual const char * GetClassName () const;
   static balInterpSystem * Create ();
-  virtual balDynamicalSystem * Copy();
+  static balInterpSystem * Copy(balInterpSystem *is);
+  virtual balDynamicalSystem * Clone() const;
   virtual void Destroy ();
   
   int RHS (realtype t, N_Vector x, N_Vector xdot, void * data);
@@ -79,6 +80,7 @@ class balInterpSystem : public balDynamicalSystem {
   N_Vector xderiv;
   balInterpolator *interpolator;
   int backward;
+  bool _dealloc;
 };
 
 #ifdef __cplusplus

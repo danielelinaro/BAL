@@ -52,6 +52,7 @@ balODESolver::balODESolver() {
   events_constraints = NULL;
   delete_events_constraints = false;
   dynsys = NULL;
+  _dealloc = false;
   params = NULL;
   reltol = RTOL;
   abstol = ATOL;
@@ -92,7 +93,14 @@ balODESolver::balODESolver(const balODESolver& solver) {
   rows = 0;
   nvectors_allocated = false;
   delete_events = delete_events_constraints = false;
-  SetDynamicalSystem((solver.GetDynamicalSystem())->Clone());
+  if (solver.dynsys != NULL) {
+    SetDynamicalSystem((solver.GetDynamicalSystem())->Clone());
+    _dealloc = true;
+  }
+  else {
+    dynsys = NULL;
+    _dealloc = false;
+  }
   for(i=0; i<dynsys->GetDimension(); i++)
     Ith(x0,i) = Ith(solver.x0,i);
   reltol = solver.GetRelativeTolerance();
@@ -147,6 +155,8 @@ balODESolver::~balODESolver() {
   fclose(errfp);
   if(delete_lyapunov_exponents)
     delete lyapunov_exponents;
+  if (_dealloc)
+    dynsys->Destroy();
 }
 
 double * balODESolver::GetBuffer() const {

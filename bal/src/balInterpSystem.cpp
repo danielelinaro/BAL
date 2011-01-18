@@ -37,13 +37,18 @@ balInterpSystem::balInterpSystem() {
   //xderiv = N_VNew_Serial(GetDimension());
   interpolator = NULL;
   backward = false;
+  _dealloc = false;
 }
 
 balInterpSystem::balInterpSystem(const balInterpSystem& interpsystem) : balDynamicalSystem( interpsystem ) {
-  if (interpsystem.interpolator != NULL)
+  if (interpsystem.interpolator != NULL) {
     interpolator = interpsystem.interpolator->Clone();
-  else
+    _dealloc = true;
+  }
+  else { 
     interpolator = NULL;
+    _dealloc = false;
+  }
   backward = interpsystem.backward;
   //xderiv = N_VNew_Serial(eye.GetDimension());
   /*for(int i = 0; i < eye.GetDimension(); i++)
@@ -52,7 +57,9 @@ balInterpSystem::balInterpSystem(const balInterpSystem& interpsystem) : balDynam
   */
 }
 
-balInterpSystem::~balInterpSystem() {
+balInterpSystem::~balInterpSystem() {  
+  if (_dealloc)
+     interpolator->Destroy();
   //N_VDestroy_Serial(xderiv);
 }
 
@@ -64,7 +71,11 @@ void balInterpSystem::Destroy () {
   delete this;
 }
 
-balDynamicalSystem * balInterpSystem::Copy() {
+balInterpSystem * balInterpSystem::Copy(balInterpSystem *is) {
+  return new balInterpSystem(*is);
+}
+
+balDynamicalSystem * balInterpSystem::Clone() const {
   return new balInterpSystem(*this);
 }
   
