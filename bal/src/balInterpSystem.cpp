@@ -37,6 +37,7 @@ balInterpSystem::balInterpSystem() {
   //xderiv = N_VNew_Serial(GetDimension());
   interpolator = NULL;
   backward = false;
+  arclength = false;
   _dealloc = false;
 }
 
@@ -50,6 +51,7 @@ balInterpSystem::balInterpSystem(const balInterpSystem& interpsystem) : balDynam
     _dealloc = false;
   }
   backward = interpsystem.backward;
+  arclength = interpsystem.arclength;
   //xderiv = N_VNew_Serial(eye.GetDimension());
   /*for(int i = 0; i < eye.GetDimension(); i++)
     Ith(xderiv,i)=Ith(eye.xderiv,i);
@@ -112,6 +114,24 @@ int balInterpSystem::RHS (realtype t, N_Vector x, N_Vector xdot, void * data) {
       Ith(xdot,i) = -Ith(xdot,i);
     }
   }
+  if (arclength) {
+    double norm = 0.0;
+    for (i=0; i<n; i++) {
+      norm += Ith(xdot,i)*Ith(xdot,i);
+    }
+    //norm += 1.0;
+    //printf("-%e\n",norm);
+    norm = sqrt(norm);
+    //norm = 1.0e-6;
+    //printf("%e\t",norm);
+    norm *= 1.0e6;
+    //printf("%e\n",norm);
+    for (i=0; i<n; i++) {
+      //printf("%d - %e\t",i,Ith(xdot,i));
+      Ith(xdot,i) /= norm;
+      //printf("%e\n",Ith(xdot,i));
+    }
+  }
   return CV_SUCCESS;
 }
 
@@ -124,6 +144,7 @@ int balInterpSystem::Events (realtype t, N_Vector x, realtype * event, void * da
 
 bool balInterpSystem::SpecialOptions(const void *opt) {
   bool *b = (bool*) opt;
-  backward = *b;
+  backward = b[0];
+  arclength = b[1];
   return true;
 }

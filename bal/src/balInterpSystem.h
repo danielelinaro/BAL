@@ -79,7 +79,7 @@ class balInterpSystem : public balDynamicalSystem {
 
   N_Vector xderiv;
   balInterpolator *interpolator;
-  int backward;
+  bool backward, arclength;
   bool _dealloc;
 };
 
