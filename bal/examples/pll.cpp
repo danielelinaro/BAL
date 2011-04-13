@@ -23,7 +23,13 @@
 #include <unistd.h>
 #include <iostream>
 #include <cstdlib>
+
+#include <boost/property_tree/ptree.hpp>
+#include <boost/property_tree/xml_parser.hpp>
+using boost::property_tree::ptree;
+
 #include <nvector/nvector_serial.h>
+
 #include "balCommon.h"
 #include "balParameters.h"
 #include "balLogger.h"
@@ -31,7 +37,6 @@
 #include "balBifurcationDiagram.h"
 #include "balBifurcationParameters.h"
 #include "balPLL.h"
-#include "ConfigFile.h"
 using namespace bal;
 
 const realtype pi = 3.1415926535897931;
@@ -41,7 +46,8 @@ int main(int argc, char *argv[]) {
     fprintf(stderr, "Usage: %s ConfigFile\n", argv[0]);
     exit(1);
   }
-  ConfigFile config(argv[1]);
+  ptree config;
+  read_xml(argv[1], config);
   char name[100];
   
   int steps[PLL::npar];
@@ -49,16 +55,17 @@ int main(int argc, char *argv[]) {
   bp->SetNumber(PLL::npar);
   
   for(int i=0; i<PLL::npar; i++) {
-    sprintf(name,"%ssteps",PLL::parname[i]);
-    steps[i] = config.read<int>(name);
+    sprintf(name,"pll.%s.steps",PLL::parname[i]);
+    steps[i] = config.get<int>(name);
     if(steps[i] == 1) {
-      bp->SetIthParameter(i,config.read<double>(PLL::parname[i]));
+      sprintf(name,"pll.%s.min",PLL::parname[i]);
+      bp->SetIthParameter(i,config.get<double>(name));
     }
     else {
-      sprintf(name,"%smin",PLL::parname[i]);
-      bp->SetIthParameterLowerBound(i,config.read<double>(name));
-      sprintf(name,"%smax",PLL::parname[i]);
-      bp->SetIthParameterUpperBound(i,config.read<double>(name));
+      sprintf(name,"pll.%s.min",PLL::parname[i]);
+      bp->SetIthParameterLowerBound(i,config.get<double>(name));
+      sprintf(name,"pll.%s.max",PLL::parname[i]);
+      bp->SetIthParameterUpperBound(i,config.get<double>(name));
     }
   }
   
@@ -75,7 +82,7 @@ int main(int argc, char *argv[]) {
   realtype x0[4] = {0.,0.,0.,0.};
 #endif
 #endif
-  x0[1] = config.read<double>("vdd");	
+  x0[1] = config.get<double>("pll.vdd.min");	
   
   bp->SetNumberOfSteps(steps);
   PLL * pll = PLL::Create();
@@ -83,15 +90,15 @@ int main(int argc, char *argv[]) {
   BifurcationDiagram * bifd = BifurcationDiagram::Create();
   bifd->RestartFromX0(true);
   bifd->SetDynamicalSystem(pll);
-  bifd->SetFilename((char *) config.read<string>("outputfile").c_str());
-  if(config.read<bool>("trajectory"))
+  bifd->SetFilename((char *) config.get<std::string>("simulation.outputfile").c_str());
+  if(config.get<bool>("simulation.trajectory"))
     bifd->GetODESolver()->SetIntegrationMode(balBOTH);
   else
     bifd->GetODESolver()->SetIntegrationMode(balEVENTS);
-  bifd->GetODESolver()->SetTransientDuration(config.read<double>("ttran"));
+  bifd->GetODESolver()->SetTransientDuration(config.get<double>("simulation.ttran"));
   bifd->GetODESolver()->HaltAtEquilibrium(false);
   bifd->GetODESolver()->HaltAtCycle(false);
-  bifd->GetODESolver()->SetFinalTime(config.read<double>("tout"));
+  bifd->GetODESolver()->SetFinalTime(config.get<double>("simulation.tout"));
   bifd->GetODESolver()->SetTimeStep(1e-11);
   bifd->GetODESolver()->SetMaxNumberOfIntersections((int) 1e7);
   bifd->GetODESolver()->SetX0(x0);
