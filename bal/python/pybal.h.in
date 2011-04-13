@@ -13,7 +13,6 @@
 #include "balBifurcationParameters.h"
 #include "balODESolver.h"
 #include "balBifurcationDiagram.h"
-using namespace bal;
 
 #include <dlfcn.h>
 

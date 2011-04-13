@@ -62,7 +62,7 @@ int main(int argc, char *argv[]) {
   solver->SetFinalTime(1.1e4);
   solver->SetTimeStep(5);
   solver->SetLyapunovTimeStep(5);
-  solver->SetIntegrationMode(balLYAP);
+  solver->SetIntegrationMode(LYAP);
   solver->SetX0(x0);
 	
   // Calculating Lyapunov Exponents

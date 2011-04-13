@@ -638,7 +638,7 @@ static int pyBalODESolver_init(pyBalODESolver *self, PyObject *args, PyObject *k
 	self->solver->SetDynamicalSystem(self->dynsys->dynsys);
 	self->solver->SetTransientDuration(0.0);
 	self->solver->SetFinalTime(10.0);
-	self->solver->SetIntegrationMode(balTRAJ);
+	self->solver->SetIntegrationMode(bal::TRAJ);
 	
 	return 0;
 }
@@ -686,13 +686,13 @@ static PyObject * pyBalODESolver_getattro(pyBalODESolver *self, PyObject *name) 
 	}
 	else if(strcmp(n, "mode") == 0) {
 		switch(self->solver->GetIntegrationMode()) {
-			case balTRAJ:
+			case bal::TRAJ:
 				result = Py_BuildValue("s","trajectory");
 				break;
-			case balEVENTS:
+			case bal::EVENTS:
 				result = Py_BuildValue("s","events");
 				break;
-			case balBOTH:
+			case bal::BOTH:
 				result = Py_BuildValue("s","trajectory + events");
 				break;
 		}
@@ -775,13 +775,13 @@ static int pyBalODESolver_setattro(pyBalODESolver *self, PyObject *name, PyObjec
 		Py_INCREF(value);
 		char *v = PyString_AsString(value);
 		if(strcmp(v, "trajectory") == 0)
-			self->solver->SetIntegrationMode(balTRAJ);
+			self->solver->SetIntegrationMode(bal::TRAJ);
 		else if(strcmp(v, "events") == 0)
-			self->solver->SetIntegrationMode(balEVENTS);
+			self->solver->SetIntegrationMode(bal::EVENTS);
 		else if(strcmp(v, "trajectory + events") == 0 || strcmp(v, "both") == 0)
-			self->solver->SetIntegrationMode(balBOTH);
+			self->solver->SetIntegrationMode(bal::BOTH);
 		else if(strcmp(v, "lyap") == 0 || strcmp(v, "lyapunov"))
-			self->solver->SetIntegrationMode(balLYAP);
+			self->solver->SetIntegrationMode(bal::LYAP);
 		else
 			err = -1;
 		Py_DECREF(value);
@@ -1018,7 +1018,7 @@ static int pyBalBifurcationDiagram_init(pyBalBifurcationDiagram *self, PyObject 
 	
 	self->diagram = bal::BifurcationDiagram::Create();
 	self->diagram->SetDynamicalSystem(self->dynsys->dynsys);
-	self->diagram->GetODESolver()->SetIntegrationMode(balEVENTS);
+	self->diagram->GetODESolver()->SetIntegrationMode(bal::EVENTS);
 	self->diagram->GetODESolver()->HaltAtEquilibrium(true);
 	self->diagram->GetODESolver()->HaltAtCycle(false);
 	self->diagram->GetODESolver()->SetTransientDuration(1e3);
@@ -1027,7 +1027,7 @@ static int pyBalBifurcationDiagram_init(pyBalBifurcationDiagram *self, PyObject 
 	self->diagram->GetODESolver()->SetX0(x0);
 	self->diagram->RestartFromX0(true);
 	self->diagram->SetNumberOfThreads(2);
-	self->diagram->SetMode(balPARAMS);
+	self->diagram->SetMode(bal::PARAMS);
 	
 	delete x0;
 	return 0;
@@ -1082,26 +1082,26 @@ static PyObject * pyBalBifurcationDiagram_getattro(pyBalBifurcationDiagram *self
 	}
 	else if(strcmp(n, "mode") == 0) {
 		switch(self->diagram->GetODESolver()->GetIntegrationMode()) {
-			case balTRAJ:
+			case bal::TRAJ:
 				result = Py_BuildValue("s","trajectory");
 				break;
-			case balEVENTS:
+			case bal::EVENTS:
 				result = Py_BuildValue("s","events");
 				break;
-			case balBOTH:
+			case bal::BOTH:
 				result = Py_BuildValue("s","trajectory + events");
 				break;
-			case balLYAP:
+			case bal::LYAP:
 				result = Py_BuildValue("s","lyapunov exponents");
 				break;
 		}
 	}
 	else if(strcmp(n, "diagram_mode") == 0) {
 		switch(self->diagram->GetMode()) {
-			case balPARAMS:
+			case bal::PARAMS:
 				result = Py_BuildValue("s","parameters");
 				break;
-			case balIC:
+			case bal::IC:
 				result = Py_BuildValue("s","IC");
 				break;
 		}
@@ -1185,7 +1185,7 @@ static int pyBalBifurcationDiagram_setattro(pyBalBifurcationDiagram *self, PyObj
 			err = -1;
 	}
 	else if(strcmp(n, "x0") == 0) {
-		if(self->diagram->GetMode() == balPARAMS) {
+		if(self->diagram->GetMode() == bal::PARAMS) {
 			int i, ndim = self->dynsys->dynsys->GetDimension();
 			double *x0 = new double[ndim];
 			for(i=0; i<ndim; i++)
@@ -1193,7 +1193,7 @@ static int pyBalBifurcationDiagram_setattro(pyBalBifurcationDiagram *self, PyObj
 			self->diagram->GetODESolver()->SetX0(x0);
 			delete x0;
 		}
-		else if(self->diagram->GetMode() == balIC) {
+		else if(self->diagram->GetMode() == bal::IC) {
 			int i, j, ndim = self->dynsys->dynsys->GetDimension();
 			PyObject *list;
 			if(self->nic > 0) {
@@ -1216,13 +1216,13 @@ static int pyBalBifurcationDiagram_setattro(pyBalBifurcationDiagram *self, PyObj
 		Py_INCREF(value);
 		char *v = PyString_AsString(value);
 		if(strcmp(v, "trajectory") == 0)
-			self->diagram->GetODESolver()->SetIntegrationMode(balTRAJ);
+			self->diagram->GetODESolver()->SetIntegrationMode(bal::TRAJ);
 		else if(strcmp(v, "events") == 0)
-			self->diagram->GetODESolver()->SetIntegrationMode(balEVENTS);
+			self->diagram->GetODESolver()->SetIntegrationMode(bal::EVENTS);
 		else if(strcmp(v, "trajectory + events") == 0 || strcmp(v, "both") == 0)
-			self->diagram->GetODESolver()->SetIntegrationMode(balBOTH);
+			self->diagram->GetODESolver()->SetIntegrationMode(bal::BOTH);
 		else if(strcmp(v, "lyap") == 0 || strcmp(v, "lyapunov") == 0)
-			self->diagram->GetODESolver()->SetIntegrationMode(balLYAP);
+			self->diagram->GetODESolver()->SetIntegrationMode(bal::LYAP);
 		else
 			err = -1;
 		Py_DECREF(value);
@@ -1231,9 +1231,9 @@ static int pyBalBifurcationDiagram_setattro(pyBalBifurcationDiagram *self, PyObj
 		Py_INCREF(value);
 		char *v = PyString_AsString(value);
 		if(strcmp(v, "parameters") == 0)
-			self->diagram->SetMode(balPARAMS);
+			self->diagram->SetMode(bal::PARAMS);
 		else if(strcmp(v, "IC") == 0 || strcmp(v, "ic") == 0)
-			self->diagram->SetMode(balIC);
+			self->diagram->SetMode(bal::IC);
 		else
 			err = -1;
 		Py_DECREF(value);

@@ -56,7 +56,7 @@ int main(int argc, char *argv[]) {
   solver->SetTimeStep(10);
   solver->HaltAtEquilibrium(true);
   solver->SetEquilibriumTolerance(1e-2 * solver->GetEquilibriumTolerance());
-  solver->SetIntegrationMode(balTRAJ);
+  solver->SetIntegrationMode(TRAJ);
   solver->SetX0(x0);
   solver->Solve();
 

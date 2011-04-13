@@ -43,12 +43,12 @@ bool CompareBalSummaryEntries(SummaryEntry *entry1, SummaryEntry *entry2) {
 
 /***** SummaryEntry *****/
 
-SummaryEntry::SummaryEntry(Solution *sol, int mode) {
+SummaryEntry::SummaryEntry(Solution *sol, diagram_mode mode) {
   int r, c, np, nx;
   realtype *buffer;
   np = sol->GetParameters()->GetNumber();
   n = np; // number of parameters
-  if(mode == balIC) {
+  if(mode == IC) {
     sol->GetSize(&r,&c);
     nx = c-2;
     n += 2*nx; // initial and final condition
@@ -59,10 +59,10 @@ SummaryEntry::SummaryEntry(Solution *sol, int mode) {
   for(int i=0; i<np; i++)
     data[i] = sol->GetParameters()->At(i);
   switch(mode) {
-  case balLYAP:
+  case LYAP:
     data[n-1] = sol->GetLyapunovExponents()[0]; //saving Maximal Lyapunov exponent (MLE)
     break;
-  case balIC:
+  case IC:
     buffer = sol->GetData();
     for(int i=0; i<nx; i++) {
       data[np+i] = buffer[1+i];
@@ -112,7 +112,7 @@ BifurcationDiagram::BifurcationDiagram() {
   destroy_solver = true;
   restart_from_x0 = true;
   nthreads = 2;
-  mode = balPARAMS;
+  mode = PARAMS;
   solutions = NULL;
   summary = NULL;
   destroy_lists = false;
@@ -205,7 +205,7 @@ bool BifurcationDiagram::SaveSummaryData(const char *filename) const {
     entry = (*it)->GetData();
     for(i=0; i<(*it)->GetN()-1; i++)
       fprintf(fid, "%e ", entry[i]);
-    if (solver->GetIntegrationMode() == balLYAP)
+    if (solver->GetIntegrationMode() == LYAP)
       fprintf(fid,"%e\n", (double) entry[(*it)->GetN()-1]);
     else 
       fprintf(fid,"%d\n", (int) entry[(*it)->GetN()-1]);
@@ -255,11 +255,11 @@ void BifurcationDiagram::RestartFromX0(bool restart) {
   restart_from_x0 = restart;
 }
 
-bool BifurcationDiagram::SetMode(int _mode) {
+bool BifurcationDiagram::SetMode(diagram_mode _mode) {
   switch(_mode) {
-  case balPARAMS:
+  case PARAMS:
     break;
-  case balIC:
+  case IC:
     break;
   default:
     return false;
@@ -329,16 +329,16 @@ void BifurcationDiagram::ComputeDiagramMultiThread() {
 
   BifurcationParameters *pars;
 	
-  if (solver->GetIntegrationMode() == balLYAP)
+  if (solver->GetIntegrationMode() == LYAP)
     restart_from_x0 = true;
   
   switch(mode) {
-  case balPARAMS:
+  case PARAMS:
     pars = (BifurcationParameters *) parameters;
     pars->Reset();
     total = pars->GetTotalNumberOfTuples();
     break;
-  case balIC:
+  case IC:
     RestartFromX0(true);
     idx = 0;
     solver->SetX0(X0[idx]);
@@ -355,7 +355,7 @@ void BifurcationDiagram::ComputeDiagramMultiThread() {
   /**
    * launching the thread of the writing routine: it activates only when list size >= LIST_MAX_SIZE
    **/
-  if (solver->GetIntegrationMode() != balLYAP) {
+  if (solver->GetIntegrationMode() != LYAP) {
     logger_thread = new boost::thread(&Logger::SaveSolutionThreaded,logger,solutions,&list_mutex,&q_empty,&q_full);
   }
   
@@ -366,7 +366,7 @@ void BifurcationDiagram::ComputeDiagramMultiThread() {
     IntegrateAndEnqueue(solver,solutionId);
     printf("%c%s", ESC, GREEN);
 #ifdef DEBUG
-    if(mode == balIC)
+    if(mode == IC)
       printf("[%05d/%05d]\r", idx+1, total);
     else
       printf("[%05d/%05d]\r", cnt+1, total);
@@ -375,10 +375,10 @@ void BifurcationDiagram::ComputeDiagramMultiThread() {
 #endif
     printf("%c%s", ESC, NORMAL); fflush(stdout);
     switch(mode) {
-    case balPARAMS:
+    case PARAMS:
       pars->Next();
       break;
-    case balIC:
+    case IC:
       idx++;
       if (idx<total)
         solver->SetX0(X0[idx]);
@@ -403,11 +403,11 @@ void BifurcationDiagram::ComputeDiagramMultiThread() {
   for (cnt = 0; cnt < nloops; cnt++) {
     /* we set to each solver a different tuple of parameters */
     switch(mode) {
-    case balPARAMS:
+    case PARAMS:
       for(i = 0; i < nthreads; i++, pars->Next())
 	lpar[i]->CopyValues(pars);
       break;
-    case balIC:
+    case IC:
       for(i = 0; i < nthreads; i++, idx++)
 	lsol[i]->SetX0(X0[idx]);
       break;
@@ -421,7 +421,7 @@ void BifurcationDiagram::ComputeDiagramMultiThread() {
       threads[i]->join();
       printf("%c%s", ESC, GREEN);
 #ifdef DEBUG
-      if(mode == balIC)
+      if(mode == IC)
 	printf("[%05d/%05d]\r", idx-nthreads+i+1, total);
       else
 	printf("[%05d/%05d]\r", (prologue + cnt*nthreads + i + 1), total);
@@ -444,7 +444,7 @@ void BifurcationDiagram::ComputeDiagramMultiThread() {
   delete [] lsol;
   delete [] lpar;
 
-  if (solver->GetIntegrationMode() != balLYAP) {
+  if (solver->GetIntegrationMode() != LYAP) {
     /* interrupting logger_thread */
     logger_thread->interrupt();
     /* waiting logger thread to writing the remaining solution in the queue and exit */
@@ -474,13 +474,13 @@ void BifurcationDiagram::IntegrateAndEnqueue(ODESolver * sol, int solutionId) {
       q_empty.wait(lock);
     }
     // insert a new solution into the list
-    if (solver->GetIntegrationMode() != balLYAP)
+    if (solver->GetIntegrationMode() != LYAP)
       solutions->push_back(solution);
     // insert a new summary into the list
     summary->push_back(new SummaryEntry(solution,mode));
   }	
   
-  if (solver->GetIntegrationMode() == balLYAP)
+  if (solver->GetIntegrationMode() == LYAP)
     solution->Destroy();
   
   if(! restart_from_x0)

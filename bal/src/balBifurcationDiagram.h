@@ -52,7 +52,9 @@ namespace bal {
 
 void ResetColours(int d);
 
-enum { balPARAMS, balIC };
+typedef enum {
+        PARAMS, IC
+} diagram_mode;
 
 /**
  * \class SummaryEntry
@@ -60,7 +62,7 @@ enum { balPARAMS, balIC };
  */
 class SummaryEntry : public Object {
  public:
-  SummaryEntry(Solution *sol, int mode = balPARAMS);
+  SummaryEntry(Solution *sol, diagram_mode mode = PARAMS);
   virtual ~SummaryEntry();
   int GetN() const;
   int GetID() const;
@@ -190,7 +192,7 @@ class BifurcationDiagram : public Object {
   bool SaveSummaryData(const char *filename) const;
   double** GetSummaryData(int *size = NULL) const;
 
-  bool SetMode(int _mode);
+  bool SetMode(diagram_mode _mode);
   int GetMode() const;
   void SetInitialConditions(int nx0, double **x0);
 
@@ -230,7 +232,7 @@ class BifurcationDiagram : public Object {
   /** The number of parameters to be varied for the bifurcation diagram. */
   int n_var_par;
   /** The mode of computation of the diagram. */
-  int mode;
+  diagram_mode mode;
 
   int nX0;
   double **X0;

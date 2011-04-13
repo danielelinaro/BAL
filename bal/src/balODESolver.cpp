@@ -58,14 +58,14 @@ ODESolver::ODESolver() {
   params = NULL;
   reltol = RTOL;
   abstol = ATOL;
-  mode = balTRAJ;
+  mode = TRAJ;
   stiff = true;
   t0 = 0.0;
   t = t0;
-  tstep = STEP;
+  tstep = REGUL;
   ttran = T_TRAN;
   tfinal = T_END;
-  lyap_tstep = 100*STEP;
+  lyap_tstep = 100*REGUL;
   setup = false;
   max_intersections = DEFAULT_INTERSECTIONS;
   bufsize = 0;
@@ -237,7 +237,7 @@ Solution * ODESolver::GetSolution() const {
   Solution * solution = Solution::Create();
   solution->SetData(rows,cols,buffer);
   solution->SetParameters(params);
-  if (mode == balLYAP)
+  if (mode == LYAP)
     solution->SetLyapunovExponents(dynsys->GetOriginalDimension(),lyapunov_exponents);
   else 
     solution->SetNumberOfTurns(nturns);
@@ -351,7 +351,7 @@ bool ODESolver::SaveOrbit(const char *filename) const {
   int i, cnt, start, stop;
   FILE *fp;
 
-  if(mode != balEVENTS && mode != balBOTH)
+  if(mode != EVENTS && mode != BOTH)
     return false;
 
   fp = fopen(filename,"w");
@@ -586,20 +586,20 @@ bool ODESolver::AllocateSolutionBuffer() {
       delete_buffer = false;
     }
     switch(mode) {
-    case balLYAP:
+    case LYAP:
       lrows = (int) ceil ((tfinal - ttran) / lyap_tstep);
       if(lrows < 0) lrows = 0;
       lrows += 2;
       break;
-    case balTRAJ:
+    case TRAJ:
       lrows = (int) ceil ((tfinal - ttran) / tstep);
       if(lrows < 0) lrows = 0;
       lrows += 2;
       break;
-    case balEVENTS:
+    case EVENTS:
       lrows = max_intersections + 2;
       break;
-    case balBOTH:
+    case BOTH:
       lrows = (int) ceil ((tfinal - ttran) / tstep);
       // the number of detected intersections is increased only after
       // transient evolution.
@@ -625,7 +625,7 @@ void ODESolver::ResetInitialCondition() {
     Ith(x,i) = Ith(x0,i);
   }
   ResetPositionInBuffer();
-  StoreRecordInBuffer(balSTART);
+  StoreRecordInBuffer(START);
 }
 
 void ODESolver::ResetPositionInBuffer() {
@@ -654,7 +654,7 @@ void ODESolver::SkipTransient(bool *equilibrium, bool *error) {
   tout = t0 + ttran;
   while (t < tout) {
     flag = CVode (cvode_mem, tout, x, &t, CV_NORMAL);
-    if (flag < 0 && flag != CV_TOO_MUCH_WORK && (flag != CV_ILL_INPUT || mode == balTRAJ)) {
+    if (flag < 0 && flag != CV_TOO_MUCH_WORK && (flag != CV_ILL_INPUT || mode == TRAJ)) {
       *error = true;
       break;
     }
@@ -663,14 +663,14 @@ void ODESolver::SkipTransient(bool *equilibrium, bool *error) {
      * if events are enabled, we give the dynamical system the possibility to
      * change its internal structure also during the transient evolution.
      */
-    if ((mode == balEVENTS || mode == balBOTH) && flag == CV_ROOT_RETURN) {
+    if ((mode == EVENTS || mode == BOTH) && flag == CV_ROOT_RETURN) {
       CVodeGetRootInfo (cvode_mem, events);
       if(dynsys->HasEventsConstraints()) {
 	dynsys->EventsConstraints(t,x,events_constraints,params);
 	/* 
 	 * call ManageEvents so that the dynamical system can (optionally)
 	 * change something in its internal structure. See for example
-	 * balPLL, a switch system.
+	 * PLL, a switch system.
 	 */
 	dynsys->ManageEvents(t,x,events,events_constraints);
       }
@@ -686,7 +686,7 @@ void ODESolver::SkipTransient(bool *equilibrium, bool *error) {
       break;
   }
   // if it's an equilibrium point, the label is changed at the end...
-  StoreRecordInBuffer(balTRAN_END);
+  StoreRecordInBuffer(TRAN_END);
 }
 
 int ODESolver::CheckEquilibrium() {
@@ -694,7 +694,7 @@ int ODESolver::CheckEquilibrium() {
   if(EuclideanDistance(neq,xdot) < equilibrium_tolerance) {
     nturns = 0;
     if(halt_at_equilibrium) {
-      ChangeCurrentLabel(balEQUIL);
+      ChangeCurrentLabel(EQUIL);
       return EQUIL_BREAK;
     }
     return EQUIL_TRUE;
@@ -798,8 +798,8 @@ bool ODESolver::ResetCVode() {
   int flag;
 
   switch(mode) {
-  case balTRAJ:
-  case balLYAP:
+  case TRAJ:
+  case LYAP:
 #ifdef CVODE25
     flag = CVodeRootInit (cvode_mem, 0, NULL, dynsys);
 #endif
@@ -807,8 +807,8 @@ bool ODESolver::ResetCVode() {
     flag = CVodeRootInit (cvode_mem, 0, NULL);
 #endif
     break;
-  case balEVENTS:
-  case balBOTH:
+  case EVENTS:
+  case BOTH:
 #ifdef CVODE25
     flag = CVodeRootInit (cvode_mem, nev, DynamicalSystem::EventsWrapper, dynsys);
 #endif
@@ -837,7 +837,7 @@ bool ODESolver::ResetCVode() {
 bool ODESolver::Solve() {
   bool retval;
 
-  if(mode == balLYAP) {
+  if(mode == LYAP) {
     if(!dynsys->IsExtended()) {
       dynsys->Extend(true);
       int i, n = dynsys->GetOriginalDimension();
@@ -856,14 +856,14 @@ bool ODESolver::Solve() {
   dynsys->Reset();
 
   switch (mode) {
-  case balTRAJ:
+  case TRAJ:
     retval = SolveWithoutEvents();
     break;
-  case balEVENTS:
-  case balBOTH:
+  case EVENTS:
+  case BOTH:
     retval = SolveWithEvents();
     break;
-  case balLYAP:
+  case LYAP:
     retval = SolveWithoutEventsLyapunov();
     break;
   }
@@ -918,7 +918,7 @@ bool ODESolver::SolveWithoutEventsLyapunov() {
       Ith(x,(i+1)*n+j) = (i==j ? 1. : 0.);
   }
   rows--;
-  StoreRecordInBuffer(balTRAN_END);
+  StoreRecordInBuffer(TRAN_END);
   
   /************* TRAJECTORY *****************/
   if(!err) {
@@ -939,7 +939,7 @@ bool ODESolver::SolveWithoutEventsLyapunov() {
       }
 
       flag = CVode (cvode_mem, tout, x, &t, CV_NORMAL);
-      StoreRecordInBuffer(balSTEP);
+      StoreRecordInBuffer(REGUL);
       
       if (flag < 0 && flag != CV_TOO_MUCH_WORK) {
 	/*
@@ -975,7 +975,7 @@ bool ODESolver::SolveWithoutEventsLyapunov() {
   /* if the integrator stopped because of an error, we change the label of the last row in
    * the integration buffer and stop the integration procedure */
   if (err) {
-    ChangeCurrentLabel(balERROR);
+    ChangeCurrentLabel(ERROR);
     return false;
   }
 
@@ -985,7 +985,7 @@ bool ODESolver::SolveWithoutEventsLyapunov() {
 /*** DEPRECATED ***/
 bool ODESolver::SolveLyapunov() {
   fprintf(stderr, "ODESolver::SolveLyapunov>> This function is deprecated.\n");
-  SetIntegrationMode(balTRAJ);
+  SetIntegrationMode(TRAJ);
 
   int i;
   realtype * temp_x0 = new realtype[dynsys->GetOriginalDimension()];
@@ -1058,7 +1058,7 @@ bool ODESolver::SolveLyapunov() {
   delete [] znorm;
   delete [] cum;
 
-  SetIntegrationMode(balLYAP);
+  SetIntegrationMode(LYAP);
   return true;
 }
 
@@ -1089,7 +1089,7 @@ bool ODESolver::SolveWithoutEvents() {
     tout = t+tstep;
     while (tout < t0+tfinal+tstep) {
       flag = CVode (cvode_mem, tout, x, &t, CV_NORMAL);
-      StoreRecordInBuffer(balSTEP);
+      StoreRecordInBuffer(REGUL);
       
       if (flag < 0 && flag != CV_TOO_MUCH_WORK) {
 	/*
@@ -1119,13 +1119,13 @@ bool ODESolver::SolveWithoutEvents() {
   /* if the integrator stopped because of an error, we change the label of the last row in
    * the integration buffer and stop the integration procedure */
   if (err) {
-    ChangeCurrentLabel(balERROR);
+    ChangeCurrentLabel(ERROR);
     return false;
   }
   /* if the point is an equilibrium, we change the label of the last row in
    * the integration buffer and stop the integration procedure */
   if (eq || nturns == 0)
-    ChangeCurrentLabel(balEQUIL);
+    ChangeCurrentLabel(EQUIL);
 
   return true;
 }
@@ -1155,9 +1155,9 @@ bool ODESolver::SolveWithEvents() {
   /************* INTERSECTIONS ************/
   restart = false;
   if(!(eq && halt_at_equilibrium) && !err) {
-    if(mode == balEVENTS)
+    if(mode == EVENTS)
       tout = t0+tfinal;
-    else if(mode == balBOTH)
+    else if(mode == BOTH)
       tout = t+tstep;
     intersections = 0;
     class_inters = 0;
@@ -1173,7 +1173,7 @@ bool ODESolver::SolveWithEvents() {
 	 * extremum of a state variables, which is a condition always
 	 * verified when the trajectory is on an equilibrium
 	 */
-	StoreRecordInBuffer(balERROR);
+	StoreRecordInBuffer(ERROR);
 	err = true;
 	break;
       }
@@ -1184,8 +1184,8 @@ bool ODESolver::SolveWithEvents() {
       else if(eq_flag == EQUIL_TRUE)
 	eq = true;
 
-      if (flag == CV_SUCCESS && mode == balBOTH) {
-	StoreRecordInBuffer(balSTEP);
+      if (flag == CV_SUCCESS && mode == BOTH) {
+	StoreRecordInBuffer(REGUL);
 	tout += tstep;
       }
       else if (flag == CV_ROOT_RETURN && !eq) {
@@ -1265,7 +1265,7 @@ bool ODESolver::SolveWithEvents() {
   /* if the integrator stopped because of an error, we change the label of the last row in
    * the integration buffer and stop the integration procedure */
   if (err) {
-    ChangeCurrentLabel(balERROR);
+    ChangeCurrentLabel(ERROR);
     return false;
   }
   
@@ -1277,7 +1277,7 @@ bool ODESolver::SolveWithEvents() {
   /* if the point is an equilibrium, we change the label of the last row in
    * the integration buffer */
   if (eq || nturns == 0)
-    ChangeCurrentLabel(balEQUIL);
+    ChangeCurrentLabel(EQUIL);
     
   return true;
 }

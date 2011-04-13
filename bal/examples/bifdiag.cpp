@@ -47,7 +47,7 @@ int main(int argc, char *argv[]) {
   BifurcationDiagram * bifd = BifurcationDiagram::Create();
   bifd->SetDynamicalSystem(hr);
   bifd->RestartFromX0(true);
-  bifd->GetODESolver()->SetIntegrationMode(balBOTH);
+  bifd->GetODESolver()->SetIntegrationMode(BOTH);
   bifd->GetODESolver()->HaltAtEquilibrium(true);
   bifd->GetODESolver()->HaltAtCycle(true);
   bifd->GetODESolver()->SetInitialTime(10.);

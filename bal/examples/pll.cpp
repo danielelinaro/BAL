@@ -92,9 +92,9 @@ int main(int argc, char *argv[]) {
   bifd->SetDynamicalSystem(pll);
   bifd->SetFilename((char *) config.get<std::string>("simulation.outputfile").c_str());
   if(config.get<bool>("simulation.trajectory"))
-    bifd->GetODESolver()->SetIntegrationMode(balBOTH);
+    bifd->GetODESolver()->SetIntegrationMode(BOTH);
   else
-    bifd->GetODESolver()->SetIntegrationMode(balEVENTS);
+    bifd->GetODESolver()->SetIntegrationMode(EVENTS);
   bifd->GetODESolver()->SetTransientDuration(config.get<double>("simulation.ttran"));
   bifd->GetODESolver()->HaltAtEquilibrium(false);
   bifd->GetODESolver()->HaltAtCycle(false);

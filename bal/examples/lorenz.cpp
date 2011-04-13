@@ -48,7 +48,7 @@ int main(int argc, char *argv[]) {
   solver->SetTransientDuration(0.0);
   solver->SetFinalTime(100.0);
   solver->SetTimeStep(0.001);
-  solver->SetIntegrationMode(balTRAJ);
+  solver->SetIntegrationMode(TRAJ);
   solver->SetX0(x0);
   solver->Solve();
   

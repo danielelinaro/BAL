@@ -58,7 +58,7 @@ int main(int argc, char *argv[]) {
   
   ODESolver * solver = ODESolver::Create();
   solver->SetDynamicalSystem(hr);
-  solver->SetIntegrationMode(balLYAP);
+  solver->SetIntegrationMode(LYAP);
   solver->SetTimeStep(0.01);
   solver->SetTransientDuration(500);
   solver->SetLyapunovTimeStep(0.5);

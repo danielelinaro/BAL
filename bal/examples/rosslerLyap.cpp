@@ -28,7 +28,7 @@ int main(int argc, char *argv[]) {
   
 	BifurcationDiagram * bifd = BifurcationDiagram::Create();
   bifd->SetDynamicalSystem(ros);
-  bifd->GetODESolver()->SetIntegrationMode(balLYAP);
+  bifd->GetODESolver()->SetIntegrationMode(LYAP);
   bifd->GetODESolver()->SetTransientDuration(1e3);
 	bifd->GetODESolver()->SetLyapunovTimeStep(1);
 	bifd->GetODESolver()->SetTimeStep(1);

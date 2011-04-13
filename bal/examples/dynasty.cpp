@@ -50,7 +50,7 @@ int main(int argc, char *argv[]) {
   dynasty->SpecialOptions((const void *) "minima");
   BifurcationDiagram * bifd = BifurcationDiagram::Create();
   bifd->SetDynamicalSystem(dynasty);
-  bifd->GetODESolver()->SetIntegrationMode(balEVENTS);
+  bifd->GetODESolver()->SetIntegrationMode(EVENTS);
   bifd->GetODESolver()->HaltAtEquilibrium(true);
   bifd->GetODESolver()->HaltAtCycle(false);
   bifd->GetODESolver()->SetTransientDuration(5e3);

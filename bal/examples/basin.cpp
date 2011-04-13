@@ -47,7 +47,7 @@ int main(int argc, char *argv[]) {
   BifurcationDiagram * bifd = BifurcationDiagram::Create();
   bifd->SetDynamicalSystem(hr);
   bifd->SetFilename("hr-basin.h5");
-  bifd->GetODESolver()->SetIntegrationMode(balEVENTS);
+  bifd->GetODESolver()->SetIntegrationMode(EVENTS);
   bifd->GetODESolver()->HaltAtEquilibrium(true);
   bifd->GetODESolver()->HaltAtCycle(true);
   bifd->GetODESolver()->SetTransientDuration(0e3);
@@ -76,7 +76,7 @@ int main(int argc, char *argv[]) {
     X0[i][1] = -10 + 12*((double) random()/RAND_MAX);
     X0[i][2] = -1+3.0*((double) random()/RAND_MAX);
   }
-  bifd->SetMode(balIC);
+  bifd->SetMode(IC);
   bifd->SetInitialConditions(nX0,X0);
   bifd->ComputeDiagram();
   bifd->SaveSummaryData("hr-basin.classified");

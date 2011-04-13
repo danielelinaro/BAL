@@ -92,18 +92,19 @@
 
 
 
+namespace bal {
+
 /** The integration mode of the solver. */
-typedef enum
-  {
-    /** Records the trajectory of the system */
-    balTRAJ = 1,
-    /** Records the events, i.e. the crossings of Poincare' sections */
-    balEVENTS,
-    /** Records both trajectory and events */
-    balBOTH,
-    /** Compute Lyapunov spectrum */
-    balLYAP
-  } integration_mode;
+typedef enum {
+        /** Records the trajectory of the system */
+        TRAJ = 1,
+        /** Records the events, i.e. the crossings of Poincare' sections */
+        EVENTS,
+        /** Records both trajectory and events */
+        BOTH,
+        /** Compute Lyapunov spectrum */
+        LYAP
+} integration_mode;
 
 
 /**
@@ -111,25 +112,27 @@ typedef enum
  * labels that start from 1 and that correspond to the order in which the
  * corresponding Poincare' section has been loaded into the solver.
  */
-typedef enum
-  {
-    /** Integration has terminated due to an error in CVode */
-    balERROR = -10,
-    /** Integration has terminated because the system has reached an
-     * equilibrium point */
-    balEQUIL = -3,
-    /** Initial point */
-    balSTART = -2,
-    /** Point at the end of the transient evolution */
-    balTRAN_END = -1,
-    /** A normal trajectory point */
-    balSTEP = 0
-  } label;
+typedef enum {
+        /** Integration has terminated due to an error in CVode */
+        ERROR = -10,
+        /** Integration has terminated because the system has reached an
+         * equilibrium point */
+        EQUIL = -3,
+        /** Initial point */
+        START = -2,
+        /** Point at the end of the transient evolution */
+        TRAN_END = -1,
+        /** A normal trajectory point */
+        REGUL = 0
+} state_label;
 
-enum { EQUIL_FALSE, EQUIL_TRUE, EQUIL_BREAK };
-enum { CYCLE_FALSE, CYCLE_TRUE, CYCLE_BREAK };
+typedef enum {
+        EQUIL_FALSE, EQUIL_TRUE, EQUIL_BREAK
+} equil_label;
 
-namespace bal {
+typedef enum {
+        CYCLE_FALSE, CYCLE_TRUE, CYCLE_BREAK
+} cycle_label;
 
 /**
  * \class ODESolver

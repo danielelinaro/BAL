@@ -34,11 +34,11 @@
 #include <cstring>
 #include <cvode/cvode.h>
 
-enum {MINIMA, MAXIMA, ANY};
-
 #define EPS (1.0E-4)
 
 namespace bal {
+
+enum {MINIMA, MAXIMA, ANY};
 
 /**
  * \class Dynasty
