@@ -32,7 +32,7 @@
 #include "balBifurcationParameters.h"
 #include "balPLL.h"
 #include "ConfigFile.h"
-using namespace std;
+using namespace bal;
 
 const realtype pi = 3.1415926535897931;
 
@@ -44,20 +44,20 @@ int main(int argc, char *argv[]) {
   ConfigFile config(argv[1]);
   char name[100];
   
-  int steps[balPLL::npar];
-  balBifurcationParameters * bp = balBifurcationParameters::Create();
-  bp->SetNumber(balPLL::npar);
+  int steps[PLL::npar];
+  BifurcationParameters * bp = BifurcationParameters::Create();
+  bp->SetNumber(PLL::npar);
   
-  for(int i=0; i<balPLL::npar; i++) {
-    sprintf(name,"%ssteps",balPLL::parname[i]);
+  for(int i=0; i<PLL::npar; i++) {
+    sprintf(name,"%ssteps",PLL::parname[i]);
     steps[i] = config.read<int>(name);
     if(steps[i] == 1) {
-      bp->SetIthParameter(i,config.read<double>(balPLL::parname[i]));
+      bp->SetIthParameter(i,config.read<double>(PLL::parname[i]));
     }
     else {
-      sprintf(name,"%smin",balPLL::parname[i]);
+      sprintf(name,"%smin",PLL::parname[i]);
       bp->SetIthParameterLowerBound(i,config.read<double>(name));
-      sprintf(name,"%smax",balPLL::parname[i]);
+      sprintf(name,"%smax",PLL::parname[i]);
       bp->SetIthParameterUpperBound(i,config.read<double>(name));
     }
   }
@@ -78,9 +78,9 @@ int main(int argc, char *argv[]) {
   x0[1] = config.read<double>("vdd");	
   
   bp->SetNumberOfSteps(steps);
-  balPLL * pll = balPLL::Create();
+  PLL * pll = PLL::Create();
   pll->SetParameters(bp);
-  balBifurcationDiagram * bifd = balBifurcationDiagram::Create();
+  BifurcationDiagram * bifd = BifurcationDiagram::Create();
   bifd->RestartFromX0(true);
   bifd->SetDynamicalSystem(pll);
   bifd->SetFilename((char *) config.read<string>("outputfile").c_str());

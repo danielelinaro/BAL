@@ -22,7 +22,7 @@
 
 /**
  *  \file balInterp3D.h
- *  \brief Definition of classes balBaseInterp3D balLinearInterp3D 
+ *  \brief Definition of classes BaseInterp3D LinearInterp3D 
  */
 
 #ifndef _BALINTERP3D_
@@ -32,20 +32,21 @@
 #include <cstdio>
 #include "balObject.h"
 #include "balInterp2D.h"
-using namespace std;
+
+namespace bal {
 
 /**
- * \class balBaseInterp3D 
+ * \class BaseInterp3D 
  * \brief Base class for three dimensional interpolation.
- * \sa balInterpolator
+ * \sa Interpolator
  */
-class balBaseInterp3D : public balInterpolator {
+class BaseInterp3D : public Interpolator {
   
  public:
   /** Returns the name of the class. */
   virtual const char * GetClassName() const;
   
-  /** Destroys a balBaseInterp3D. */
+  /** Destroys a BaseInterp3D. */
   virtual void Destroy();
   
   
@@ -63,40 +64,40 @@ class balBaseInterp3D : public balInterpolator {
   
  protected:
  
- /** Constructor of balBaseInterp3D. */
-  balBaseInterp3D();
+ /** Constructor of BaseInterp3D. */
+  BaseInterp3D();
  
- /** Copy constructor of balBaseInterp3D. */
-  balBaseInterp3D(const balBaseInterp3D & interp);
+ /** Copy constructor of BaseInterp3D. */
+  BaseInterp3D(const BaseInterp3D & interp);
  
- /** Destructor of balBaseInterp3D. */
-  ~balBaseInterp3D();
+ /** Destructor of BaseInterp3D. */
+  ~BaseInterp3D();
   
   int nnx1, nnx2, nnx3;
   double *xx1, *xx2, *xx3, **yy;
 };
 
 /**
- * \class balLinearInterp3D 
+ * \class LinearInterp3D 
  * \brief Class for three dimensional linear interpolation.
- * \sa balBaseInterp3D
+ * \sa BaseInterp3D
  */
-class balLinearInterp3D : public balBaseInterp3D {
+class LinearInterp3D : public BaseInterp3D {
   
  public:
   /** Returns the name of the class. */
   virtual const char * GetClassName() const;
   
-  /** Destroys a balLinearInterp3D. */
+  /** Destroys a LinearInterp3D. */
   virtual void Destroy();
   
-  /** Creates a balLinearInterp3D. */
-  static balLinearInterp3D * Create();
+  /** Creates a LinearInterp3D. */
+  static LinearInterp3D * Create();
  
-  /** Copies a balLinearInterp3D */
-  static balLinearInterp3D * Copy(balLinearInterp3D *interp);
+  /** Copies a LinearInterp3D */
+  static LinearInterp3D * Copy(LinearInterp3D *interp);
   
-  virtual balLinearInterp3D * Clone() const; 
+  virtual LinearInterp3D * Clone() const; 
   
   /** Evaluates the function in point x. The result is stored in array y. 
    *  If an error has occurred the return value is -1, otherwise it is 0. */
@@ -110,49 +111,49 @@ class balLinearInterp3D : public balBaseInterp3D {
    *  If an error has occurred the return value is -1, otherwise it is 0. */
   virtual int EvaluateDivergence(double *x, double *y);  
   
-  /** Initializes the balLinearInterp3D. You have to perform this operation before evaluating the function. 
+  /** Initializes the LinearInterp3D. You have to perform this operation before evaluating the function. 
    *  If an error has occurred the return value is -1, otherwise it is 0. */
   int Init();
 
  protected:
  
- /** Constructor of balLinearInterp3D. */
-  balLinearInterp3D();
+ /** Constructor of LinearInterp3D. */
+  LinearInterp3D();
  
- /** Copy constructor of balLinearInterp3D. */
-  balLinearInterp3D(const balLinearInterp3D & interp);
+ /** Copy constructor of LinearInterp3D. */
+  LinearInterp3D(const LinearInterp3D & interp);
  
- /** Destructor of balLinearInterp3D. */
-  ~balLinearInterp3D();
+ /** Destructor of LinearInterp3D. */
+  ~LinearInterp3D();
   
-  balLinearInterp1D *x3terp;
-  balLinearInterp2D ** interpsxy;
-  balLinearInterp1D * interpz;
+  LinearInterp1D *x3terp;
+  LinearInterp2D ** interpsxy;
+  LinearInterp1D * interpz;
   double ***yloc;
   
 };
 
 /**
- * \class balPolyInterp3D 
+ * \class PolyInterp3D 
  * \brief Class for three dimensional polinomial interpolation.
- * \sa balBaseInterp3D
+ * \sa BaseInterp3D
  */
-class balPolyInterp3D : public balBaseInterp3D {
+class PolyInterp3D : public BaseInterp3D {
   
  public:
   /** Returns the name of the class. */
   virtual const char * GetClassName() const;
   
-  /** Destroys a balPolyInterp3D. */
+  /** Destroys a PolyInterp3D. */
   virtual void Destroy();
   
-  /** Creates a balPolyInterp3D. */
-  static balPolyInterp3D * Create();
+  /** Creates a PolyInterp3D. */
+  static PolyInterp3D * Create();
  
-  /** Copies a balPolyInterp3D */
-  static balPolyInterp3D * Copy(balPolyInterp3D *interp);
+  /** Copies a PolyInterp3D */
+  static PolyInterp3D * Copy(PolyInterp3D *interp);
   
-  virtual balPolyInterp3D * Clone() const; 
+  virtual PolyInterp3D * Clone() const; 
   
   /** Evaluates the function in point x. The result is stored in array y. 
    *  If an error has occurred the return value is -1, otherwise it is 0. */
@@ -169,50 +170,50 @@ class balPolyInterp3D : public balBaseInterp3D {
   /** Sets the interpolation order for each dimension, i.e. the order of the polinomials used to interpolate. Default: m1 = m2 = 2 (linear interpolation) */
   void SetInterpolationOrder(int m1, int m2, int m3);
   
-  /** Initializes the balPolyInterp3D. You have to perform this operation before evaluating the function. 
+  /** Initializes the PolyInterp3D. You have to perform this operation before evaluating the function. 
    *  If an error has occurred the return value is -1, otherwise it is 0. */
   int Init();
 
  protected:
  
- /** Constructor of balPolyInterp3D. */
-  balPolyInterp3D();
+ /** Constructor of PolyInterp3D. */
+  PolyInterp3D();
  
- /** Copy constructor of balPolyInterp3D. */
-  balPolyInterp3D(const balPolyInterp3D & interp);
+ /** Copy constructor of PolyInterp3D. */
+  PolyInterp3D(const PolyInterp3D & interp);
  
- /** Destructor of balPolyInterp3D. */
-  ~balPolyInterp3D();
+ /** Destructor of PolyInterp3D. */
+  ~PolyInterp3D();
 
   int mm1, mm2, mm3;
-  balPolyInterp1D *x3terp;
-  balPolyInterp2D ** interpsxy;
-  balPolyInterp1D * interpz;
+  PolyInterp1D *x3terp;
+  PolyInterp2D ** interpsxy;
+  PolyInterp1D * interpz;
   double ***yloc;
   
 };
 
 /**
- * \class balSplineInterp3D 
+ * \class SplineInterp3D 
  * \brief Class for three dimensional spline interpolation.
- * \sa balBaseInterp3D
+ * \sa BaseInterp3D
  */
-class balSplineInterp3D : public balBaseInterp3D {
+class SplineInterp3D : public BaseInterp3D {
   
  public:
   /** Returns the name of the class. */
   virtual const char * GetClassName() const;
   
-  /** Destroys a balSplineInterp3D. */
+  /** Destroys a SplineInterp3D. */
   virtual void Destroy();
   
-  /** Creates a balSplineInterp3D. */
-  static balSplineInterp3D * Create();
+  /** Creates a SplineInterp3D. */
+  static SplineInterp3D * Create();
  
-  /** Copies a balSplineInterp3D */
-  static balSplineInterp3D * Copy(balSplineInterp3D *interp);
+  /** Copies a SplineInterp3D */
+  static SplineInterp3D * Copy(SplineInterp3D *interp);
   
-  virtual balSplineInterp3D * Clone() const; 
+  virtual SplineInterp3D * Clone() const; 
   
   /** Sets the dimension of the interpolation windows (how many points you want to use to perform the interpolation) */
   void SetWindow(int w);
@@ -229,49 +230,49 @@ class balSplineInterp3D : public balBaseInterp3D {
    *  If an error has occurred the return value is -1, otherwise it is 0. */
   virtual int EvaluateDivergence(double *x, double *y);  
  
-  /** Initializes the balSplineInterp3D. You have to perform this operation before evaluating the function. 
+  /** Initializes the SplineInterp3D. You have to perform this operation before evaluating the function. 
    *  If an error has occurred the return value is -1, otherwise it is 0. */
   int Init();
 
  protected:
  
- /** Constructor of balSplineInterp3D. */
-  balSplineInterp3D();
+ /** Constructor of SplineInterp3D. */
+  SplineInterp3D();
  
- /** Copy constructor of balSplineInterp3D. */
-  balSplineInterp3D(const balSplineInterp3D & interp);
+ /** Copy constructor of SplineInterp3D. */
+  SplineInterp3D(const SplineInterp3D & interp);
  
- /** Destructor of balSplineInterp3D. */
-  ~balSplineInterp3D();
+ /** Destructor of SplineInterp3D. */
+  ~SplineInterp3D();
 
-  balPolyInterp1D *x3terp;
-  balSplineInterp2D ** interpsxy;
-  balSplineInterp1D * interpz;
+  PolyInterp1D *x3terp;
+  SplineInterp2D ** interpsxy;
+  SplineInterp1D * interpz;
   int window;
   double ***yloc;
 };
 
 /**
- * \class balSmoothingSplineInterp3D 
+ * \class SmoothingSplineInterp3D 
  * \brief Class for three dimensional approximation with smoothing splines.
- * \sa balBaseInterp3D
+ * \sa BaseInterp3D
  */
-class balSmoothingSplineInterp3D : public balBaseInterp3D {
+class SmoothingSplineInterp3D : public BaseInterp3D {
   
  public:
   /** Returns the name of the class. */
   virtual const char * GetClassName() const;
   
-  /** Destroys a balSmoothingSplineInterp3D. */
+  /** Destroys a SmoothingSplineInterp3D. */
   virtual void Destroy();
   
-  /** Creates a balSmoothingSplineInterp3D. */
-  static balSmoothingSplineInterp3D * Create();
+  /** Creates a SmoothingSplineInterp3D. */
+  static SmoothingSplineInterp3D * Create();
  
-  /** Copies a balSmoothingSplineInterp3D */
-  static balSmoothingSplineInterp3D * Copy(balSmoothingSplineInterp3D *interp);
+  /** Copies a SmoothingSplineInterp3D */
+  static SmoothingSplineInterp3D * Copy(SmoothingSplineInterp3D *interp);
   
-  virtual balSmoothingSplineInterp3D * Clone() const; 
+  virtual SmoothingSplineInterp3D * Clone() const; 
   
   /** Evaluates the function in point x. The result is stored in array y. 
    *  If an error has occurred the return value is -1, otherwise it is 0. */
@@ -294,28 +295,31 @@ class balSmoothingSplineInterp3D : public balBaseInterp3D {
   /** Sets the dimension of the interpolation window (how many points you want to use to perform the interpolation) */
   void SetWindow(int w);
   
-  /** Initializes the balSmoothingSplineInterp3D. You have to perform this operation before evaluating the function. 
+  /** Initializes the SmoothingSplineInterp3D. You have to perform this operation before evaluating the function. 
    *  If an error has occurred the return value is -1, otherwise it is 0. */
   int Init();
 
  protected:
  
- /** Constructor of balSmoothingSplineInterp3D. */
-  balSmoothingSplineInterp3D();
+ /** Constructor of SmoothingSplineInterp3D. */
+  SmoothingSplineInterp3D();
  
- /** Copy constructor of balSmoothingSplineInterp3D. */
-  balSmoothingSplineInterp3D(const balSmoothingSplineInterp3D & interp);
+ /** Copy constructor of SmoothingSplineInterp3D. */
+  SmoothingSplineInterp3D(const SmoothingSplineInterp3D & interp);
  
- /** Destructor of balSmoothingSplineInterp3D. */
-  ~balSmoothingSplineInterp3D();
+ /** Destructor of SmoothingSplineInterp3D. */
+  ~SmoothingSplineInterp3D();
 
-  balPolyInterp1D *x3terp;
-  balSmoothingSplineInterp2D ** interpsxy;
-  balSmoothingSplineInterp1D * interpz;
+  PolyInterp1D *x3terp;
+  SmoothingSplineInterp2D ** interpsxy;
+  SmoothingSplineInterp1D * interpz;
   int window;
   double ***yloc;
   double SS;
 };
+
+} // namespace bal
+
 #endif
 
 

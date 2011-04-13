@@ -22,7 +22,7 @@
 
 /** 
  * \file balPLL.h
- * \brief Definition of the class balPLL
+ * \brief Definition of the class PLL
  */
 
 #ifndef _BALPLL_
@@ -42,21 +42,23 @@
 const int ndiv = 2;
 #endif
 
+namespace bal {
+
 /**
- * \class balPLL
+ * \class PLL
  * \brief Implementation of a dynamical system that describes a
  * Phase-Locked Loop
  *
  * This PLL is modelled as a switch system.
  *
- * \sa balDynamicalSystem
+ * \sa DynamicalSystem
  */
-class balPLL : public balDynamicalSystem {
+class PLL : public DynamicalSystem {
  public:
   virtual const char * GetClassName () const;
-  static balPLL * Create ();
-  static balPLL * Copy(balPLL *pll);
-  virtual balDynamicalSystem * Clone() const;
+  static PLL * Create ();
+  static PLL * Copy(PLL *pll);
+  virtual DynamicalSystem * Clone() const;
   virtual void Destroy ();
   
   int RHS (realtype t, N_Vector X, N_Vector Xdot, void * data);
@@ -82,8 +84,8 @@ class balPLL : public balDynamicalSystem {
   static const char * parname[14];
   
  protected:
-  balPLL();
-  virtual ~balPLL();
+  PLL();
+  virtual ~PLL();
   
  private:
   const realtype pi;
@@ -142,16 +144,17 @@ class balPLL : public balDynamicalSystem {
 
 };
 
+} // namespace bal
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-balDynamicalSystem* balPLLFactory();
+bal::DynamicalSystem* PLLFactory();
 	
 #ifdef __cplusplus
 }
 #endif
-
 
 #endif
 

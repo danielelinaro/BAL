@@ -30,26 +30,27 @@
 
 #include "balObject.h"
 #include <fstream>
-using namespace std;
+
+namespace bal {
 
 /**
- * \class balParameters 
+ * \class Parameters 
  * \brief Base class for objects that contain parameters of
  * a dynamical system.
  * 
- * balParameters is the (general-purpose) base class to represent
+ * Parameters is the (general-purpose) base class to represent
  * parameters of a dynamical system. It simply contains an array that
  * represents the parameters of a system.  
  * This class can be inherited to contain more sophisticated definition of
  * parameters.
  *
- * \sa balDynamicalSystem
+ * \sa DynamicalSystem
  */
-class balParameters : public balObject {
+class Parameters : public Object {
  public:
   virtual const char * GetClassName () const;
-  static balParameters * Create ();
-  static balParameters * Copy (balParameters * params);
+  static Parameters * Create ();
+  static Parameters * Copy (Parameters * params);
   virtual void Destroy ();
   virtual void SetNumber (int);
   int GetNumber () const;
@@ -57,14 +58,14 @@ class balParameters : public balObject {
   double & At (int k);
   double * GetParameters() const;
   
-  void CopyValues(balParameters* _par);
+  void CopyValues(Parameters* _par);
   
-  friend ostream & operator<< (ostream & out, const balParameters & bp);
+  friend std::ostream & operator<< (std::ostream & out, const Parameters & bp);
   
  protected:
-  balParameters ();
-  balParameters (const balParameters & param);
-  virtual ~balParameters ();
+  Parameters ();
+  Parameters (const Parameters & param);
+  virtual ~Parameters ();
   
  private:
   int p;
@@ -72,7 +73,9 @@ class balParameters : public balObject {
   bool _dealloc;
 };
 
-ostream & operator<< (ostream & out, const balParameters & bp);
+std::ostream & operator<< (std::ostream & out, const Parameters & bp);
+
+} // namespace bal
 
 #endif
 

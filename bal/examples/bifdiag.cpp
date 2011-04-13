@@ -28,12 +28,13 @@
 #include "balODESolver.h"
 #include "balBifurcationDiagram.h"
 #include "balBifurcationParameters.h"
+using namespace bal;
 
-// TEST balBifurcationDiagram
+// TEST BifurcationDiagram
 int main(int argc, char *argv[]) {
   int steps[4] = {10,1,1,1};
   realtype x0[3] = {0.5,0.5,0.5};
-  balBifurcationParameters * bp = balBifurcationParameters::Create();
+  BifurcationParameters * bp = BifurcationParameters::Create();
   bp->SetNumber(4);
   bp->SetIthParameterLowerBound(0,2.9);
   bp->SetIthParameterUpperBound(0,3.18);
@@ -41,9 +42,9 @@ int main(int argc, char *argv[]) {
   bp->SetIthParameter(2,0.01);
   bp->SetIthParameter(3,4.0);
   bp->SetNumberOfSteps(steps);
-  balHindmarshRose * hr = balHindmarshRose::Create();
+  HindmarshRose * hr = HindmarshRose::Create();
   hr->SetParameters(bp);
-  balBifurcationDiagram * bifd = balBifurcationDiagram::Create();
+  BifurcationDiagram * bifd = BifurcationDiagram::Create();
   bifd->SetDynamicalSystem(hr);
   bifd->RestartFromX0(true);
   bifd->GetODESolver()->SetIntegrationMode(balBOTH);

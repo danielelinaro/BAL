@@ -22,67 +22,69 @@
 
 /** 
  * \file balDoubleGyre.cpp
- * \brief Implementation of the class balDoubleGyre
+ * \brief Implementation of the class DoubleGyre
  */
 
 #include "balDoubleGyre.h"
 
-balDynamicalSystem* balDoubleGyreFactory() {
-  return balDoubleGyre::Create();
+bal::DynamicalSystem* DoubleGyreFactory() {
+  return bal::DoubleGyre::Create();
 }
 
-balDoubleGyre::balDoubleGyre() {
+namespace bal {
+
+DoubleGyre::DoubleGyre() {
   SetDimension(2);
   SetNumberOfParameters(3);
   pi = 4*atan(1.0);
 }
 
-balDoubleGyre::balDoubleGyre(const balDoubleGyre& gyre) : balDynamicalSystem(gyre) {
+DoubleGyre::DoubleGyre(const DoubleGyre& gyre) : DynamicalSystem(gyre) {
   pi = gyre.pi;
 }
 
-balDoubleGyre::~balDoubleGyre() {
+DoubleGyre::~DoubleGyre() {
 }
 
-balDoubleGyre * balDoubleGyre::Create () {
-  return new balDoubleGyre;
+DoubleGyre * DoubleGyre::Create () {
+  return new DoubleGyre;
 }
 
-balDoubleGyre * balDoubleGyre::Copy(balDoubleGyre *gyre) {
-  return new balDoubleGyre(*gyre);
+DoubleGyre * DoubleGyre::Copy(DoubleGyre *gyre) {
+  return new DoubleGyre(*gyre);
 }
 
-balDynamicalSystem * balDoubleGyre::Clone() const {
-  return new balDoubleGyre(*this);
+DynamicalSystem * DoubleGyre::Clone() const {
+  return new DoubleGyre(*this);
 }
 
-void balDoubleGyre::Destroy () {
+void DoubleGyre::Destroy () {
   delete this;
 }
 
-const char * balDoubleGyre::GetClassName () const {
-  return "balDoubleGyre";
+const char * DoubleGyre::GetClassName () const {
+  return "DoubleGyre";
 }
 
-realtype balDoubleGyre::f(realtype t, realtype x, realtype omega, realtype eps) const {
+realtype DoubleGyre::f(realtype t, realtype x, realtype omega, realtype eps) const {
   realtype s;
   s = sin(omega*t);
   return eps*s*x*x + (1-2*eps*s)*x;
 }
 
-realtype balDoubleGyre::df(realtype t, realtype x, realtype omega, realtype eps) const {
+realtype DoubleGyre::df(realtype t, realtype x, realtype omega, realtype eps) const {
   realtype s;
   s = sin(omega*t);
   return 2*eps*s*x + (1-2*eps*s);
 }
 
-int balDoubleGyre::RHS (realtype t, N_Vector x, N_Vector xdot, void * data) {
+int DoubleGyre::RHS (realtype t, N_Vector x, N_Vector xdot, void * data) {
   realtype x1, x2;
   realtype A, omega, eps;
   realtype fx, dfx;
-  balParameters * parameters;
+  Parameters * parameters;
   
-  parameters = (balParameters *) data;
+  parameters = (Parameters *) data;
   A = parameters->At(0);
   omega = parameters->At(1);
   eps = parameters->At(2);
@@ -100,17 +102,19 @@ int balDoubleGyre::RHS (realtype t, N_Vector x, N_Vector xdot, void * data) {
 }
 
 #ifdef CVODE25
-int balDoubleGyre::Jacobian (long int N, DenseMat J, realtype t, N_Vector x, N_Vector fy, 
+int DoubleGyre::Jacobian (long int N, DenseMat J, realtype t, N_Vector x, N_Vector fy, 
 				void *jac_data, N_Vector tmp1, N_Vector tmp2, N_Vector tmp3) {
 #endif
 #ifdef CVODE26
-int balDoubleGyre::Jacobian (int N, realtype t, N_Vector x, N_Vector fy, DlsMat J, 
+int DoubleGyre::Jacobian (int N, realtype t, N_Vector x, N_Vector fy, DlsMat J, 
 				void *jac_data, N_Vector tmp1, N_Vector tmp2, N_Vector tmp3) {
 #endif
   return CV_SUCCESS;
 }
 
-bool balDoubleGyre::HasJacobian() const {
+bool DoubleGyre::HasJacobian() const {
   return false;
 }
  
+} // namespace bal
+

@@ -23,23 +23,24 @@
 #include "balObject.h"
 #include "balParameters.h"
 #include "balLogger.h"
+using namespace bal;
 
-// TEST balH5Logger and balASCIILogger
+// TEST H5Logger and ASCIILogger
 int main(int argc, char *argv[]) {
 
 	// data
 	double buffer[10] = {0, 0, 0, 0, -2, 1, 1, 1, 1, -1}; 
 	
 	// parameters
-	balParameters * pars = balParameters::Create();
+	Parameters * pars = Parameters::Create();
 	pars->SetNumber(4);
 	pars->At(0) = 3.0;
 	pars->At(1) = 5.0;
 	pars->At(2) = 0.01;
 	pars->At(3) = 4.0;
 
-	// balH5Logger
-	balLogger * logger = balH5Logger::Create();
+	// H5Logger
+	Logger * logger = H5Logger::Create();
 	logger->SetFilename("test.1.h5");
 	logger->SetNumberOfColumns(5);
 	logger->SetParameters(pars);
@@ -47,18 +48,6 @@ int main(int argc, char *argv[]) {
 	logger->SetFilename("test.2.h5");
 	logger->SaveBuffer(buffer, 2);
 	logger->Destroy();
-
-	/*
-	// TEST balASCIILogger
-	logger = balASCIILogger::Create();
-	logger->SetFilename("test.1.dat");
-	logger->SetNumberOfColumns(5);
-	logger->SetParameters(pars);
-	logger->SaveBuffer(buffer, 2);
-	logger->SetFilename("test.2.dat");
-	logger->SaveBuffer(buffer, 2);
-	logger->Destroy();
-	*/
 
 	return 0;
 }

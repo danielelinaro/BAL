@@ -29,21 +29,22 @@
 #include "balODESolver.h"
 #include "balBifurcationDiagram.h"
 #include "balParameters.h"
+using namespace bal;
 
-// TEST balBifurcationDiagram
+// TEST BifurcationDiagram
 int main(int argc, char *argv[]) {
 
-  balParameters * par = balParameters::Create();
+  Parameters * par = Parameters::Create();
   par->SetNumber(4);
   par->At(0) = 2.88;
   par->At(1) = 2.6;
   par->At(2) = 0.01;
   par->At(3) = 4.0;
 
-  balHindmarshRose * hr = balHindmarshRose::Create();
+  HindmarshRose * hr = HindmarshRose::Create();
   hr->SetParameters(par);
 
-  balBifurcationDiagram * bifd = balBifurcationDiagram::Create();
+  BifurcationDiagram * bifd = BifurcationDiagram::Create();
   bifd->SetDynamicalSystem(hr);
   bifd->SetFilename("hr-basin.h5");
   bifd->GetODESolver()->SetIntegrationMode(balEVENTS);

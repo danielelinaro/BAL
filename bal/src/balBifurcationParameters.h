@@ -28,15 +28,17 @@
 
 /** 
  * \file balBifurcationParameters.h
- * \brief Definition of the class balBifurcationParameters
+ * \brief Definition of the class BifurcationParameters
  */
 
+namespace bal {
+
 /**
- * \class balBifurcationParameters
+ * \class BifurcationParameters
  * \brief Class for storing the tuples of parameters required in the
  * computation of a bifurcation diagram.
  *
- * This class is used by balBifurcationDiagram to iterate over all the
+ * This class is used by BifurcationDiagram to iterate over all the
  * possible tuples of parameters needed to compute a bifurcation diagram.
  * Suppose that the user wants to integrate a system that depends on four
  * parameters: if they want to compute a bidimensional diagram, then it is
@@ -46,17 +48,17 @@
  * will have distinct values for the upper and lower bounds and a number of
  * steps greater than one. If the number of steps along the two parameters
  * is n1 and n2 respectively, then the total number of tuples given by
- * balBifurcationParameters will be n1*n2.
- * An instance of balBifurcationParameters stores internally the current
- * tuple of parameters, so that a balDynamicalSystem can use an instance of
- * balBifurcationParameters as if it were of type balParameters.
+ * BifurcationParameters will be n1*n2.
+ * An instance of BifurcationParameters stores internally the current
+ * tuple of parameters, so that a DynamicalSystem can use an instance of
+ * BifurcationParameters as if it were of type Parameters.
  *
- * \sa balParameters balBifurcationDiagram balDynamicalSystem
+ * \sa Parameters BifurcationDiagram DynamicalSystem
  */
-class balBifurcationParameters : public balParameters {
+class BifurcationParameters : public Parameters {
  public:
   virtual const char * GetClassName () const;
-  static balBifurcationParameters * Create ();
+  static BifurcationParameters * Create ();
   virtual void Destroy ();
   
   virtual void SetNumber(int n);
@@ -64,10 +66,10 @@ class balBifurcationParameters : public balParameters {
   bool SetIthParameterLowerBound(int i, double p);
   bool SetIthParameter(int i, double p);
   bool SetIthParameterUpperBound(int i, double p);
-  void SetParameterBounds(balParameters * lower, balParameters * upper);
-  double GetIthParameterUpperBound(int i) throw(balException);
-  double GetIthParameter(int i) throw(balException);
-  double GetIthParameterLowerBound(int i) throw(balException);
+  void SetParameterBounds(Parameters * lower, Parameters * upper);
+  double GetIthParameterUpperBound(int i) throw(Exception);
+  double GetIthParameter(int i) throw(Exception);
+  double GetIthParameterLowerBound(int i) throw(Exception);
   
   bool SetNumberOfSteps(int i, int s);
   void SetNumberOfSteps(const int * s);
@@ -83,15 +85,15 @@ class balBifurcationParameters : public balParameters {
   bool IsLast() const;
   
  protected:
-  balBifurcationParameters();
-  ~balBifurcationParameters();
+  BifurcationParameters();
+  ~BifurcationParameters();
   void Setup();
   
  private:
   /** The lower bounds of the parameters. */
-  balParameters * plower;
+  Parameters * plower;
   /** The upper bounds of the parameters. */
-  balParameters * pupper;
+  Parameters * pupper;
   /** The parameter steps for every parameter. */
   double * steps;
   /** The number of steps associated with every parameter. */
@@ -107,6 +109,8 @@ class balBifurcationParameters : public balParameters {
   /** Tells whether memory has been allocated or not */
   bool _dealloc;
 };
+
+} // namespace bal
 
 #endif
 

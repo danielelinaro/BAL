@@ -22,7 +22,7 @@
 
 /** 
  * \file balDynasty.h
- * \brief Definition of the class balDynasty
+ * \brief Definition of the class Dynasty
  */
 
 #ifndef _BALDYNASTY_
@@ -38,19 +38,21 @@ enum {MINIMA, MAXIMA, ANY};
 
 #define EPS (1.0E-4)
 
+namespace bal {
+
 /**
- * \class balDynasty
+ * \class Dynasty
  * \brief Implementation of a dynamical system that describes a
  * model of Chinese dynasty.
  * 
- * \sa balDynamicalSystem
+ * \sa DynamicalSystem
  */
-class balDynasty : public balDynamicalSystem {
+class Dynasty : public DynamicalSystem {
  public:
   virtual const char * GetClassName () const;
-  static balDynasty * Create ();
-  static balDynasty * Copy(balDynasty *dynasty);
-  virtual balDynamicalSystem * Clone() const;
+  static Dynasty * Create ();
+  static Dynasty * Copy(Dynasty *dynasty);
+  virtual DynamicalSystem * Clone() const;
   virtual void Destroy ();
   
   int RHS (realtype t, N_Vector x, N_Vector xdot, void * data);
@@ -71,23 +73,26 @@ class balDynasty : public balDynamicalSystem {
   bool SpecialOptions(const void *opt);
 
  protected:
-  balDynasty();
-  balDynasty(const balDynasty& hr);
-  virtual ~balDynasty();
+  Dynasty();
+  Dynasty(const Dynasty& hr);
+  virtual ~Dynasty();
   
  private:
   N_Vector xderiv;
   int constraint_type;
 };
 
+} // namespace bal
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-balDynamicalSystem* balDynastyFactory();
+bal::DynamicalSystem* DynastyFactory();
 	
 #ifdef __cplusplus
 }
 #endif
 
 #endif
+

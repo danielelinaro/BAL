@@ -42,7 +42,7 @@ from pybal import util
 
 # the dynamical system
 pll = bal.DynamicalSystem()
-pll.create('balPLL')
+pll.create('PLL')
 
 # the parameters
 par = bal.Parameters(pll.npar)

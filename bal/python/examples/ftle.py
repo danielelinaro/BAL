@@ -38,7 +38,7 @@ T0 = 5
 T = 15
 dt = 0.01
 gyre = bal.DynamicalSystem()
-gyre.create('balDoubleGyre')
+gyre.create('DoubleGyre')
 
 A = 0.1
 omega = 2*np.pi/10

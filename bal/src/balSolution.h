@@ -22,7 +22,7 @@
 
 /** 
  * \file balSolution.h
- * \brief Definition of the class balSolution
+ * \brief Definition of the class Solution
  */
 
 #ifndef _BALSOLUTION_
@@ -32,21 +32,23 @@
 #include "balCommon.h"
 #include "balParameters.h"
 
+namespace bal {
+
 /**
- * \class balSolution
+ * \class Solution
  * \brief Class that contains the result of an integration of a dynamical
  * system
- * \sa balDynamicalSystem balParameters balODESolver
+ * \sa DynamicalSystem Parameters ODESolver
  */
-class balSolution : public balObject {
+class Solution : public Object {
  public:
   /** Returns the name of the class. */
   virtual const char * GetClassName() const;
-  /** Creates a new balSolution. */
-  static balSolution * Create();
-  /** Copies a balSolution */
-  static balSolution * Copy(balSolution * solution);
-  /** Destroys a balSolution. */
+  /** Creates a new Solution. */
+  static Solution * Create();
+  /** Copies a Solution */
+  static Solution * Copy(Solution * solution);
+  /** Destroys a Solution. */
   virtual void Destroy();
   
   int GetRows() const;
@@ -54,8 +56,8 @@ class balSolution : public balObject {
   void GetSize(int * r, int * c) const;
   void SetSize(int r, int c);
   
-  balParameters * GetParameters() const;
-  void SetParameters(balParameters * p);
+  Parameters * GetParameters() const;
+  void SetParameters(Parameters * p);
   
   realtype * GetData() const;
   void SetData(int r, int c, realtype * data);
@@ -73,12 +75,12 @@ class balSolution : public balObject {
 
  protected:
   /* Protected destructor of the class. */
-  virtual ~balSolution();
-  balSolution();
-  balSolution(const balSolution & solution);
+  virtual ~Solution();
+  Solution();
+  Solution(const Solution & solution);
   
  private:
-  balParameters * parameters;
+  Parameters * parameters;
   realtype * buffer;
 	realtype * lyapunov_exponents;
 	int spectrum_dimension;
@@ -88,26 +90,9 @@ class balSolution : public balObject {
 	bool lyapunov_mode;
 };
 
-bool CompareBalSolutions(balSolution *sol1, balSolution *sol2);
+bool CompareBalSolutions(Solution *sol1, Solution *sol2);
 
-/*
- * \struct balSolutionComparer
- * \brief Object used to compare two balSolution objects when sorting a list
- * \sa balSolution
- */
-/*
-struct balSolutionComparer {
-  bool operator() (balSolution * sol1, balSolution * sol2) {
-    return sol1->GetID() < sol2->GetID();
-    //for (int i = 0; i < sol1->GetParameters()->GetNumber(); i++) {
-    //  if (sol1->GetParameters()->At(i) < sol2->GetParameters()->At(i))
-    //    return true;
-    //}
-    //return false;
-  }
-};
-*/
-
+} // namespace bal
 
 #endif
 

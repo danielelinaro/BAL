@@ -22,58 +22,60 @@
 
 /** 
  * \file balHindmarshRose.cpp
- * \brief Implementation of the class balHindmarshRose
+ * \brief Implementation of the class HindmarshRose
  */
 
 #include "balHindmarshRose.h"
 
-balDynamicalSystem* balHindmarshRoseFactory() {
-  return balHindmarshRose::Create();
+bal::DynamicalSystem* HindmarshRoseFactory() {
+  return bal::HindmarshRose::Create();
 }
 
-balHindmarshRose::balHindmarshRose() /* xrest(-1.6) */{
+namespace bal {
+
+HindmarshRose::HindmarshRose() /* xrest(-1.6) */{
   SetDimension(3);
   SetNumberOfParameters(4);
   SetNumberOfEvents(GetDimension());
   xderiv = N_VNew_Serial(GetDimension());
 }
 
-balHindmarshRose::balHindmarshRose(const balHindmarshRose& hr) : balDynamicalSystem(hr) /* : xrest(-1.6) */ {
+HindmarshRose::HindmarshRose(const HindmarshRose& hr) : DynamicalSystem(hr) /* : xrest(-1.6) */ {
   xderiv = N_VNew_Serial(hr.GetDimension());
   for(int i = 0; i < hr.GetDimension(); i++)
     Ith(xderiv,i)=Ith(hr.xderiv,i);
 }
 
-balHindmarshRose::~balHindmarshRose() {
+HindmarshRose::~HindmarshRose() {
   N_VDestroy_Serial(xderiv);
 }
 
-balHindmarshRose * balHindmarshRose::Create () {
-  return new balHindmarshRose;
+HindmarshRose * HindmarshRose::Create () {
+  return new HindmarshRose;
 }
 
-balHindmarshRose * balHindmarshRose::Copy (balHindmarshRose *hr) {
-  return new balHindmarshRose(*hr);
+HindmarshRose * HindmarshRose::Copy (HindmarshRose *hr) {
+  return new HindmarshRose(*hr);
 }
 
-balDynamicalSystem * balHindmarshRose::Clone() const {
-  return new balHindmarshRose(*this);
+DynamicalSystem * HindmarshRose::Clone() const {
+  return new HindmarshRose(*this);
 }
 
-void balHindmarshRose::Destroy () {
+void HindmarshRose::Destroy () {
   delete this;
 }
 
-const char * balHindmarshRose::GetClassName () const {
-  return "balHindmarshRose";
+const char * HindmarshRose::GetClassName () const {
+  return "HindmarshRose";
 }
 
-int balHindmarshRose::RHS (realtype t, N_Vector x, N_Vector xdot, void * data) {
+int HindmarshRose::RHS (realtype t, N_Vector x, N_Vector xdot, void * data) {
   realtype x1, x2, x3;
   realtype b, I, u, s;
-  balParameters * parameters;
+  Parameters * parameters;
   
-  parameters = (balParameters *) data;
+  parameters = (Parameters *) data;
   b = parameters->At(0);
   I = parameters->At(1);
   u = parameters->At(2);
@@ -91,22 +93,22 @@ int balHindmarshRose::RHS (realtype t, N_Vector x, N_Vector xdot, void * data) {
 }
 
 #ifdef CVODE25
-int balHindmarshRose::Jacobian (long int N, DenseMat J, realtype t, N_Vector x, N_Vector fy, 
+int HindmarshRose::Jacobian (long int N, DenseMat J, realtype t, N_Vector x, N_Vector fy, 
 				void *jac_data, N_Vector tmp1, N_Vector tmp2, N_Vector tmp3) {
 #endif
 #ifdef CVODE26
-int balHindmarshRose::Jacobian (int N, realtype t, N_Vector x, N_Vector fy, DlsMat J, 
+int HindmarshRose::Jacobian (int N, realtype t, N_Vector x, N_Vector fy, DlsMat J, 
 				void *jac_data, N_Vector tmp1, N_Vector tmp2, N_Vector tmp3) {
 #endif
   realtype b, I, u, s;
   realtype x1, x2, x3;
-  balParameters * parameters;
+  Parameters * parameters;
   
   x1 = Ith (x, 0);
   x2 = Ith (x, 1);
   x3 = Ith (x, 2);
  
-  parameters = (balParameters *) jac_data;
+  parameters = (Parameters *) jac_data;
   b = parameters->At(0);
   I = parameters->At(1);
   u = parameters->At(2);
@@ -125,24 +127,24 @@ int balHindmarshRose::Jacobian (int N, realtype t, N_Vector x, N_Vector fy, DlsM
   return CV_SUCCESS;
 }
 
-int balHindmarshRose::Events (realtype t, N_Vector x, realtype * event, void * data) {
+int HindmarshRose::Events (realtype t, N_Vector x, realtype * event, void * data) {
   RHS(t,x,xderiv,data);
   for(int i=0; i<GetNumberOfEvents(); i++)
     event[i] = Ith(xderiv,i);
   return CV_SUCCESS;
 }
 
-void balHindmarshRose::EventsConstraints (realtype t, N_Vector x, int * constraints, void * data) {
+void HindmarshRose::EventsConstraints (realtype t, N_Vector x, int * constraints, void * data) {
   realtype b, u, s;
   realtype x1, x2, x3;
   realtype ris[3], xdot[3];
-  balParameters * parameters;
+  Parameters * parameters;
   
   x1 = Ith (x, 0);
   x2 = Ith (x, 1);
   x3 = Ith (x, 2);
  
-  parameters = (balParameters *) data;
+  parameters = (Parameters *) data;
   b = parameters->At(0);
   u = parameters->At(2);
   s = parameters->At(3);
@@ -159,15 +161,17 @@ void balHindmarshRose::EventsConstraints (realtype t, N_Vector x, int * constrai
     constraints[i] = (ris[i] < 0 ? 1 : 0);
 }
 
-bool balHindmarshRose::HasJacobian() const {
+bool HindmarshRose::HasJacobian() const {
   return true;
 }
  
-bool balHindmarshRose::HasEvents() const {
+bool HindmarshRose::HasEvents() const {
   return true;
 }
  
-bool balHindmarshRose::HasEventsConstraints() const {
+bool HindmarshRose::HasEventsConstraints() const {
   return true;
 }
-  
+ 
+}
+

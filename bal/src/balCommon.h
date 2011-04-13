@@ -67,21 +67,25 @@
 
 #include <exception>
 
+namespace bal {
+
 /**
- * \class balException
+ * \class Exception
  * \brief Class that implements the exceptions thrown by the BAL library
  */
-class balException : public std::exception {
+class Exception : public std::exception {
  public:
- balException(const char* description = NULL) : errorDescription(description) {}
+ Exception(const char* description = NULL) : errorDescription(description) {}
   virtual const char* what() const throw() {
     if(errorDescription == NULL)
-      return "balException";
+      return "bal::Exception";
     return errorDescription;
   }
  private:
   const char* errorDescription;
 };
+
+} // namespace bal
 
 #endif
 

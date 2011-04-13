@@ -22,16 +22,18 @@
 
 /** 
  * \file balHeartNeuron.cpp
- * \brief Implementation of the class balHeartNeuron
+ * \brief Implementation of the class HeartNeuron
  */
 
 #include "balHeartNeuron.h"
 
-balDynamicalSystem* balHeartNeuronFactory() {
-  return balHeartNeuron::Create();
+bal::DynamicalSystem* HeartNeuronFactory() {
+  return bal::HeartNeuron::Create();
 }
 
-balHeartNeuron::balHeartNeuron() : 
+namespace bal {
+
+HeartNeuron::HeartNeuron() : 
   C(0.5),gK2(30.),EK(-0.07),ENa(0.045),gNa(200.),E1(-0.046),g1(8.),tauNa(0.0405022) {
   A[0] = -150.;
   A[1] = 500.;
@@ -45,50 +47,50 @@ balHeartNeuron::balHeartNeuron() :
   xderiv = N_VNew_Serial(GetDimension());
 }
 
-balHeartNeuron::~balHeartNeuron(){
+HeartNeuron::~HeartNeuron(){
   N_VDestroy_Serial(xderiv);
 }
 
-balHeartNeuron * balHeartNeuron::Create () {
-  return new balHeartNeuron;
+HeartNeuron * HeartNeuron::Create () {
+  return new HeartNeuron;
 }
 
-balHeartNeuron * balHeartNeuron::Copy (balHeartNeuron *hn) {
-  return new balHeartNeuron(*hn);
+HeartNeuron * HeartNeuron::Copy (HeartNeuron *hn) {
+  return new HeartNeuron(*hn);
 }
 
-balDynamicalSystem * balHeartNeuron::Clone() const {
-  return new balHeartNeuron(*this);
+DynamicalSystem * HeartNeuron::Clone() const {
+  return new HeartNeuron(*this);
 }
 
-void balHeartNeuron::Destroy () {
+void HeartNeuron::Destroy () {
   delete this;
 }
 
-const char * balHeartNeuron::GetClassName () const {
-  return "balHeartNeuron";
+const char * HeartNeuron::GetClassName () const {
+  return "HeartNeuron";
 }
 
-bool balHeartNeuron::HasJacobian() const {
+bool HeartNeuron::HasJacobian() const {
   return false;
 }
 
-bool balHeartNeuron::HasEvents() const {
+bool HeartNeuron::HasEvents() const {
   return true;
 }
 
-bool balHeartNeuron::HasEventsConstraints() const {
+bool HeartNeuron::HasEventsConstraints() const {
   return true; 
 }
   
-int balHeartNeuron::RHS(realtype t, N_Vector x, N_Vector xdot, void * data){
+int HeartNeuron::RHS(realtype t, N_Vector x, N_Vector xdot, void * data){
   realtype VK2shift,Iapp,tauK2;
   realtype V,hNa,mK2;
   realtype f;
   
-  balParameters *param;
+  Parameters *param;
   
-  param = (balParameters *) data;
+  param = (Parameters *) data;
   VK2shift = param->At(0);
   Iapp = param->At(1);
   tauK2 = param->At(2);
@@ -106,13 +108,13 @@ int balHeartNeuron::RHS(realtype t, N_Vector x, N_Vector xdot, void * data){
   return CV_SUCCESS;
 }
 
-int balHeartNeuron::Events(realtype t, N_Vector x, realtype * event, void * data){
+int HeartNeuron::Events(realtype t, N_Vector x, realtype * event, void * data){
   realtype Iapp;
   realtype V,hNa,mK2;
   realtype f;
   
-  balParameters *param;
-  param = (balParameters *) data;
+  Parameters *param;
+  param = (Parameters *) data;
   Iapp = param->At(1);
   
   V = Ith(x,0);
@@ -126,19 +128,19 @@ int balHeartNeuron::Events(realtype t, N_Vector x, realtype * event, void * data
 }
 
 #ifdef CVODE25
-int balHeartNeuron::Jacobian (long int N, DenseMat J, realtype t, N_Vector x, N_Vector fy, 
+int HeartNeuron::Jacobian (long int N, DenseMat J, realtype t, N_Vector x, N_Vector fy, 
 			      void *jac_data, N_Vector tmp1, N_Vector tmp2, N_Vector tmp3) {
 #endif
 #ifdef CVODE26
-int balHeartNeuron::Jacobian (int N, realtype t, N_Vector x, N_Vector fy, DlsMat J, 
+int HeartNeuron::Jacobian (int N, realtype t, N_Vector x, N_Vector fy, DlsMat J, 
 			      void *jac_data, N_Vector tmp1, N_Vector tmp2, N_Vector tmp3) {
 #endif
   realtype VK2shift,Iapp,tauK2;
   realtype V,hNa,mK2;
   realtype f;
   
-  balParameters *param;
-  param = (balParameters *) jac_data;
+  Parameters *param;
+  param = (Parameters *) jac_data;
   VK2shift = param->At(0);
   Iapp = param->At(1);	
   tauK2 = param->At(2);	
@@ -162,7 +164,7 @@ int balHeartNeuron::Jacobian (int N, realtype t, N_Vector x, N_Vector fy, DlsMat
   return CV_SUCCESS;	
 }
 
-void balHeartNeuron::EventsConstraints (realtype t, N_Vector x, int * constraints, void * data){
+void HeartNeuron::EventsConstraints (realtype t, N_Vector x, int * constraints, void * data){
   realtype VK2shift,Iapp,tauK2;
   realtype V,hNa,mK2;
   
@@ -170,8 +172,8 @@ void balHeartNeuron::EventsConstraints (realtype t, N_Vector x, int * constraint
   realtype ris;
   realtype f,dfdv;
   
-  balParameters *param;
-  param = (balParameters *) data;
+  Parameters *param;
+  param = (Parameters *) data;
   VK2shift = param->At(0);
   Iapp = param->At(1);
   tauK2 = param->At(1);
@@ -194,4 +196,6 @@ void balHeartNeuron::EventsConstraints (realtype t, N_Vector x, int * constraint
   else
     constraints[0] = 0;
 }
+
+} // namespace bal
 

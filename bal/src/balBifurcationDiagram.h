@@ -22,7 +22,7 @@
 
 /**
  * \file balBifurcationDiagram.h
- * \brief Definition of the class balBifurcationDiagram.
+ * \brief Definition of the class BifurcationDiagram.
  */
 
 #ifndef _BALBIFURCATIONDIAGRAM_
@@ -46,22 +46,22 @@
 #include <boost/thread/condition.hpp>
 #include <boost/ref.hpp>
 
-using std::list;
-
 #define DEBUG
+
+namespace bal {
 
 void ResetColours(int d);
 
 enum { balPARAMS, balIC };
 
 /**
- * \class balSummaryEntry
+ * \class SummaryEntry
  * \brief Object used to store an entry of the summary list.
  */
-class balSummaryEntry : public balObject {
+class SummaryEntry : public Object {
  public:
-  balSummaryEntry(balSolution *sol, int mode = balPARAMS);
-  virtual ~balSummaryEntry();
+  SummaryEntry(Solution *sol, int mode = balPARAMS);
+  virtual ~SummaryEntry();
   int GetN() const;
   int GetID() const;
   double* GetData() const;
@@ -72,76 +72,76 @@ class balSummaryEntry : public balObject {
   int id;
 };
 
-bool CompareBalSummaryEntry(balSummaryEntry *entry1, balSummaryEntry *entry2);
+bool CompareBalSummaryEntry(SummaryEntry *entry1, SummaryEntry *entry2);
 
 /**
- * \class balBifurcationDiagram
+ * \class BifurcationDiagram
  * \brief Class to calculate brute-force bifurcation diagrams.
  *
  * This class is used to compute brute-force bifurcation diagrams: it
- * manages 4 different kind of objects: a balDynamicalSystem that defines
- * the RHS function of the system to integrate, a balODESolver that
- * performs the actual integration, a balLogger to store data to file and a
- * balBifurcationParameters that is mainly used to iterate over all the
+ * manages 4 different kind of objects: a DynamicalSystem that defines
+ * the RHS function of the system to integrate, a ODESolver that
+ * performs the actual integration, a Logger to store data to file and a
+ * BifurcationParameters that is mainly used to iterate over all the
  * combinations of parameters that the user is interested to simulate.
  *
- * \sa balDynamicalSystem balBifurcationParameters balODESolver
+ * \sa DynamicalSystem BifurcationParameters ODESolver
  */
-class balBifurcationDiagram : public balObject {
+class BifurcationDiagram : public Object {
  public:
   /** Returns the name of the class. */
   virtual const char * GetClassName() const;
-  /** Creates a new balBifurcationDiagram. */
-  static balBifurcationDiagram * Create();
-  /** Destroys a balBifurcationDiagram. */
+  /** Creates a new BifurcationDiagram. */
+  static BifurcationDiagram * Create();
+  /** Destroys a BifurcationDiagram. */
   virtual void Destroy();
 
   /**
-   * Sets the dynamical system to integrate. balBifurcationDiagram
-   * assumes that the dynamical contain an instance of balBifurcationParameters,
-   * instead of the simpler balParameters.
+   * Sets the dynamical system to integrate. BifurcationDiagram
+   * assumes that the dynamical contain an instance of BifurcationParameters,
+   * instead of the simpler Parameters.
    * @param sys A dynamical system: any instance of a class inherited
-   * from balDynamicalSystem.
+   * from DynamicalSystem.
    */
-  void SetDynamicalSystem(balDynamicalSystem * sys);
+  void SetDynamicalSystem(DynamicalSystem * sys);
 
   /**
    * Gets the dynamical system to integrate.
    * @return The dynamical system used in the computation of the
    * bifurcation diagram.
    */
-  balDynamicalSystem * GetDynamicalSystem() const;
+  DynamicalSystem * GetDynamicalSystem() const;
 
   /**
    * Sets the logger used for saving integration data to file. A logger
-   * is automatically instantiated when a balBifurcationDiagram is
+   * is automatically instantiated when a BifurcationDiagram is
    * created. This method should be used only if the user wants to use a
    * different kind of logger (such as one, for example, that saves data
    * in a particular format). The default logger uses H5 files.
-   * @param log An instance of one of the classes inherited by balLogger.
+   * @param log An instance of one of the classes inherited by Logger.
    */
-  void SetLogger(balLogger * log);
+  void SetLogger(Logger * log);
 
   /**
    * @return The logger used for saving data to file.
    */
-  balLogger * GetLogger() const;
+  Logger * GetLogger() const;
 
   /**
    * Sets the ODESolver used to integrate the dynamical system. An ODE
-   * solver is automatically instantiated when a balBifurcationDiagram is
+   * solver is automatically instantiated when a BifurcationDiagram is
    * created. This method should be called only if the user has developed
    * their own ODE solver.
    * \param sol An instance of an ODE solver.
    */
-  void SetODESolver(balODESolver * sol);
+  void SetODESolver(ODESolver * sol);
 
   /**
    * This method returns a pointer to the ODE solver used to integrate
    * the system. It is useful to set parameters of the ODE solver.
    * @return The ODE solver used to integrate the system.
    */
-  balODESolver * GetODESolver() const;
+  ODESolver * GetODESolver() const;
 
   /**
    * Sets the name of the file where data will be saved.
@@ -195,29 +195,29 @@ class balBifurcationDiagram : public balObject {
   void SetInitialConditions(int nx0, double **x0);
 
  protected:
-  balBifurcationDiagram();
-  virtual ~balBifurcationDiagram();
+  BifurcationDiagram();
+  virtual ~BifurcationDiagram();
 
  private:
 
   //void ComputeDiagramSingleThread();
   void ComputeDiagramMultiThread();
-  void IntegrateAndEnqueue(balODESolver *sol, int solutionId);
-  double* BuildSummaryEntry(balSolution *sol);
+  void IntegrateAndEnqueue(ODESolver *sol, int solutionId);
+  double* BuildSummaryEntry(Solution *sol);
 
   /** The ODE solver used to integrate the system */
-  balODESolver * solver;
+  ODESolver * solver;
   /** The dynamical system to integrate */
-  balDynamicalSystem * system;
+  DynamicalSystem * system;
   /** The parameters of the dynamical system */
-  balParameters * parameters;
+  Parameters * parameters;
   /**
    * The object used to save data to a file: by default H5 file logging
-   * is used, i.e., logger is an instance of the balH5Logger class:
+   * is used, i.e., logger is an instance of the H5Logger class:
    * if the user wants to use another logger, they should provide it
    * by using the SetLogger member.
    */
-  balLogger * logger;
+  Logger * logger;
   /** Tells whether the logger should be deleted when a new one is set. */
   bool destroy_logger;
   /** Tells whether the solver should be deleted when a new one is set. */
@@ -245,7 +245,7 @@ class balBifurcationDiagram : public balObject {
    * A list containing the results of the numerical integrations: when the list
    * is full, the threads that integrate stop and another thread saves data to file
    */
-  list<balSolution *> *solutions;
+  std::list<Solution *> *solutions;
   /**
    * A list containing the summary of the bifurcation diagram in
    * terms of number of turns of the solution. Each entry contains
@@ -254,7 +254,7 @@ class balBifurcationDiagram : public balObject {
    * is the number of turns of the limit cycle. The value '0' corresponds
    * to an equilibrium solution.
    */
-  list<balSummaryEntry *> *summary;
+  std::list<SummaryEntry *> *summary;
   /** tells whether solutions and summary have been allocated */
   bool destroy_lists;
 
@@ -267,4 +267,7 @@ class balBifurcationDiagram : public balObject {
   int nthreads;
 };
 
+} // namespace bal
+
 #endif
+

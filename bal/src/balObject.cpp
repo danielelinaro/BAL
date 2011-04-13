@@ -27,25 +27,29 @@
 
 #include "balObject.h"
 
-balObject::balObject() {
+namespace bal {
+
+Object::Object() {
 }
 
-balObject::~balObject() {
+Object::~Object() {
 }
 
-balObject* balObject::Create() {
-  return new balObject;
+Object* Object::Create() {
+  return new Object;
 }
 
-void balObject::Destroy() {
+void Object::Destroy() {
   delete this;
 }
 
-const char* balObject::GetClassName() const {
-  return "balObject";
+const char* Object::GetClassName() const {
+  return "bal::Object";
 }
 
-bool balObject::IsA(const char * name) const {
+bool Object::IsA(const char * name) const {
   return (strcmp(name, this->GetClassName()) == 0);
 }
+
+} // namespace bal
 

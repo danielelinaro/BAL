@@ -26,25 +26,24 @@
 #include "balParameters.h"
 #include "balODESolver.h"
 #include "balSolution.h"
-using namespace std;
+using namespace bal;
 
-// TEST balODESolver
 int main(int argc, char *argv[]) {
 	
   // parameters
-  balParameters * pars = balParameters::Create();
+  Parameters * pars = Parameters::Create();
   pars->SetNumber(3);
   pars->At(0) = 10.0;
   pars->At(1) = 28.0;
   pars->At(2) = 8./3.;
   
   // Lorenz
-  balLorenz *lor = balLorenz::Create();
+  Lorenz *lor = Lorenz::Create();
   lor->SetParameters(pars);
   lor->Extend(true);
   
   double x0[12] = {0,1,0,1,0,0,0,1,0,0,0,1};
-  balODESolver * solver = balODESolver::Create();
+  ODESolver * solver = ODESolver::Create();
   solver->SetDynamicalSystem(lor);
   solver->SetTransientDuration(0.0);
   solver->SetFinalTime(100.0);
@@ -53,7 +52,7 @@ int main(int argc, char *argv[]) {
   solver->SetX0(x0);
   solver->Solve();
   
-  balSolution *sol = solver->GetSolution();
+  Solution *sol = solver->GetSolution();
   int r,c,i,j;
   double *buffer;
   sol->GetSize(&r,&c);

@@ -22,7 +22,7 @@
 
 /** 
  * \file balLorenz.h
- * \brief Definition of the class balLorenz
+ * \brief Definition of the class Lorenz
  */
 
 #ifndef _BALHINDMARSHROSE_
@@ -33,17 +33,19 @@
 #include "balDynamicalSystem.h"
 #include <cvode/cvode.h>
 
+namespace bal {
+
 /**
- * \class balLorenz
+ * \class Lorenz
  * \brief Implementation of Lorenz dynamical system
- * \sa balDynamicalSystem
+ * \sa DynamicalSystem
  */
-class balLorenz : public balDynamicalSystem {
+class Lorenz : public DynamicalSystem {
  public:
   virtual const char * GetClassName () const;
-  static balLorenz * Create ();
-  static balLorenz * Copy (balLorenz *lor);
-  virtual balDynamicalSystem * Clone() const;
+  static Lorenz * Create ();
+  static Lorenz * Copy (Lorenz *lor);
+  virtual DynamicalSystem * Clone() const;
   virtual void Destroy ();
   
   int RHS (realtype t, N_Vector x, N_Vector xdot, void * data);
@@ -59,17 +61,19 @@ class balLorenz : public balDynamicalSystem {
   bool HasJacobian() const;
 
  protected:
-  balLorenz();
-  balLorenz(const balLorenz& lor);
-  virtual ~balLorenz();
+  Lorenz();
+  Lorenz(const Lorenz& lor);
+  virtual ~Lorenz();
   
 };
+
+} // namespace bal
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-balDynamicalSystem* balLorenzFactory();
+bal::DynamicalSystem* LorenzFactory();
 	
 #ifdef __cplusplus
 }

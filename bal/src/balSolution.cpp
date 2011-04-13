@@ -22,12 +22,14 @@
 
 /** 
  * \file balSolution.cpp
- * \brief Implementation of the class balSolution
+ * \brief Implementation of the class Solution
  */
 
 #include "balSolution.h"
 
-balSolution::balSolution() {
+namespace bal {
+
+Solution::Solution() {
   rows = columns = 0;
   buffer = NULL;
 	lyapunov_exponents = NULL;
@@ -37,8 +39,8 @@ balSolution::balSolution() {
 	lyapunov_mode = false;
 }
 
-balSolution::balSolution(const balSolution& solution) {
-  balSolution();
+Solution::Solution(const Solution& solution) {
+  Solution();
   solution.GetSize(&rows,&columns);
   SetSize(rows,columns);
   memcpy(buffer,solution.buffer,rows*columns*sizeof(realtype));
@@ -48,75 +50,75 @@ balSolution::balSolution(const balSolution& solution) {
 		SetLyapunovExponents(solution.spectrum_dimension,solution.lyapunov_exponents);
 }
 
-balSolution::~balSolution() {
+Solution::~Solution() {
   if(buffer != NULL) delete [] buffer;
 	if(lyapunov_exponents !=NULL) delete [] lyapunov_exponents;
   if(parameters != NULL) parameters->Destroy();
 }
 
-const char * balSolution::GetClassName() const {
-  return "balSolution";
+const char * Solution::GetClassName() const {
+  return "Solution";
 }
 
-balSolution * balSolution::Create() {
-  return new balSolution;
+Solution * Solution::Create() {
+  return new Solution;
 }
 
-balSolution * balSolution::Copy(balSolution * solution) {
-  return new balSolution(*solution);
+Solution * Solution::Copy(Solution * solution) {
+  return new Solution(*solution);
 }
 
-void balSolution::Destroy() {
+void Solution::Destroy() {
   delete this;
 }
 
-int balSolution::GetRows() const {
+int Solution::GetRows() const {
   return rows;
 }
 
-int balSolution::GetColumns() const {
+int Solution::GetColumns() const {
   return columns;
 }
 
-void balSolution::SetSize(int r, int c) {
+void Solution::SetSize(int r, int c) {
   if(buffer != NULL) delete [] buffer;
   rows = r;
   columns = c;
   buffer = new realtype[rows*columns];
 }
 
-void balSolution::GetSize(int * r, int * c) const {
+void Solution::GetSize(int * r, int * c) const {
   *r = rows;
   *c= columns;
 }
 
-void balSolution::SetData(int r, int c, realtype * data) {
+void Solution::SetData(int r, int c, realtype * data) {
   SetSize(r,c);
   memcpy(buffer,data,rows*columns*sizeof(realtype));
 }
 
-realtype * balSolution::GetData() const {
+realtype * Solution::GetData() const {
   return buffer;
 }	
 
-void balSolution::SetParameters(balParameters * p) {
+void Solution::SetParameters(Parameters * p) {
   if(parameters != NULL) parameters->Destroy();
-  parameters = balParameters::Copy(p);
+  parameters = Parameters::Copy(p);
 }
 
-balParameters * balSolution::GetParameters() const {
+Parameters * Solution::GetParameters() const {
   return parameters;
 }
 
-void balSolution::SetNumberOfTurns(int _nturns) {
+void Solution::SetNumberOfTurns(int _nturns) {
   nturns = _nturns;
 }
   
-int balSolution::GetNumberOfTurns() const {
+int Solution::GetNumberOfTurns() const {
   return nturns;
 }
 
-void balSolution::SetLyapunovExponents(int n, realtype * lp) {
+void Solution::SetLyapunovExponents(int n, realtype * lp) {
 	if (lyapunov_exponents == NULL || n != spectrum_dimension)
 		lyapunov_exponents = new realtype[n];
 	spectrum_dimension = n;
@@ -125,22 +127,25 @@ void balSolution::SetLyapunovExponents(int n, realtype * lp) {
 		lyapunov_exponents[i] = lp[i];
 }
 
-realtype * balSolution::GetLyapunovExponents() const {
+realtype * Solution::GetLyapunovExponents() const {
 	return lyapunov_exponents;
 }
 
-void balSolution::SetID(int id) {
+void Solution::SetID(int id) {
   ID = id;
 }
 
-int balSolution::GetID() const {
+int Solution::GetID() const {
   return ID;
 }
 
-bool balSolution::IsLyapunovMode() const {
+bool Solution::IsLyapunovMode() const {
 	return lyapunov_mode;
 }
 
-bool CompareBalSolutions(balSolution *sol1, balSolution *sol2) {
+bool CompareBalSolutions(Solution *sol1, Solution *sol2) {
   return sol1->GetID() < sol2->GetID();
 }
+
+} // namespace bal
+

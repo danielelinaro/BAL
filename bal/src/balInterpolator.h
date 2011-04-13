@@ -22,7 +22,7 @@
  
  /**
  *  \file balInterp1D.h
- *  \brief Definition of abstract class balInterpolator. 
+ *  \brief Definition of abstract class Interpolator. 
  */
 
 #ifndef _BALINTERPOLATOR_
@@ -32,23 +32,25 @@
 #include <cstdio>
 #include "balObject.h"
 
+namespace bal {
+
 /**
- * \class balInterpolator 
+ * \class Interpolator 
  * \brief Base class for generic interpolator (also smooth approximator) of functions f: R^{nd} -> R^{nf}.
  *
- * \sa balInterp1D, balInterp2D, balInterp3D
+ * \sa Interp1D, Interp2D, Interp3D
  */
 
-class balInterpolator : public balObject {
+class Interpolator : public Object {
   public:
   
     /** Returns the name of the class. */
     virtual const char * getClassName() const;
     
-    /** Destroys a balInterpolator. */
+    /** Destroys a Interpolator. */
     virtual void Destroy();
     
-    virtual balInterpolator * Clone() const = 0;
+    virtual Interpolator * Clone() const = 0;
     
     /** Evaluates the function in point x. The result is stored in array y. 
      *  If an error has occurred the return value is -1, otherwise it is 0. */ 
@@ -62,7 +64,7 @@ class balInterpolator : public balObject {
      *  If an error has occurred the return value is -1, otherwise it is 0. */
     virtual int EvaluateDivergence(double *x, double *y) = 0;  
     
-    /** Initializes the balInterpolator. You have to perform this operation before evaluating the function. 
+    /** Initializes the Interpolator. You have to perform this operation before evaluating the function. 
      *  If an error has occurred the return value is -1, otherwise it is 0. */
     virtual int Init();
 
@@ -73,16 +75,20 @@ class balInterpolator : public balObject {
     int GetCodomainDimensions();
 
   protected:
-    /** Constructor of balInterpolator. */
-    balInterpolator();
+    /** Constructor of Interpolator. */
+    Interpolator();
     
-    /** Destructor of balInterpolator. */
-    virtual ~balInterpolator();
+    /** Destructor of Interpolator. */
+    virtual ~Interpolator();
 
-    /** Copy constructor of balInterpolator. */
-    balInterpolator(const balInterpolator & interp);
+    /** Copy constructor of Interpolator. */
+    Interpolator(const Interpolator & interp);
 
     int nnd, nnf;
 
 };
+
+} // namespace bal
+
 #endif
+

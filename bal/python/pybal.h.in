@@ -5,9 +5,6 @@
 #include <structmember.h>
 
 #include <sundials/sundials_types.h>
-//#include <nvector/nvector_serial.h>
-//#include <sundials/sundials_dense.h>
-//#include <cvode/cvode.h>
 
 #include "balObject.h"
 #include "balCommon.h"
@@ -16,6 +13,7 @@
 #include "balBifurcationParameters.h"
 #include "balODESolver.h"
 #include "balBifurcationDiagram.h"
+using namespace bal;
 
 #include <dlfcn.h>
 
@@ -25,11 +23,11 @@ extern "C" {
 
 /******************** pyBalDynamicalSystem ********************/
 
-typedef balDynamicalSystem* (*Factory)();
+typedef bal::DynamicalSystem* (*Factory)();
 	
 typedef struct {
 	PyObject_HEAD
-	balDynamicalSystem * dynsys;
+	bal::DynamicalSystem * dynsys;
 	void * lib;
 } pyBalDynamicalSystem;
 
@@ -45,7 +43,7 @@ static PyObject * pyBalDynamicalSystem_create(PyObject *self, PyObject *args);
 
 typedef struct {
 	PyObject_HEAD
-	balBifurcationParameters * bifparams;
+	bal::BifurcationParameters * bifparams;
 } pyBalParameters;
 	
 static PyObject * pyBalParameters_new(PyTypeObject *type, PyObject *args, PyObject *kwds);
@@ -67,7 +65,7 @@ static PyObject * pyBalParameters_iternext(pyBalParameters *self);
 	
 typedef struct {
 	PyObject_HEAD
-	balODESolver * solver;
+	bal::ODESolver * solver;
 	pyBalDynamicalSystem * dynsys;
 	pyBalParameters *params;
 } pyBalODESolver;
@@ -82,14 +80,14 @@ static PyObject * pyBalODESolver_getsolution(pyBalODESolver * self);
 static PyObject * pyBalODESolver_writeorbit(pyBalODESolver *self, PyObject *args, PyObject *kwds);
 
 /******************** pyBalSolution ********************/
-	
+
 typedef struct {
 	PyObject_HEAD
-	balParameters * params;
+	bal::Parameters * params;
 	PyObject * data;
 } pyBalSolution;
 
-static pyBalSolution* createPyBalSolution(balSolution *s);
+static pyBalSolution* createPyBalSolution(bal::Solution *s);
 static void pyBalSolution_dealloc(pyBalSolution *self);
 static PyObject * pyBalSolution_getattro(pyBalSolution *self, PyObject *name);
 
@@ -97,7 +95,7 @@ static PyObject * pyBalSolution_getattro(pyBalSolution *self, PyObject *name);
 
 typedef struct {
 	PyObject_HEAD
-	balBifurcationDiagram * diagram;
+	bal::BifurcationDiagram * diagram;
 	pyBalDynamicalSystem * dynsys;
 	pyBalParameters *params;
 	double **ic;

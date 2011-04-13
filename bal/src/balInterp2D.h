@@ -21,8 +21,8 @@
  *=========================================================================*/
 
 /**
- *  \file balInterp2D.h
- *  \brief Definition of classes balBaseInterp2D balLinearInterp2D 
+ *  \file Interp2D.h
+ *  \brief Definition of classes BaseInterp2D LinearInterp2D 
  */
 
 #ifndef _BALINTERP2D_
@@ -32,20 +32,21 @@
 #include <cstdio>
 #include "balObject.h"
 #include "balInterp1D.h"
-using namespace std;
+
+namespace bal {
 
 /**
- * \class balBaseInterp2D 
+ * \class BaseInterp2D 
  * \brief Base class for two dimensional interpolation.
- * \sa balInterpolator
+ * \sa Interpolator
  */
-class balBaseInterp2D : public balInterpolator {
+class BaseInterp2D : public Interpolator {
   
  public:
   /** Returns the name of the class. */
   virtual const char * GetClassName() const;
   
-  /** Destroys a balBaseInterp2D. */
+  /** Destroys a BaseInterp2D. */
   virtual void Destroy();
  
     /** Sets the interpolation points.
@@ -60,40 +61,40 @@ class balBaseInterp2D : public balInterpolator {
   
  protected:
  
- /** Constructor of balBaseInterp2D. */
-  balBaseInterp2D();
+ /** Constructor of BaseInterp2D. */
+  BaseInterp2D();
  
- /** Copy constructor of balBaseInterp2D. */
-  balBaseInterp2D(const balBaseInterp2D & interp);
+ /** Copy constructor of BaseInterp2D. */
+  BaseInterp2D(const BaseInterp2D & interp);
  
- /** Destructor of balBaseInterp2D. */
-  ~balBaseInterp2D();
+ /** Destructor of BaseInterp2D. */
+  ~BaseInterp2D();
   
   int nnx1, nnx2;
   double *xx1, *xx2, **yy;
 };
 
 /**
- * \class balLinearInterp2D 
+ * \class LinearInterp2D 
  * \brief Class for two dimensional linear interpolation.
- * \sa balBaseInterp2D
+ * \sa BaseInterp2D
  */
-class balLinearInterp2D : public balBaseInterp2D {
+class LinearInterp2D : public BaseInterp2D {
   
  public:
   /** Returns the name of the class. */
   virtual const char * GetClassName() const;
   
-  /** Destroys a balLinearInterp2D. */
+  /** Destroys a LinearInterp2D. */
   virtual void Destroy();
   
-  /** Creates a balLinearInterp2D. */
-  static balLinearInterp2D * Create();
+  /** Creates a LinearInterp2D. */
+  static LinearInterp2D * Create();
   
-  balLinearInterp2D * Clone() const;
+  LinearInterp2D * Clone() const;
  
-  /** Copies a balLinearInterp2D */
-  static balLinearInterp2D * Copy(balLinearInterp2D *interp);
+  /** Copies a LinearInterp2D */
+  static LinearInterp2D * Copy(LinearInterp2D *interp);
   
   /** Evaluates the function in point x. The result is stored in array y. 
    *  If an error has occurred the return value is -1, otherwise it is 0. */
@@ -107,46 +108,46 @@ class balLinearInterp2D : public balBaseInterp2D {
    *  If an error has occurred the return value is -1, otherwise it is 0. */
   virtual int EvaluateDivergence(double *x, double *y);  
   
-  /** Initializes the balLinearInterp2D. You have to perform this operation before evaluating the function. 
+  /** Initializes the LinearInterp2D. You have to perform this operation before evaluating the function. 
    *  If an error has occurred the return value is -1, otherwise it is 0. */
   int Init();
 
  protected:
  
- /** Constructor of balLinearInterp2D. */
-  balLinearInterp2D();
+ /** Constructor of LinearInterp2D. */
+  LinearInterp2D();
  
- /** Copy constructor of balLinearInterp2D. */
-  balLinearInterp2D(const balLinearInterp2D & interp);
+ /** Copy constructor of LinearInterp2D. */
+  LinearInterp2D(const LinearInterp2D & interp);
  
- /** Destructor of balLinearInterp2D. */
-  ~balLinearInterp2D();
+ /** Destructor of LinearInterp2D. */
+  ~LinearInterp2D();
   
-  balLinearInterp1D *x1terp, *x2terp;
+  LinearInterp1D *x1terp, *x2terp;
   
 };
 
 /**
- * \class balPolyInterp2D 
+ * \class PolyInterp2D 
  * \brief Class for two dimensional polinomial interpolation.
- * \sa balBaseInterp2D
+ * \sa BaseInterp2D
  */
-class balPolyInterp2D : public balBaseInterp2D {
+class PolyInterp2D : public BaseInterp2D {
   
  public:
   /** Returns the name of the class. */
   virtual const char * GetClassName() const;
   
-  /** Destroys a balPolyInterp2D. */
+  /** Destroys a PolyInterp2D. */
   virtual void Destroy();
   
-  /** Creates a balPolyInterp2D. */
-  static balPolyInterp2D * Create();
+  /** Creates a PolyInterp2D. */
+  static PolyInterp2D * Create();
  
-  /** Copies a balPolyInterp2D */
-  static balPolyInterp2D * Copy(balPolyInterp2D *interp);
+  /** Copies a PolyInterp2D */
+  static PolyInterp2D * Copy(PolyInterp2D *interp);
   
-  balPolyInterp2D * Clone() const;
+  PolyInterp2D * Clone() const;
   
   /** Evaluates the function in point x. The result is stored in array y. 
    *  If an error has occurred the return value is -1, otherwise it is 0. */
@@ -163,49 +164,49 @@ class balPolyInterp2D : public balBaseInterp2D {
   /** Sets the interpolation order for each dimension, i.e. the order of the polinomials used to interpolate. Default: m1 = m2 = 2 (linear interpolation) */
   void SetInterpolationOrder(int m1, int m2);
   
-  /** Initializes the balPolyInterp2D. You have to perform this operation before evaluating the function. 
+  /** Initializes the PolyInterp2D. You have to perform this operation before evaluating the function. 
    *  If an error has occurred the return value is -1, otherwise it is 0. */
   int Init();
 
  protected:
  
- /** Constructor of balPolyInterp2D. */
-  balPolyInterp2D();
+ /** Constructor of PolyInterp2D. */
+  PolyInterp2D();
  
- /** Copy constructor of balPolyInterp2D. */
-  balPolyInterp2D(const balPolyInterp2D & interp);
+ /** Copy constructor of PolyInterp2D. */
+  PolyInterp2D(const PolyInterp2D & interp);
  
- /** Destructor of balPolyInterp2D. */
-  ~balPolyInterp2D();
+ /** Destructor of PolyInterp2D. */
+  ~PolyInterp2D();
 
   int mm1, mm2;
-  balPolyInterp1D ** interpsx, *interpy;
-  balPolyInterp1D *x2terp;
+  PolyInterp1D ** interpsx, *interpy;
+  PolyInterp1D *x2terp;
   double ***yloc;
   
 };
 
 /**
- * \class balSplineInterp2D 
+ * \class SplineInterp2D 
  * \brief Class for two dimensional spline interpolation.
- * \sa balBaseInterp2D
+ * \sa BaseInterp2D
  */
-class balSplineInterp2D : public balBaseInterp2D {
+class SplineInterp2D : public BaseInterp2D {
   
  public:
   /** Returns the name of the class. */
   virtual const char * GetClassName() const;
   
-  /** Destroys a balSplineInterp2D. */
+  /** Destroys a SplineInterp2D. */
   virtual void Destroy();
   
-  /** Creates a balSplineInterp2D. */
-  static balSplineInterp2D * Create();
+  /** Creates a SplineInterp2D. */
+  static SplineInterp2D * Create();
  
-  /** Copies a balSplineInterp2D */
-  static balSplineInterp2D * Copy(balSplineInterp2D *interp);
+  /** Copies a SplineInterp2D */
+  static SplineInterp2D * Copy(SplineInterp2D *interp);
   
-  balSplineInterp2D * Clone() const;
+  SplineInterp2D * Clone() const;
   
   /** Evaluates the function in point x. The result is stored in array y. 
    *  If an error has occurred the return value is -1, otherwise it is 0. */
@@ -219,47 +220,47 @@ class balSplineInterp2D : public balBaseInterp2D {
    *  If an error has occurred the return value is -1, otherwise it is 0. */
   virtual int EvaluateDivergence(double *x, double *y);  
  
-  /** Initializes the balSplineInterp2D. You have to perform this operation before evaluating the function. 
+  /** Initializes the SplineInterp2D. You have to perform this operation before evaluating the function. 
    *  If an error has occurred the return value is -1, otherwise it is 0. */
   int Init();
 
  protected:
  
- /** Constructor of balSplineInterp2D. */
-  balSplineInterp2D();
+ /** Constructor of SplineInterp2D. */
+  SplineInterp2D();
  
- /** Copy constructor of balSplineInterp2D. */
-  balSplineInterp2D(const balSplineInterp2D & interp);
+ /** Copy constructor of SplineInterp2D. */
+  SplineInterp2D(const SplineInterp2D & interp);
  
- /** Destructor of balSplineInterp2D. */
-  ~balSplineInterp2D();
+ /** Destructor of SplineInterp2D. */
+  ~SplineInterp2D();
 
-  balPolyInterp1D *x1terp, *x2terp;
+  PolyInterp1D *x1terp, *x2terp;
   int wt[16][16];
   double ***y1d, ***y2d, ***y12d, ***c;
 };
 
 /**
- * \class balSmoothingSplineInterp2D 
+ * \class SmoothingSplineInterp2D 
  * \brief Class for two dimensional approximation with smoothing splines.
- * \sa balBaseInterp2D
+ * \sa BaseInterp2D
  */
-class balSmoothingSplineInterp2D : public balBaseInterp2D {
+class SmoothingSplineInterp2D : public BaseInterp2D {
   
  public:
   /** Returns the name of the class. */
   virtual const char * GetClassName() const;
   
-  /** Destroys a balSmoothingSplineInterp2D. */
+  /** Destroys a SmoothingSplineInterp2D. */
   virtual void Destroy();
   
-  /** Creates a balSmoothingSplineInterp2D. */
-  static balSmoothingSplineInterp2D * Create();
+  /** Creates a SmoothingSplineInterp2D. */
+  static SmoothingSplineInterp2D * Create();
  
-  /** Copies a balSmoothingSplineInterp2D */
-  static balSmoothingSplineInterp2D * Copy(balSmoothingSplineInterp2D *interp);
+  /** Copies a SmoothingSplineInterp2D */
+  static SmoothingSplineInterp2D * Copy(SmoothingSplineInterp2D *interp);
   
-  balSmoothingSplineInterp2D * Clone() const;
+  SmoothingSplineInterp2D * Clone() const;
   
   /** Evaluates the function in point x. The result is stored in array y. 
    *  If an error has occurred the return value is -1, otherwise it is 0. */
@@ -282,28 +283,31 @@ class balSmoothingSplineInterp2D : public balBaseInterp2D {
   /** Sets the dimension of the interpolation window (how many points you want to use to perform the interpolation) */
   void SetWindow(int w);
   
-  /** Initializes the balSmoothingSplineInterp2D. You have to perform this operation before evaluating the function. 
+  /** Initializes the SmoothingSplineInterp2D. You have to perform this operation before evaluating the function. 
    *  If an error has occurred the return value is -1, otherwise it is 0. */
   int Init();
 
  protected:
  
- /** Constructor of balSmoothingSplineInterp2D. */
-  balSmoothingSplineInterp2D();
+ /** Constructor of SmoothingSplineInterp2D. */
+  SmoothingSplineInterp2D();
  
- /** Copy constructor of balSmoothingSplineInterp2D. */
-  balSmoothingSplineInterp2D(const balSmoothingSplineInterp2D & interp);
+ /** Copy constructor of SmoothingSplineInterp2D. */
+  SmoothingSplineInterp2D(const SmoothingSplineInterp2D & interp);
  
- /** Destructor of balSmoothingSplineInterp2D. */
-  ~balSmoothingSplineInterp2D();
+ /** Destructor of SmoothingSplineInterp2D. */
+  ~SmoothingSplineInterp2D();
 
   int window;
   double SS;
-  balSmoothingSplineInterp1D ** interpsx, *interpy;
-  balPolyInterp1D *x2terp;
+  SmoothingSplineInterp1D ** interpsx, *interpy;
+  PolyInterp1D *x2terp;
   double ***yloc;
   
 };
+
+} // namespace bal
+
 #endif
 
 

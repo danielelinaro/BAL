@@ -22,7 +22,7 @@
 
 /**
  *  \file balInterp1D.h
- *  \brief Definition of classes balBaseInterp1D, balLinearInterp1D, balPolyInterp1D and balSplineInterp1D. 
+ *  \brief Definition of classes BaseInterp1D, LinearInterp1D, PolyInterp1D and SplineInterp1D. 
  */
 
 #ifndef _BALINTERP1D_
@@ -31,30 +31,32 @@
 #include <cmath>
 #include <iostream>
 #include "balInterpolator.h"
-using namespace std;
 
 #define MIN(a,b) ((a) < (b) ? (a) : (b))
 #define MAX(a,b) ((a) > (b) ? (a) : (b))
 
 #define NATURAL_SPLINE 1.0e99
 #define FINITE_DIFFERENCES_STEP 1.0e-6
+
+namespace bal {
+
 /**
- * \class balBaseInterp1D 
+ * \class BaseInterp1D 
  * \brief Base class for one dimensional interpolation of vector functions f: R -> R^{nf}.
  *
- * \sa balInterpolator
+ * \sa Interpolator
  */
-class balBaseInterp1D : public balInterpolator {
+class BaseInterp1D : public Interpolator {
 		
  public:
   /** Returns the name of the class. */
   virtual const char * GetClassName() const;
 
-  /** Copies a balBaseInterp1D. */
-  static balBaseInterp1D * Copy(const balBaseInterp1D & interp);
+  /** Copies a BaseInterp1D. */
+  static BaseInterp1D * Copy(const BaseInterp1D & interp);
   
 
-  /** Destroys a balBaseInterp1D. */
+  /** Destroys a BaseInterp1D. */
   virtual void Destroy();
   
   /** Sets the interpolation points.
@@ -89,14 +91,14 @@ class balBaseInterp1D : public balInterpolator {
   
  protected:
 
- /** Constructor of balBaseInterp1D. */
-  balBaseInterp1D();
+ /** Constructor of BaseInterp1D. */
+  BaseInterp1D();
 
- /** Copy constructor of balBaseInterp1D. */
-  balBaseInterp1D(const balBaseInterp1D & interp);
+ /** Copy constructor of BaseInterp1D. */
+  BaseInterp1D(const BaseInterp1D & interp);
  
- /** Destructor of balBaseInterp1D. */
-  ~balBaseInterp1D();
+ /** Destructor of BaseInterp1D. */
+  ~BaseInterp1D();
   
   int n, mm, jsav, cor, dj; 
   double *xx, **yy; 
@@ -104,26 +106,26 @@ class balBaseInterp1D : public balInterpolator {
 
 
 /**
- * \class balLinearInterp1D 
+ * \class LinearInterp1D 
  * \brief Class for one dimensional linear interpolation of vector functions f: R -> R^{nf}.
  *
- * \sa balBaseInterp1D
+ * \sa BaseInterp1D
  */
-class balLinearInterp1D : public balBaseInterp1D {
+class LinearInterp1D : public BaseInterp1D {
  public:
   
   /** Returns the name of the class. */
   virtual const char * GetClassName() const;
   
-  /** Destroys a balLinearInterp1D. */
+  /** Destroys a LinearInterp1D. */
   virtual void Destroy();
   
-  /** Creates a balLinearInterp1D */
-  static balLinearInterp1D * Create();
+  /** Creates a LinearInterp1D */
+  static LinearInterp1D * Create();
   
-  /** Copies a balLinearInterp1D */
-  static balLinearInterp1D * Copy(balLinearInterp1D *interp);
-  virtual balLinearInterp1D * Clone() const;
+  /** Copies a LinearInterp1D */
+  static LinearInterp1D * Copy(LinearInterp1D *interp);
+  virtual LinearInterp1D * Clone() const;
   
   /** Evaluates the function in point x. The result is stored in array y. 
    *  If an error has occurred the return value is -1, otherwise it is 0. */
@@ -139,38 +141,38 @@ class balLinearInterp1D : public balBaseInterp1D {
 
  protected:
  
-  /** Constructor of balLinearInterp1D. */
-  balLinearInterp1D();
+  /** Constructor of LinearInterp1D. */
+  LinearInterp1D();
   
-  /** Copy constructor of balLinearInterp1D. */
-  balLinearInterp1D(const balLinearInterp1D & interp);
+  /** Copy constructor of LinearInterp1D. */
+  LinearInterp1D(const LinearInterp1D & interp);
 
-  /** Destructor of balLinearInterp1D. */
-  ~balLinearInterp1D();
+  /** Destructor of LinearInterp1D. */
+  ~LinearInterp1D();
   
 };
 
 /**
- * \class balPolyInterp1D 
+ * \class PolyInterp1D 
  * \brief Class for one dimensional polynomial interpolation of vector functions f: R -> R^{nf}.
 .
- * \sa balBaseInterp1D
+ * \sa BaseInterp1D
  */
-class balPolyInterp1D : public balBaseInterp1D {
+class PolyInterp1D : public BaseInterp1D {
  public:
   
   /** Returns the name of the class. */
   virtual const char * GetClassName() const;
   
-  /** Destroys a balPolyInterp1D. */
+  /** Destroys a PolyInterp1D. */
   virtual void Destroy();
   
-  /** Creates a balPolyInterp1D */
-  static balPolyInterp1D * Create();
+  /** Creates a PolyInterp1D */
+  static PolyInterp1D * Create();
   
-  /** Copies a balPolyInterp1D */
-  static balPolyInterp1D * Copy(balPolyInterp1D *interp);
-  virtual balPolyInterp1D * Clone() const;
+  /** Copies a PolyInterp1D */
+  static PolyInterp1D * Copy(PolyInterp1D *interp);
+  virtual PolyInterp1D * Clone() const;
 
   /** Sets the interpolation order, i.e. the order of the polinomial used to interpolate. Default: 2 (linear interpolation) */
   void SetInterpolationOrder(int m);
@@ -190,46 +192,46 @@ class balPolyInterp1D : public balBaseInterp1D {
   
  protected:
   
-  /** Constructor of balPolyInterp1D. */
-  balPolyInterp1D();
+  /** Constructor of PolyInterp1D. */
+  PolyInterp1D();
 
-  /** Copy constructor of balPolyInterp1D. */
-  balPolyInterp1D(const balPolyInterp1D & interp);
+  /** Copy constructor of PolyInterp1D. */
+  PolyInterp1D(const PolyInterp1D & interp);
   
-  /** Destructor of balPolyInterp1D. */
-  ~balPolyInterp1D();
+  /** Destructor of PolyInterp1D. */
+  ~PolyInterp1D();
   
  private:
   double dy;
 };
 
 /**
- * \class balSplineInterp1D 
+ * \class SplineInterp1D 
  * \brief Class for one dimensional interpolation of vector functions f: R -> R^{nf} by using splines.
  *
- * \sa balBaseInterp1D
+ * \sa BaseInterp1D
  */
-class balSplineInterp1D : public balBaseInterp1D {
+class SplineInterp1D : public BaseInterp1D {
  public:
   
   /** Returns the name of the class. */
   virtual const char * GetClassName() const;
   
-  /** Destroys a balSplineInterp1D. */
+  /** Destroys a SplineInterp1D. */
   virtual void Destroy();
   
-  /** Creates a balSplineInterp1D */
-  static balSplineInterp1D * Create();
+  /** Creates a SplineInterp1D */
+  static SplineInterp1D * Create();
   
-  /** Copies a balSplineInterp1D */
-  static balSplineInterp1D * Copy(balSplineInterp1D *interp);
-  virtual balSplineInterp1D * Clone() const;
+  /** Copies a SplineInterp1D */
+  static SplineInterp1D * Copy(SplineInterp1D *interp);
+  virtual SplineInterp1D * Clone() const;
   
   /** Sets the value of the first derivative at the boundaries of the domain. There is a single value for each component of the codomain.
    *  Default value: natural splines (second derivative equal to 0 in the boundaries) */
   void SetBoundaryConditions(double yp1, double ypn);
 
-  /** Initializes the balSpline1D. You have to perform this operation before evaluating the function. 
+  /** Initializes the Spline1D. You have to perform this operation before evaluating the function. 
    *  If an error has occurred the return value is -1, otherwise it is 0. */
   int Init();
   
@@ -248,14 +250,14 @@ class balSplineInterp1D : public balBaseInterp1D {
   
  protected:
   
-  /** Constructor of balSplineInterp1D. */
-  balSplineInterp1D();
+  /** Constructor of SplineInterp1D. */
+  SplineInterp1D();
   
-  /** Copy constructor of balSplineInterp1D. */
-  balSplineInterp1D(const balSplineInterp1D & interp);
+  /** Copy constructor of SplineInterp1D. */
+  SplineInterp1D(const SplineInterp1D & interp);
   
-  /** Destructor of balSplineInterp1D. */
-  ~balSplineInterp1D();
+  /** Destructor of SplineInterp1D. */
+  ~SplineInterp1D();
  
   /** Method used by Init(). */
   void Sety2();
@@ -265,26 +267,26 @@ class balSplineInterp1D : public balBaseInterp1D {
 };
 
 /**
- * \class balSmoothingSplineInterp1D 
+ * \class SmoothingSplineInterp1D 
  * \brief Class for one dimensional approximation of vector functions f: R -> R^{nf} by using smoothing Reinsch splines.
  *        Notice that an interpolation is not performed.
- * \sa balBaseInterp1D
+ * \sa BaseInterp1D
  */
-class balSmoothingSplineInterp1D : public balBaseInterp1D {
+class SmoothingSplineInterp1D : public BaseInterp1D {
  public:
   
   /** Returns the name of the class. */
   virtual const char * GetClassName() const;
   
-  /** Destroys a balSmoothingSplineInterp1D. */
+  /** Destroys a SmoothingSplineInterp1D. */
   virtual void Destroy();
 
-  /** Creates a balSmoothingSplineInterp1D. */
-  static balSmoothingSplineInterp1D * Create();
-  virtual balSmoothingSplineInterp1D * Clone() const;
+  /** Creates a SmoothingSplineInterp1D. */
+  static SmoothingSplineInterp1D * Create();
+  virtual SmoothingSplineInterp1D * Clone() const;
   
-  /** Copies a balSmoothingSplineInterp1D. */
-  static balSmoothingSplineInterp1D * Copy(balSmoothingSplineInterp1D *interp);
+  /** Copies a SmoothingSplineInterp1D. */
+  static SmoothingSplineInterp1D * Copy(SmoothingSplineInterp1D *interp);
   
   /** Sets the smoothing factors. The smoothing spline is computed by finding a third order polinomial which minimizes the
    *  integral of the square of the second derivative under these constraints:
@@ -308,7 +310,7 @@ class balSmoothingSplineInterp1D : public balBaseInterp1D {
    */
   void SetSmoothingParameters(double smooth);
   
-  /** Initializes the balSmoothingSplineInterp1D. You have to perform this operation before evaluating the function. 
+  /** Initializes the SmoothingSplineInterp1D. You have to perform this operation before evaluating the function. 
    *  If an error has occurred the return value is -1, otherwise it is 0. */
   int Init();
 
@@ -326,14 +328,14 @@ class balSmoothingSplineInterp1D : public balBaseInterp1D {
   
  protected:
   
-  /** Constructor of balSmoothingSplineInterp1D. */
-  balSmoothingSplineInterp1D();
+  /** Constructor of SmoothingSplineInterp1D. */
+  SmoothingSplineInterp1D();
   
-  /** Copy constructor of balSmoothingSplineInterp1D. */
-  balSmoothingSplineInterp1D(const balSmoothingSplineInterp1D & interp);
+  /** Copy constructor of SmoothingSplineInterp1D. */
+  SmoothingSplineInterp1D(const SmoothingSplineInterp1D & interp);
   
-  /** Destructor of balSmoothingSplineInterp1D. */
-  ~balSmoothingSplineInterp1D();
+  /** Destructor of SmoothingSplineInterp1D. */
+  ~SmoothingSplineInterp1D();
   
   /** Method used by Init(). */
   int ComputeCoefficients(int i);
@@ -342,6 +344,8 @@ class balSmoothingSplineInterp1D : public balBaseInterp1D {
   double *ddy,SS,**a,**b,**c,**d;
   int _DEALLOC_DDY;
 };
-#endif
 
+} // namespace bal
+
+#endif
 

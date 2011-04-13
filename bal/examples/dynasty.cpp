@@ -28,13 +28,13 @@
 #include "balODESolver.h"
 #include "balBifurcationDiagram.h"
 #include "balBifurcationParameters.h"
+using namespace bal;
 
-// TEST balBifurcationDiagram
 int main(int argc, char *argv[]) {
 
   int steps[7] = {1,101,1,1,1,1,1};
   realtype x0[3] = {0.5,0.5,0.5};
-  balBifurcationParameters * bp = balBifurcationParameters::Create();
+  BifurcationParameters * bp = BifurcationParameters::Create();
   bp->SetNumber(7);
   bp->SetIthParameter(0,-3.1); // r
   bp->SetIthParameterLowerBound(1,1.8); // e
@@ -45,10 +45,10 @@ int main(int argc, char *argv[]) {
   bp->SetIthParameter(5,0.1); // h
   bp->SetIthParameter(6,0.4); // q
   bp->SetNumberOfSteps(steps);
-  balDynasty * dynasty = balDynasty::Create();
+  Dynasty * dynasty = Dynasty::Create();
   dynasty->SetParameters(bp);
   dynasty->SpecialOptions((const void *) "minima");
-  balBifurcationDiagram * bifd = balBifurcationDiagram::Create();
+  BifurcationDiagram * bifd = BifurcationDiagram::Create();
   bifd->SetDynamicalSystem(dynasty);
   bifd->GetODESolver()->SetIntegrationMode(balEVENTS);
   bifd->GetODESolver()->HaltAtEquilibrium(true);

@@ -25,13 +25,13 @@
 #include "balHindmarshRose.h"
 #include "balParameters.h"
 #include "balODESolver.h"
-using namespace std;
+using namespace bal;
 
-// TEST balODESolver
+// TEST ODESolver
 int main(int argc, char *argv[]) {
 	
   // parameters
-  balParameters * pars = balParameters::Create();
+  Parameters * pars = Parameters::Create();
   pars->SetNumber(4);
   pars->At(0) = 3.0;
   pars->At(1) = 5.0;
@@ -39,10 +39,10 @@ int main(int argc, char *argv[]) {
   pars->At(3) = 4.0;
   
   // HindmarshRose
-  balHindmarshRose *hr = balHindmarshRose::Create();
+  HindmarshRose *hr = HindmarshRose::Create();
   hr->SetParameters(pars);
   
-  balODESolver * solver = balODESolver::Create();
+  ODESolver * solver = ODESolver::Create();
   solver->SetDynamicalSystem(hr);
   solver->SetTransientDuration(0.0);
   solver->SetFinalTime(1000.0);

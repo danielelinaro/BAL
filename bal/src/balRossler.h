@@ -22,7 +22,7 @@
 
 /** 
  * \file balRossler.h
- * \brief Definition of the class balRossler
+ * \brief Definition of the class Rossler
  */
 
 #ifndef _BALROSSLER_
@@ -33,18 +33,20 @@
 #include "balDynamicalSystem.h"
 #include <cvode/cvode.h>
 
+namespace bal {
+
 /**
- * \class balRossler
+ * \class Rossler
  * \brief Implementation of the Rossler system
  *
- * \sa balDynamicalSystem
+ * \sa DynamicalSystem
  */
-class balRossler : public balDynamicalSystem {
+class Rossler : public DynamicalSystem {
  public:
   virtual const char * GetClassName () const;
-  static balRossler * Create ();
-  static balRossler * Copy (balRossler *ros);
-  virtual balDynamicalSystem * Clone() const;
+  static Rossler * Create ();
+  static Rossler * Copy (Rossler *ros);
+  virtual DynamicalSystem * Clone() const;
   virtual void Destroy ();
   
   int RHS (realtype t, N_Vector x, N_Vector xdot, void * data);
@@ -64,22 +66,25 @@ class balRossler : public balDynamicalSystem {
   bool HasEventsConstraints() const;
   
  protected:
-  balRossler();
-  balRossler(const balRossler& hr);
-  virtual ~balRossler();
+  Rossler();
+  Rossler(const Rossler& hr);
+  virtual ~Rossler();
   
  private:
   N_Vector xderiv;
 };
 
+} // namespace bal
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 	
-  balDynamicalSystem* balRosslerFactory();
+bal::DynamicalSystem* RosslerFactory();
   
 #ifdef __cplusplus
 }
 #endif
 
 #endif
+

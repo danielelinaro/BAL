@@ -25,21 +25,21 @@
 #include "balObject.h"
 #include "balParameters.h"
 #include "balBifurcationParameters.h"
-using namespace std;
+using namespace bal;
 
 // TEST balBifurcationParameters
 int main(int argc, char *argv[]) {
 
 	// parameters
-	balParameters * pars = balParameters::Create();
+	Parameters * pars = Parameters::Create();
 	pars->SetNumber(4);
 	pars->At(0) = 3.0;
 	pars->At(1) = 5.0;
 	pars->At(2) = 0.01;
 	pars->At(3) = 4.0;
 
-	balBifurcationParameters * bp = balBifurcationParameters::Create();
-	balParameters * parupper = balParameters::Create();
+	BifurcationParameters * bp = BifurcationParameters::Create();
+	Parameters * parupper = Parameters::Create();
 	parupper->SetNumber(4);
 	parupper->At(0) = pars->At(0)+1;
 	parupper->At(1) = pars->At(1)+1;
@@ -49,22 +49,22 @@ int main(int argc, char *argv[]) {
 	int steps[4] = {6,6,1,1};
 	bp->SetNumberOfSteps(steps);
 
-	cout << "par lower: " << *pars << endl;
-	cout << "par upper: " << *parupper << endl;
+        std::cout << "par lower: " << *pars << std::endl;
+        std::cout << "par upper: " << *parupper << std::endl;
 
 	// print all tuples
 	while(bp->HasTuples()) {
-		cout << *bp << endl;
+		std::cout << *bp << std::endl;
 		bp->Next();
 	}
-	cout << endl;
+	std::cout << std::endl;
 	bp->Reset();
 	// leave last tuple out
 	while(bp->HasNext()) {
-		cout << *bp << endl;
+		std::cout << *bp << std::endl;
 		bp->Next();
 	}
-	cout << endl;
+	std::cout << std::endl;
 	pars->Destroy();
 	parupper->Destroy();
 	bp->Reset();

@@ -29,7 +29,7 @@
 #include "balDynamicalSystem.h"
 #include "balHindmarshRose.h"
 #include "balParameters.h"
-using namespace std;
+using namespace bal;
 
 #ifdef CVODE25
 void PrintJacobian(int n, DenseMat J);
@@ -52,26 +52,26 @@ void PrintJacobian(int n, DlsMat J) {
 int main(int argc, char *argv[]) {
 	
   // parameters
-  balParameters * pars = balParameters::Create();
+  Parameters * pars = Parameters::Create();
   pars->SetNumber(4);
   pars->At(0) = 3.0;
   pars->At(1) = 5.0;
   pars->At(2) = 0.01;
   pars->At(3) = 4.0;
   
-  // balDynamicalSystem
-  balDynamicalSystem * dynsys = balDynamicalSystem::Create();
-  cout << dynsys->GetClassName() << endl;
+  // DynamicalSystem
+  DynamicalSystem * dynsys = DynamicalSystem::Create();
+  std::cout << dynsys->GetClassName() << std::endl;
   dynsys->Destroy();
   
-  // balHindmarshRose
+  // HindmarshRose
   int i, n;
-  balDynamicalSystem * hr = balHindmarshRose::Create();
+  DynamicalSystem * hr = HindmarshRose::Create();
   n = hr->GetDimension();
   N_Vector x = N_VNew_Serial(n);
   N_Vector xdot = N_VNew_Serial(n);
 
-  //balHindmarshRose *hrcopy = (balHindmarshRose *) hr->Copy();
+  //HindmarshRose *hrcopy = (HindmarshRose *) hr->Copy();
 //  printf("hrcopy->xrest = %f\n", hrcopy->xrest);
 //  hrcopy->Destroy();
 
@@ -83,27 +83,27 @@ int main(int argc, char *argv[]) {
     for(i=0; i<n; i++)
       NV_Ith_S(x,i) = 0.0;
   }
-  cout << hr->GetClassName() << endl;
+  std::cout << hr->GetClassName() << std::endl;
   hr->SetParameters(pars);
-  balDynamicalSystem::RHSWrapper(0,x,xdot,hr);
+  DynamicalSystem::RHSWrapper(0,x,xdot,hr);
 
-  cout << "xdot = (";
+  std::cout << "xdot = (";
   for(i=0; i<n-1; i++) {
-    cout << NV_Ith_S(xdot,i) << ",";
+    std::cout << NV_Ith_S(xdot,i) << ",";
   }
-  cout << NV_Ith_S(xdot,i) << ")" << endl;
+  std::cout << NV_Ith_S(xdot,i) << ")" << std::endl;
   
 #ifdef CVODE25
   DenseMat jac = newDenseMat(n,n);
-  balDynamicalSystem::JacobianWrapper(n,jac,0,x,NULL,hr,NULL,NULL,NULL);
+  DynamicalSystem::JacobianWrapper(n,jac,0,x,NULL,hr,NULL,NULL,NULL);
 #endif
 #ifdef CVODE26
   DlsMat jac = NewDenseMat(n,n);
-  balDynamicalSystem::JacobianWrapper(n,0,x,NULL,jac,hr,NULL,NULL,NULL);
+  DynamicalSystem::JacobianWrapper(n,0,x,NULL,jac,hr,NULL,NULL,NULL);
 #endif
   printf("\n>> Exact Jacobian matrix <<\n");
   PrintJacobian(n,jac);
-  balDynamicalSystem::JacobianFiniteDifferences(n,0,x,jac,hr);
+  DynamicalSystem::JacobianFiniteDifferences(n,0,x,jac,hr);
   printf("\n>> Approximated Jacobian matrix <<\n");
   PrintJacobian(n,jac);
 

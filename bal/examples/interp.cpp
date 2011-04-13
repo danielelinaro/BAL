@@ -37,11 +37,11 @@
 #include "balHeartNeuron.h"
 #include "balPLL.h"
 #include "balInterp1D.h"
-using namespace std;
+using namespace bal;
 
 int main(int argc, char *argv[]) {
 
-  balBaseInterp1D *interp[4];
+  BaseInterp1D *interp[4];
   double *x, **y;
   int i;
   double * yy;
@@ -65,23 +65,23 @@ int main(int argc, char *argv[]) {
     dyy[i] = new double[1];
 
   
-  balLinearInterp1D *lin = balLinearInterp1D::Create();
+  LinearInterp1D *lin = LinearInterp1D::Create();
   lin -> SetInterpolationPoints(x,y,n,nf);
   //lin -> Init();
   interp[0] = lin;
 
-  balPolyInterp1D *pol = balPolyInterp1D::Create();
+  PolyInterp1D *pol = PolyInterp1D::Create();
   pol -> SetInterpolationPoints(x,y,n,nf);
   pol -> SetInterpolationOrder(3);
   pol -> Init();
   interp[1] = pol;
 
-  balSplineInterp1D *spl = balSplineInterp1D::Create();
+  SplineInterp1D *spl = SplineInterp1D::Create();
   spl -> SetInterpolationPoints(x,y,n,nf);
   spl -> Init();
   interp[2] = spl;
 
-  balSmoothingSplineInterp1D *smooth = balSmoothingSplineInterp1D::Create();
+  SmoothingSplineInterp1D *smooth = SmoothingSplineInterp1D::Create();
   smooth -> SetInterpolationPoints(x,y,n,nf);
   smooth -> SetSmoothingParameters(10);
   smooth -> Init();

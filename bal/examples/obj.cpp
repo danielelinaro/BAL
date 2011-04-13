@@ -22,21 +22,21 @@
 
 #include <iostream>
 #include "balObject.h"
-using namespace std;
+using namespace bal;
 
-// TEST balObject
+// TEST Object
 int main(int argc, char *argv[]) {
   bool flag;
-  const char name[] = "balObject";
-  balObject *obj = balObject::Create();
+  const char name[] = "Object";
+  Object *obj = Object::Create();
 
   if(argc > 1)
     flag = obj->IsA(argv[1]);
   else
     flag = obj->IsA(name);
 
-  cout << obj->GetClassName() << endl;
-  cout << "I am " << (flag ? "" : "not ") << "a " << (argc>1 ? argv[1] : name) << "." << endl;
+  std::cout << obj->GetClassName() << std::endl;
+  std::cout << "I am " << (flag ? "" : "not ") << "a " << (argc>1 ? argv[1] : name) << "." << std::endl;
   obj->Destroy();
 
   return 0;

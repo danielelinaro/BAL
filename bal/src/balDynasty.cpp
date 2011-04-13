@@ -22,16 +22,18 @@
 
 /** 
  * \file balDynasty.cpp
- * \brief Implementation of the class balDynasty
+ * \brief Implementation of the class Dynasty
  */
 
 #include "balDynasty.h"
 
-balDynamicalSystem* balDynastyFactory() {
-  return balDynasty::Create();
+bal::DynamicalSystem* DynastyFactory() {
+  return bal::Dynasty::Create();
 }
 
-balDynasty::balDynasty() : balDynamicalSystem() {
+namespace bal {
+
+Dynasty::Dynasty() : DynamicalSystem() {
   SetDimension(3);
   SetNumberOfParameters(7);
   //SetNumberOfEvents(GetDimension());
@@ -40,43 +42,43 @@ balDynasty::balDynasty() : balDynamicalSystem() {
   xderiv = N_VNew_Serial(GetDimension());
 }
 
-balDynasty::balDynasty(const balDynasty& dyn) : balDynamicalSystem(dyn) {
+Dynasty::Dynasty(const Dynasty& dyn) : DynamicalSystem(dyn) {
   constraint_type = dyn.constraint_type;
   xderiv = N_VNew_Serial(dyn.GetDimension());
   for(int i = 0; i < dyn.GetDimension(); i++)
     Ith(xderiv,i)=Ith(dyn.xderiv,i);
 }
 
-balDynasty::~balDynasty() {
+Dynasty::~Dynasty() {
   N_VDestroy_Serial(xderiv);
 }
 
-balDynasty * balDynasty::Create () {
-  return new balDynasty;
+Dynasty * Dynasty::Create () {
+  return new Dynasty;
 }
 
-balDynasty * balDynasty::Copy(balDynasty *dynasty) {
-  return new balDynasty(*dynasty);
+Dynasty * Dynasty::Copy(Dynasty *dynasty) {
+  return new Dynasty(*dynasty);
 }
 
-balDynamicalSystem * balDynasty::Clone() const {
-  return new balDynasty(*this);
+DynamicalSystem * Dynasty::Clone() const {
+  return new Dynasty(*this);
 }
 
-void balDynasty::Destroy () {
+void Dynasty::Destroy () {
   delete this;
 }
 
-const char * balDynasty::GetClassName () const {
-  return "balDynasty";
+const char * Dynasty::GetClassName () const {
+  return "Dynasty";
 }
 
-int balDynasty::RHS (realtype t, N_Vector x, N_Vector xdot, void * data) {
+int Dynasty::RHS (realtype t, N_Vector x, N_Vector xdot, void * data) {
   realtype x1, x2, x3;
   realtype r, e, b, d, g, h, q;
-  balParameters *parameters;
+  Parameters *parameters;
   
-  parameters = (balParameters*) data;
+  parameters = (Parameters*) data;
   r = exp(parameters->At(0));
   e = parameters->At(1);
   b = parameters->At(2);
@@ -121,23 +123,23 @@ int balDynasty::RHS (realtype t, N_Vector x, N_Vector xdot, void * data) {
 }
 
 #ifdef CVODE25
-int balDynasty::Jacobian (long int N, DenseMat J, realtype t, N_Vector x, N_Vector fy, 
+int Dynasty::Jacobian (long int N, DenseMat J, realtype t, N_Vector x, N_Vector fy, 
 			  void *jac_data, N_Vector tmp1, N_Vector tmp2, N_Vector tmp3) {
 #endif
 #ifdef CVODE26
-int balDynasty::Jacobian (int N, realtype t, N_Vector x, N_Vector fy, DlsMat J, 
+int Dynasty::Jacobian (int N, realtype t, N_Vector x, N_Vector fy, DlsMat J, 
 			  void *jac_data, N_Vector tmp1, N_Vector tmp2, N_Vector tmp3) {
 #endif
   realtype x1, x2, x3;
   realtype r, e, b, d, g, h, q;
   realtype denx, deny, denxsquare, denysquare;
-  balParameters *parameters;
+  Parameters *parameters;
   
   x1 = Ith (x, 0);
   x2 = Ith (x, 1);
   x3 = Ith (x, 2);
  
-  parameters = (balParameters*) jac_data;
+  parameters = (Parameters*) jac_data;
   r = exp(parameters->At(0));
   e = parameters->At(1);
   b = parameters->At(2);
@@ -164,19 +166,19 @@ int balDynasty::Jacobian (int N, realtype t, N_Vector x, N_Vector fy, DlsMat J,
   return CV_SUCCESS;
 }
 
-int balDynasty::Events (realtype t, N_Vector x, realtype * event, void * data) {
+int Dynasty::Events (realtype t, N_Vector x, realtype * event, void * data) {
   RHS(t,x,xderiv,data);
   for(int i=0; i<GetNumberOfEvents(); i++)
     event[i] = Ith(xderiv,i);
   return CV_SUCCESS;
 }
 
-void balDynasty::EventsConstraints (realtype t, N_Vector x, int * constraints, void * data) {
+void Dynasty::EventsConstraints (realtype t, N_Vector x, int * constraints, void * data) {
   realtype x1, x2, x3;
   realtype r, e, b, d, g, h, q;
   realtype denx, deny, denxsquare, denysquare;
   realtype ris[3], xdot[3];
-  balParameters *parameters;
+  Parameters *parameters;
   
   if(constraint_type != MINIMA && constraint_type != MAXIMA) {
     for(int i=0; i<GetNumberOfEvents(); i++)
@@ -188,7 +190,7 @@ void balDynasty::EventsConstraints (realtype t, N_Vector x, int * constraints, v
   x2 = Ith (x, 1);
   x3 = Ith (x, 2);
  
-  parameters = (balParameters*) data;
+  parameters = (Parameters*) data;
   r = exp(parameters->At(0));
   e = parameters->At(1);
   b = parameters->At(2);
@@ -231,7 +233,7 @@ void balDynasty::EventsConstraints (realtype t, N_Vector x, int * constraints, v
   }
 }
 
-bool balDynasty::SpecialOptions(const void *opt) {
+bool Dynasty::SpecialOptions(const void *opt) {
   char *s = (char *) opt;
   if(strncasecmp(s,"minima",6) == 0) {
     constraint_type = MINIMA;
@@ -248,15 +250,17 @@ bool balDynasty::SpecialOptions(const void *opt) {
   return false;
 }
 
-bool balDynasty::HasJacobian() const {
+bool Dynasty::HasJacobian() const {
   return true;
 }
  
-bool balDynasty::HasEvents() const {
+bool Dynasty::HasEvents() const {
   return true;
 }
  
-bool balDynasty::HasEventsConstraints() const {
+bool Dynasty::HasEventsConstraints() const {
   return true;
 }
-  
+
+} // namespace bal
+

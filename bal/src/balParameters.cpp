@@ -1,7 +1,7 @@
 /*=========================================================================
  *
  *   Program:   Bifurcation Analysis Library
- *   Module:    balParameters.cpp
+ *   Module:    Parameters.cpp
  *
  *   Copyright (C) 2009,2010 Daniele Linaro
  *
@@ -21,19 +21,21 @@
  *=========================================================================*/
 
 /** 
- * \file balParameters.cpp
- * \brief Implementation of the class balParameters
+ * \file Parameters.cpp
+ * \brief Implementation of the class Parameters
  */
 
 #include "balParameters.h"
 
-balParameters::balParameters() {
+namespace bal {
+
+Parameters::Parameters() {
   p = 0;
   pars = NULL;
   _dealloc = false;
 }
 
-balParameters::balParameters(const balParameters& params) {
+Parameters::Parameters(const Parameters& params) {
   p = 0;
   pars = NULL;
   _dealloc = false;
@@ -42,28 +44,28 @@ balParameters::balParameters(const balParameters& params) {
     pars[i] = params.pars[i];
 }
 
-balParameters::~balParameters () {
+Parameters::~Parameters () {
   if (_dealloc)
     delete pars;
 }
 
-const char * balParameters::GetClassName () const {
-  return "balParameters";
+const char * Parameters::GetClassName () const {
+  return "Parameters";
 }
 
-balParameters * balParameters::Create () {
-     return new balParameters;
+Parameters * Parameters::Create () {
+     return new Parameters;
 }
 
-balParameters * balParameters::Copy (balParameters * params) {
-  return new balParameters(*params);
+Parameters * Parameters::Copy (Parameters * params) {
+  return new Parameters(*params);
 }
 
-void balParameters::Destroy () {
+void Parameters::Destroy () {
   delete this;
 }
 
-void balParameters::SetNumber (int numpars) {
+void Parameters::SetNumber (int numpars) {
   if(numpars > 0) {
     p = numpars;
     if(_dealloc)
@@ -75,28 +77,30 @@ void balParameters::SetNumber (int numpars) {
   }
 }
 
-int balParameters::GetNumber () const {
+int Parameters::GetNumber () const {
   return p;
 }
 
-double & balParameters::At (int k) {
+double & Parameters::At (int k) {
   return pars[k];
 }
 
-double * balParameters::GetParameters () const {
+double * Parameters::GetParameters () const {
   return pars;
 }
 
-void balParameters::CopyValues(balParameters* _par){
+void Parameters::CopyValues(Parameters* _par){
   for (int i = 0; i < _par->GetNumber(); i++)
     pars[i] = _par->At(i);
 }
 
-ostream& operator<< (ostream& out, const balParameters& bp) {
+std::ostream& operator<< (std::ostream& out, const Parameters& bp) {
   out << "(";
   for(int i=0; i<bp.p-1; i++)
     out << bp.pars[i] << ",";
   out << bp.pars[bp.p-1] << ")";
   return out;
 }
+
+} // namespace bal
 

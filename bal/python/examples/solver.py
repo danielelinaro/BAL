@@ -5,7 +5,7 @@ from pylab import figure, plot, xlabel, ylabel, title, show, axis
 
 # create a dynamical system and load the equations of the Hindmarsh-Rose neuron model
 hr = bal.DynamicalSystem()
-hr.create('balHindmarshRose')
+hr.create('HindmarshRose')
 
 # create the parameters of the model
 par = bal.Parameters(hr.npar)

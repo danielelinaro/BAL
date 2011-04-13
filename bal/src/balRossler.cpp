@@ -22,58 +22,60 @@
 
 /** 
  * \file balRossler.cpp
- * \brief Implementation of the class balRossler
+ * \brief Implementation of the class Rossler
  */
 
 #include "balRossler.h"
 
-balDynamicalSystem* balRosslerFactory() {
-  return balRossler::Create();
+bal::DynamicalSystem* RosslerFactory() {
+  return bal::Rossler::Create();
 }
 
-balRossler::balRossler() {
+namespace bal {
+
+Rossler::Rossler() {
   SetDimension(3);
   SetNumberOfParameters(3);
   SetNumberOfEvents(GetDimension());
   xderiv = N_VNew_Serial(GetDimension());
 }
 
-balRossler::balRossler(const balRossler& ros) : balDynamicalSystem(ros) {
+Rossler::Rossler(const Rossler& ros) : DynamicalSystem(ros) {
   xderiv = N_VNew_Serial(ros.GetDimension());
   for(int i = 0; i < ros.GetDimension(); i++)
     Ith(xderiv,i)=Ith(ros.xderiv,i);
 }
 
-balRossler::~balRossler() {
+Rossler::~Rossler() {
   N_VDestroy_Serial(xderiv);
 }
 
-balRossler * balRossler::Create () {
-  return new balRossler;
+Rossler * Rossler::Create () {
+  return new Rossler;
 }
 
-balRossler * balRossler::Copy (balRossler *ros) {
-  return new balRossler(*ros);
+Rossler * Rossler::Copy (Rossler *ros) {
+  return new Rossler(*ros);
 }
 
-balDynamicalSystem * balRossler::Clone() const {
-  return new balRossler(*this);
+DynamicalSystem * Rossler::Clone() const {
+  return new Rossler(*this);
 }
 
-void balRossler::Destroy () {
+void Rossler::Destroy () {
   delete this;
 }
 
-const char * balRossler::GetClassName () const {
-  return "balRossler";
+const char * Rossler::GetClassName () const {
+  return "Rossler";
 }
 
-int balRossler::RHS (realtype t, N_Vector x, N_Vector xdot, void * data) {
+int Rossler::RHS (realtype t, N_Vector x, N_Vector xdot, void * data) {
   realtype x1, x2, x3;
   realtype a, b, c;
-  balParameters * parameters;
+  Parameters * parameters;
   
-  parameters = (balParameters *) data;
+  parameters = (Parameters *) data;
   a = parameters->At(0);
   b = parameters->At(1);
   c = parameters->At(2);
@@ -90,22 +92,22 @@ int balRossler::RHS (realtype t, N_Vector x, N_Vector xdot, void * data) {
 }
 
 #ifdef CVODE25
-int balRossler::Jacobian (long int N, DenseMat J, realtype t, N_Vector x, N_Vector fy, 
+int Rossler::Jacobian (long int N, DenseMat J, realtype t, N_Vector x, N_Vector fy, 
 			  void *jac_data, N_Vector tmp1, N_Vector tmp2, N_Vector tmp3) {
 #endif
 #ifdef CVODE26
-int balRossler::Jacobian (int N, realtype t, N_Vector x, N_Vector fy, DlsMat J, 
+int Rossler::Jacobian (int N, realtype t, N_Vector x, N_Vector fy, DlsMat J, 
 			  void *jac_data, N_Vector tmp1, N_Vector tmp2, N_Vector tmp3) {
 #endif
   realtype a, b, c;
   realtype x1, x2, x3;
-  balParameters * parameters;
+  Parameters * parameters;
   
   x1 = Ith (x, 0);
   x2 = Ith (x, 1);
   x3 = Ith (x, 2);
   
-  parameters = (balParameters *) jac_data;
+  parameters = (Parameters *) jac_data;
   a = parameters->At(0);
   b = parameters->At(1);
   c = parameters->At(2);
@@ -123,24 +125,24 @@ int balRossler::Jacobian (int N, realtype t, N_Vector x, N_Vector fy, DlsMat J,
   return CV_SUCCESS;
 }
  
- int balRossler::Events (realtype t, N_Vector x, realtype * event, void * data) {
+ int Rossler::Events (realtype t, N_Vector x, realtype * event, void * data) {
    RHS(t,x,xderiv,data);
    for(int i=0; i<GetNumberOfEvents(); i++)
      event[i] = Ith(xderiv,i);
    return CV_SUCCESS;
  }
  
-void balRossler::EventsConstraints (realtype t, N_Vector x, int * constraints, void * data) {
+void Rossler::EventsConstraints (realtype t, N_Vector x, int * constraints, void * data) {
   realtype a, b, c;
   realtype x1, x2, x3;
   realtype ris[3], xdot[3];
-  balParameters * parameters;
+  Parameters * parameters;
   
   x1 = Ith (x, 0);
   x2 = Ith (x, 1);
   x3 = Ith (x, 2);
  
-  parameters = (balParameters *) data;
+  parameters = (Parameters *) data;
   a = parameters->At(0);
   b = parameters->At(1);
   c = parameters->At(2);
@@ -157,15 +159,17 @@ void balRossler::EventsConstraints (realtype t, N_Vector x, int * constraints, v
     constraints[i] = (ris[i] < 0 ? 1 : 0);
 }
 
- bool balRossler::HasJacobian() const {
+ bool Rossler::HasJacobian() const {
    return (IsExtended() ? false : true);
  }
  
- bool balRossler::HasEvents() const {
+ bool Rossler::HasEvents() const {
    return true;
  }
  
- bool balRossler::HasEventsConstraints() const {
+ bool Rossler::HasEventsConstraints() const {
    return true;
  }
  
+} // namespace bal
+

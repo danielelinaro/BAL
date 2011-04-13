@@ -5,7 +5,7 @@ from pybal import bal
 outfile = 'hr.h5'
 
 hr = bal.DynamicalSystem()
-hr.create('balHindmarshRose')
+hr.create('HindmarshRose')
 
 par = bal.Parameters(hr.npar)
 par.bifpar(0,[2.5,3.5,21])

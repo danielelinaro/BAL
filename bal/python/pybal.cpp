@@ -15,7 +15,7 @@ static PyObject * pyBalDynamicalSystem_new(PyTypeObject *type, PyObject *args, P
 }
 
 static int pyBalDynamicalSystem_init(pyBalDynamicalSystem *self, PyObject *args, PyObject *kwds) {
-	self->dynsys = balDynamicalSystem::Create();
+	self->dynsys = bal::DynamicalSystem::Create();
 	self->lib = NULL;
 	return 0;
 }
@@ -142,7 +142,7 @@ static int pyBalDynamicalSystem_setattro(pyBalDynamicalSystem *self, PyObject *n
 			retval = self->dynsys->SpecialOptions((void *) opt);
 			/*
 			Py_INCREF(self->dynsys);
-			balEye *eye = (balEye *) self->dynsys;
+			bal::Eye *eye = (bal::Eye *) self->dynsys;
 			retval = eye->ReadVectorField(opt);
 			Py_DECREF(self->dynsys);
 			 */
@@ -230,7 +230,7 @@ static int pyBalParameters_init(pyBalParameters *self, PyObject *args, PyObject 
 		return NULL;
 	}
 	
-	self->bifparams = balBifurcationParameters::Create();
+	self->bifparams = bal::BifurcationParameters::Create();
 	self->bifparams->SetNumber(npar);
 	return 0;
 }
@@ -634,7 +634,7 @@ static int pyBalODESolver_init(pyBalODESolver *self, PyObject *args, PyObject *k
 		return NULL;
 	}
 	self->dynsys->dynsys->SetParameters(self->params->bifparams);
-	self->solver = balODESolver::Create();
+	self->solver = bal::ODESolver::Create();
 	self->solver->SetDynamicalSystem(self->dynsys->dynsys);
 	self->solver->SetTransientDuration(0.0);
 	self->solver->SetFinalTime(10.0);
@@ -802,7 +802,7 @@ static PyObject * pyBalODESolver_solve(pyBalODESolver *self) {
 }
 
 static PyObject * pyBalODESolver_getsolution(pyBalODESolver * self) {
-	balSolution *sol = self->solver->GetSolution();
+	bal::Solution *sol = self->solver->GetSolution();
 	if(sol == NULL)
 		return Py_BuildValue("i",-1);
 	pyBalSolution *pbs = createPyBalSolution(sol);
@@ -919,11 +919,11 @@ static PyTypeObject pyBalSolutionType = {
     0									/* tp_new */
 };
 
-static pyBalSolution* createPyBalSolution(balSolution *s) {
+static pyBalSolution* createPyBalSolution(bal::Solution *s) {
 	pyBalSolution *solution = (pyBalSolution *) pyBalSolutionType.tp_alloc(&pyBalSolutionType,0);
 	
 	// Parameters
-	solution->params = balParameters::Copy(s->GetParameters());
+	solution->params = bal::Parameters::Copy(s->GetParameters());
 	
 	// Data
 	int r,c,i,j;
@@ -1016,7 +1016,7 @@ static int pyBalBifurcationDiagram_init(pyBalBifurcationDiagram *self, PyObject 
 	for(int i=0; i<self->dynsys->dynsys->GetDimension(); i++)
 		x0[i] = 0.0;
 	
-	self->diagram = balBifurcationDiagram::Create();
+	self->diagram = bal::BifurcationDiagram::Create();
 	self->diagram->SetDynamicalSystem(self->dynsys->dynsys);
 	self->diagram->GetODESolver()->SetIntegrationMode(balEVENTS);
 	self->diagram->GetODESolver()->HaltAtEquilibrium(true);

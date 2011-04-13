@@ -129,34 +129,36 @@ typedef enum
 enum { EQUIL_FALSE, EQUIL_TRUE, EQUIL_BREAK };
 enum { CYCLE_FALSE, CYCLE_TRUE, CYCLE_BREAK };
 
+namespace bal {
+
 /**
- * \class balODESolver
+ * \class ODESolver
  * \brief Class for integration of dynamical systems
  * 
- * \sa balDynamicalSystem balBifurcationParameters balSolution
+ * \sa DynamicalSystem BifurcationParameters Solution
  */
-class balODESolver : public balObject {
+class ODESolver : public Object {
 
  public:
   /** Returns the name of the class. */
   virtual const char * GetClassName() const;
-  /** Creates a new balODESolver. */
-  static balODESolver * Create();
-  /** Creates a copy of balODESolver. */
-  static balODESolver * Copy (balODESolver * solver);
-  /** Destroys a balODESolver. */
+  /** Creates a new ODESolver. */
+  static ODESolver * Create();
+  /** Creates a copy of ODESolver. */
+  static ODESolver * Copy (ODESolver * solver);
+  /** Destroys a ODESolver. */
   virtual void Destroy();
   
   realtype * GetBuffer() const;
   int GetBufferSize() const;
   void GetBufferSize(int * r, int * c) const;
   
-  void SetDynamicalSystem(balDynamicalSystem * ds);
-  balDynamicalSystem * GetDynamicalSystem() const;
+  void SetDynamicalSystem(DynamicalSystem * ds);
+  DynamicalSystem * GetDynamicalSystem() const;
   
-  void SetDynamicalSystemParameters(balParameters * par);
+  void SetDynamicalSystemParameters(Parameters * par);
   
-  balSolution * GetSolution() const;
+  Solution * GetSolution() const;
   
   realtype GetInitialTime() const;
   void SetInitialTime(realtype T0);
@@ -204,9 +206,9 @@ class balODESolver : public balObject {
   virtual bool Solve();
   
  protected:
-  balODESolver();
-  balODESolver (const balODESolver & solver);
-  virtual ~balODESolver();
+  ODESolver();
+  ODESolver (const ODESolver & solver);
+  virtual ~ODESolver();
   bool AllocateSolutionBuffer();
   void StoreRecordInBuffer(int lbl);
   void ResetPositionInBuffer();
@@ -324,12 +326,13 @@ class balODESolver : public balObject {
   realtype cycle_tolerance; // SG
   
   /** Parameters of the system */
-  balParameters * params;
+  Parameters * params;
   /** The dynamical system that has to be integrated */
-  balDynamicalSystem * dynsys;
+  DynamicalSystem * dynsys;
 
   bool _dealloc;
 };
 
+} // namespace bal
 
 #endif

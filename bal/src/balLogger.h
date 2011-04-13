@@ -22,9 +22,9 @@
 
 /** 
  * \file balLogger.h
- * \brief Definition of classes balLogger and balH5Logger
+ * \brief Definition of classes Logger and H5Logger
  *
- * balLogger and its inherited classes are used for saving data to files.
+ * Logger and its inherited classes are used for saving data to files.
  * More specifically, data is assumed to be a matrix of realtype values,
  * where every row has the following structure:
  *
@@ -65,64 +65,66 @@
 
 using std::list;
 
+namespace bal {
+
 /**
- * \class balLogger 
+ * \class Logger 
  * \brief Base class for saving integration data to file 
- * \sa balODESolver
+ * \sa ODESolver
  */
-class balLogger : public balObject {
+class Logger : public Object {
  public:
   virtual const char * GetClassName () const;
   
   virtual void SetFilename(const char * fname, bool compress = false);
   const char * GetFilename() const;
-  void SetParameters(balParameters * p);
-  balParameters * GetParameters() const;
+  void SetParameters(Parameters * p);
+  Parameters * GetParameters() const;
   void SetNumberOfColumns(int c);
   int GetNumberOfColumns() const;
   bool IsFileOpen() const;
   
   virtual bool SaveBuffer(realtype * buffer, int rows, int id = 1);
-  bool SaveSolution(balSolution * solution);
-  bool SaveSolutionThreaded(list <balSolution *> * sol_list,
+  bool SaveSolution(Solution * solution);
+  bool SaveSolutionThreaded(list <Solution *> * sol_list,
 			    boost::mutex * list_mutex,
 			    boost::condition_variable * q_empty,
 			    boost::condition_variable * q_full);
   
  protected:
-  balLogger();
-  virtual ~balLogger();
+  Logger();
+  virtual ~Logger();
   virtual bool OpenFile() = 0;
   virtual bool CloseFile() = 0;
   void SetFileIsOpen(bool open);
 
-  virtual bool SortAndWriteSolutionList(list <balSolution *> * sol_list);
+  virtual bool SortAndWriteSolutionList(list <Solution *> * sol_list);
   
  private:
   /** Tells whether the logging file is open or not */
   bool opened;
   char filename[FILENAME_LENGTH];
   int cols;
-  balParameters * params;
+  Parameters * params;
 };
 
 /**
- * \class balH5Logger 
+ * \class H5Logger 
  * \brief Class for saving integration data to H5 (compressed) files
- * \sa balLogger balODESolver
+ * \sa Logger ODESolver
  */
-class balH5Logger : public balLogger {
+class H5Logger : public Logger {
  public:
   virtual const char * GetClassName () const;
-  static balH5Logger * Create();
+  static H5Logger * Create();
   virtual void Destroy();
   
   virtual void SetFilename(const char * fname, bool compress = false);
   virtual bool SaveBuffer(realtype * buffer, int rows, int id = 1);
   
  protected:
-  balH5Logger();
-  virtual ~balH5Logger();
+  H5Logger();
+  virtual ~H5Logger();
   virtual bool OpenFile();
   virtual bool CloseFile();
   
@@ -139,6 +141,7 @@ class balH5Logger : public balLogger {
   char datasetname[DATASETNAME_LENGTH];
 };
 
+} // namespace bal
 
 #endif
 

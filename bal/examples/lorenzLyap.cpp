@@ -26,9 +26,9 @@
 #include "balParameters.h"
 #include "balODESolver.h"
 #include "balSolution.h"
-using namespace std;
+using namespace bal;
 
-/**************** TEST balODESolver SolveLyapunovExponents **********************
+/**************** TEST ODESolver SolveLyapunovExponents **********************
  *										*
  *		lyapunov exponents calculated using base 2 logarithm		*
  *		in formula.							*
@@ -44,19 +44,19 @@ using namespace std;
 int main(int argc, char *argv[]) {
 	
   // parameters
-  balParameters * pars = balParameters::Create();
+  Parameters * pars = Parameters::Create();
   pars->SetNumber(3);
   pars->At(0) = 16;
   pars->At(1) = 45.92;
   pars->At(2) = 4.0;
   
   // Lorenz
-  balLorenz *lor = balLorenz::Create();
+  Lorenz *lor = Lorenz::Create();
   lor->SetParameters(pars);
   
   // Setting ODESolver fields 
   realtype x0[] = {10,1,0};
-  balODESolver * solver = balODESolver::Create();
+  ODESolver * solver = ODESolver::Create();
   solver->SetDynamicalSystem(lor);
   solver->SetTransientDuration(1000);
   solver->SetFinalTime(1.1e4);

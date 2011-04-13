@@ -2,9 +2,9 @@
 #include "balInterpSystem.h"
 #include "balODESolver.h"
 #include "balInterp3D.h"
+using namespace bal;
 
 #define DIM 3
-
 
 int main(int argc, char *argv[]) {
 
@@ -16,7 +16,7 @@ int main(int argc, char *argv[]) {
 
 
   // Instantiate eye
-  balInterpSystem * interpsystem = balInterpSystem::Create();
+  InterpSystem * interpsystem = InterpSystem::Create();
   
   // Read vector field
   FILE *fdat = fopen(argv[1],"r");
@@ -39,7 +39,7 @@ int main(int argc, char *argv[]) {
   }
   fclose(fdat);
     
-  balSplineInterp3D * interp = balSplineInterp3D::Create();
+  SplineInterp3D * interp = SplineInterp3D::Create();
   interp->SetInterpolationPoints(xi1,xi2,xi3,yi,nx1,nx2,nx3,DIM);
   interp->SetWindow(10);
   interp->Init();
@@ -49,7 +49,7 @@ int main(int argc, char *argv[]) {
   bool backward = true;
   interpsystem->SpecialOptions(&backward);
 
-  balODESolver * solver = balODESolver::Create();
+  ODESolver * solver = ODESolver::Create();
   solver->SetDynamicalSystem(interpsystem);
   solver->SetTransientDuration(0e6);
   solver->SetFinalTime(1e6);
@@ -63,7 +63,7 @@ int main(int argc, char *argv[]) {
   FILE *fid = fopen("interpsystem.dat","w");
   int r, c;
   double * buffer;
-  balSolution * sol = solver->GetSolution();
+  Solution * sol = solver->GetSolution();
   buffer = sol->GetData();
   sol->GetSize(&r,&c);
   for(i=0; i<r; i++) {

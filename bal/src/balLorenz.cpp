@@ -22,58 +22,60 @@
 
 /** 
  * \file balLorenz.cpp
- * \brief Implementation of the class balLorenz
+ * \brief Implementation of the class Lorenz
  */
 
 #include "balLorenz.h"
 
-balDynamicalSystem* balLorenzFactory() {
-  return balLorenz::Create();
+bal::DynamicalSystem* LorenzFactory() {
+  return bal::Lorenz::Create();
 }
 
-balLorenz::balLorenz() {
+namespace bal {
+
+Lorenz::Lorenz() {
   SetDimension(3);
   SetNumberOfParameters(3);
   SetNumberOfEvents(0);
 }
 
-balLorenz::balLorenz(const balLorenz& lor) : balDynamicalSystem(lor) {}
+Lorenz::Lorenz(const Lorenz& lor) : DynamicalSystem(lor) {}
 
-balLorenz::~balLorenz() {}
+Lorenz::~Lorenz() {}
 
-const char * balLorenz::GetClassName () const {
-  return "balLorenz";
+const char * Lorenz::GetClassName () const {
+  return "Lorenz";
 }
 
-balLorenz * balLorenz::Create () {
-  return new balLorenz;
+Lorenz * Lorenz::Create () {
+  return new Lorenz;
 }
 
-balLorenz * balLorenz::Copy (balLorenz *lor) {
-  return new balLorenz(*lor);
+Lorenz * Lorenz::Copy (Lorenz *lor) {
+  return new Lorenz(*lor);
 }
 
-balDynamicalSystem * balLorenz::Clone() const {
-  return new balLorenz(*this);
+DynamicalSystem * Lorenz::Clone() const {
+  return new Lorenz(*this);
 }
 
-void balLorenz::Destroy() {
+void Lorenz::Destroy() {
   delete this;
 }
 
-bool balLorenz::HasJacobian() const {
+bool Lorenz::HasJacobian() const {
   return (IsExtended() ? false : true);
 }
 
-int balLorenz::RHS (realtype t, N_Vector x, N_Vector xdot, void * data) {
+int Lorenz::RHS (realtype t, N_Vector x, N_Vector xdot, void * data) {
   // the state of the system
   realtype x1, x2, x3;
   // the parameters
   realtype sigma, rho, beta;
-  balParameters *parameters;
+  Parameters *parameters;
   
   // parameters
-  parameters = (balParameters *) data;
+  parameters = (Parameters *) data;
   sigma = parameters->At(0);
   rho = parameters->At(1);
   beta = parameters->At(2);
@@ -90,22 +92,22 @@ int balLorenz::RHS (realtype t, N_Vector x, N_Vector xdot, void * data) {
 }
 
 #ifdef CVODE25
-int balLorenz::Jacobian (long int N, DenseMat J, realtype t, N_Vector x, N_Vector fy, 
+int Lorenz::Jacobian (long int N, DenseMat J, realtype t, N_Vector x, N_Vector fy, 
 			 void *jac_data, N_Vector tmp1, N_Vector tmp2, N_Vector tmp3) {
 #endif
 #ifdef CVODE26
-int balLorenz::Jacobian (int N, realtype t, N_Vector x, N_Vector fy, DlsMat J, 
+int Lorenz::Jacobian (int N, realtype t, N_Vector x, N_Vector fy, DlsMat J, 
 			 void *jac_data, N_Vector tmp1, N_Vector tmp2, N_Vector tmp3) {
 #endif
   realtype x1, x2, x3;
   realtype sigma, rho, beta;
-  balParameters * parameters;
+  Parameters * parameters;
   
   x1 = Ith (x, 0);
   x2 = Ith (x, 1);
   x3 = Ith (x, 2);
  
-  parameters = (balParameters *) jac_data;
+  parameters = (Parameters *) jac_data;
   sigma = parameters->At(0);
   rho = parameters->At(1);
   beta = parameters->At(2);
@@ -122,4 +124,6 @@ int balLorenz::Jacobian (int N, realtype t, N_Vector x, N_Vector fy, DlsMat J,
 
   return CV_SUCCESS;
 }
+
+} // namespace bal
 

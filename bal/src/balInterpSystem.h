@@ -22,17 +22,11 @@
 
 /** 
  * \file balInterpSystem.h
- * \brief Definition of the class balInterpSystem
+ * \brief Definition of the class InterpSystem
  */
 
 #ifndef _BALINTERPSYSTEM_
 #define _BALINTERPSYSTEM_
-
-#include <cmath>
-#include <cstdio>
-#include <cstdlib>
-#include <cstring>
-#include <iostream>
 
 #include <sundials/sundials_types.h>
 #include <nvector/nvector_serial.h>
@@ -48,51 +42,54 @@
 #include "balDynamicalSystem.h"
 #include "balInterpolator.h"
 
+namespace bal {
+
 /**
- * \class balInterpSystem
+ * \class InterpSystem
  * \brief Implementation of a dynamical system whos vector vield is known only n a regular grid
  * 
- * \sa balDynamicalSystem
+ * \sa DynamicalSystem
  */
-class balInterpSystem : public balDynamicalSystem {
+class InterpSystem : public DynamicalSystem {
  public:
   virtual const char * GetClassName () const;
-  static balInterpSystem * Create ();
-  static balInterpSystem * Copy(balInterpSystem *is);
-  virtual balDynamicalSystem * Clone() const;
+  static InterpSystem * Create ();
+  static InterpSystem * Copy(InterpSystem *is);
+  virtual DynamicalSystem * Clone() const;
   virtual void Destroy ();
   
   int RHS (realtype t, N_Vector x, N_Vector xdot, void * data);
   int Events (realtype t, N_Vector x, realtype * event, void * data);
   
   bool HasEvents() const;
-  int SetInterpolator(balInterpolator *interp);
+  int SetInterpolator(Interpolator *interp);
   
   // Used to set the direction of the integration (forward or backward in time)
   bool SpecialOptions(const void *opt); 
  protected:
-  balInterpSystem();
-  balInterpSystem(const balInterpSystem& interpsystem);
-  virtual ~balInterpSystem();
+  InterpSystem();
+  InterpSystem(const InterpSystem& interpsystem);
+  virtual ~InterpSystem();
   
  private:
 
   N_Vector xderiv;
-  balInterpolator *interpolator;
+  Interpolator *interpolator;
   bool backward, arclength;
   bool _dealloc;
 };
+
+} // namespace bal
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-balDynamicalSystem* balInterpSystemFactory();
+bal::DynamicalSystem* InterpSystemFactory();
 	
 #ifdef __cplusplus
 }
 #endif
 
 #endif
-
 

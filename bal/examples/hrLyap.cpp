@@ -28,14 +28,14 @@
 #include "balODESolver.h"
 #include "balBifurcationDiagram.h"
 #include "balBifurcationParameters.h"
+using namespace bal;
 
 // TEST balODESolver calculating Lyapunov Spectrum
-
 int main(int argc, char *argv[]) {
 
   /** parameters **/
   realtype x0[3] = {0.5,0.5,0.5};
-  balBifurcationParameters * bp = balBifurcationParameters::Create();
+  BifurcationParameters * bp = BifurcationParameters::Create();
   bp->SetNumber(4);
   
   // chaos
@@ -53,10 +53,10 @@ int main(int argc, char *argv[]) {
   bp->At(2) = 0.01;
   bp->At(3) = 4.0;
   
-  balHindmarshRose * hr = balHindmarshRose::Create();
+  HindmarshRose * hr = HindmarshRose::Create();
   hr->SetParameters(bp);
   
-  balODESolver * solver = balODESolver::Create();
+  ODESolver * solver = ODESolver::Create();
   solver->SetDynamicalSystem(hr);
   solver->SetIntegrationMode(balLYAP);
   solver->SetTimeStep(0.01);

@@ -1,7 +1,7 @@
 /*=========================================================================
  *
  *   Program:   Bifurcation Analysis Library
- *   Module:    balDynamicalSystem.h
+ *   Module:    DynamicalSystem.h
  *
  *   Copyright (C) 2009,2010 Daniele Linaro
  *
@@ -21,8 +21,8 @@
  *=========================================================================*/
 
 /** 
- * \file balDynamicalSystem.h
- * \brief Definition of the class balDynamicalSystem
+ * \file DynamicalSystem.h
+ * \brief Definition of the class DynamicalSystem
  */
 
 #ifndef _BALDYNAMICALSYSTEM_
@@ -43,26 +43,28 @@
 #include "balObject.h"
 #include "balParameters.h"
 
+namespace bal {
+
 /** 
- * \class balDynamicalSystem
+ * \class DynamicalSystem
  * \brief Base class to represent dynamical systems.
  * 
- * balDynamicalSystem is the base class for all dynamical systems that are
+ * DynamicalSystem is the base class for all dynamical systems that are
  * to be integrated using the Bifurcation Analysis Library. Every class
- * that is inherited from balDynamicalSystem must have at least the RHS
+ * that is inherited from DynamicalSystem must have at least the RHS
  * method (implementing the vector field of a dynamical system) and
  * possibly a method that implements the Jacobian matrix of the system,
  * even though this is not strictly necessary for the integration of the
  * model.
  *
- * \sa balParameters
+ * \sa Parameters
  */
-class balDynamicalSystem : public balObject {
+class DynamicalSystem : public Object {
  public:
   virtual const char * GetClassName () const;
-  static balDynamicalSystem * Create ();
-  static balDynamicalSystem * Copy (balDynamicalSystem *sys);
-  virtual balDynamicalSystem * Clone() const;
+  static DynamicalSystem * Create ();
+  static DynamicalSystem * Copy (DynamicalSystem *sys);
+  virtual DynamicalSystem * Clone() const;
   virtual void Destroy ();
   
   virtual int RHS (realtype t, N_Vector x, N_Vector xdot, void * data);
@@ -103,16 +105,16 @@ class balDynamicalSystem : public balObject {
   int GetDimension() const;
   int GetOriginalDimension() const;
   int GetNumberOfParameters() const;
-  void SetParameters(balParameters *) throw(balException);
-  balParameters * GetParameters() const;
+  void SetParameters(Parameters *) throw(Exception);
+  Parameters * GetParameters() const;
   
   void Extend(bool extend);
   bool IsExtended() const;
   
  protected:
-  balDynamicalSystem();
-  balDynamicalSystem(const balDynamicalSystem& system);
-  virtual ~balDynamicalSystem();
+  DynamicalSystem();
+  DynamicalSystem(const DynamicalSystem& system);
+  virtual ~DynamicalSystem();
   void SetDimension(int n_);
   void SetNumberOfParameters(int p_);
   void SetNumberOfEvents(int nev_);
@@ -134,7 +136,10 @@ class balDynamicalSystem : public balObject {
 #ifdef CVODE26
   DlsMat jac;
 #endif
-  balParameters * pars;
+  Parameters * pars;
 };
 
+} // namespace bal
+
 #endif
+

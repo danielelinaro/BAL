@@ -22,16 +22,19 @@
 
 /** 
  * \file balInterpSystem.cpp
- * \brief Implementation of the class balInterpSystem
+ * \brief Implementation of the class InterpSystem
  */
 
+#include <iostream>
 #include "balInterpSystem.h"
 
-balDynamicalSystem* balInterpSystemFactory() {
-  return balInterpSystem::Create();
+bal::DynamicalSystem* InterpSystemFactory() {
+  return bal::InterpSystem::Create();
 }
 
-balInterpSystem::balInterpSystem() {
+namespace bal {
+
+InterpSystem::InterpSystem() {
   //SetDimension(2);
   SetNumberOfParameters(0);
   //xderiv = N_VNew_Serial(GetDimension());
@@ -41,7 +44,7 @@ balInterpSystem::balInterpSystem() {
   _dealloc = false;
 }
 
-balInterpSystem::balInterpSystem(const balInterpSystem& interpsystem) : balDynamicalSystem( interpsystem ) {
+InterpSystem::InterpSystem(const InterpSystem& interpsystem) : DynamicalSystem( interpsystem ) {
   if (interpsystem.interpolator != NULL) {
     interpolator = interpsystem.interpolator->Clone();
     _dealloc = true;
@@ -59,39 +62,39 @@ balInterpSystem::balInterpSystem(const balInterpSystem& interpsystem) : balDynam
   */
 }
 
-balInterpSystem::~balInterpSystem() {  
+InterpSystem::~InterpSystem() {  
   if (_dealloc)
      interpolator->Destroy();
   //N_VDestroy_Serial(xderiv);
 }
 
-balInterpSystem * balInterpSystem::Create () {
-  return new balInterpSystem;
+InterpSystem * InterpSystem::Create () {
+  return new InterpSystem;
 }
 
-void balInterpSystem::Destroy () {
+void InterpSystem::Destroy () {
   delete this;
 }
 
-balInterpSystem * balInterpSystem::Copy(balInterpSystem *is) {
-  return new balInterpSystem(*is);
+InterpSystem * InterpSystem::Copy(InterpSystem *is) {
+  return new InterpSystem(*is);
 }
 
-balDynamicalSystem * balInterpSystem::Clone() const {
-  return new balInterpSystem(*this);
+DynamicalSystem * InterpSystem::Clone() const {
+  return new InterpSystem(*this);
 }
   
-const char * balInterpSystem::GetClassName () const { 
-  return "balInterpSystem";
+const char * InterpSystem::GetClassName () const { 
+  return "InterpSystem";
 }
 
-bool balInterpSystem::HasEvents() const {
+bool InterpSystem::HasEvents() const {
   return false;
 }
 
-int balInterpSystem::SetInterpolator(balInterpolator *interp) {
+int InterpSystem::SetInterpolator(Interpolator *interp) {
   if (interp->GetDomainDimensions() != interp->GetCodomainDimensions()) {
-    cerr<<"balInterpSystem::SetInterpolator() - Invalid interpolator\n";
+          std::cerr << "InterpSystem::SetInterpolator() - Invalid interpolator\n";
     return -1;
   }
   interpolator = interp;
@@ -100,7 +103,7 @@ int balInterpSystem::SetInterpolator(balInterpolator *interp) {
   return 0;
 }
 
-int balInterpSystem::RHS (realtype t, N_Vector x, N_Vector xdot, void * data) { 
+int InterpSystem::RHS (realtype t, N_Vector x, N_Vector xdot, void * data) { 
   int i;
   int n = GetDimension();
   // NV_DATA_S gets a pointer to data conteined in N_Vector object
@@ -135,16 +138,19 @@ int balInterpSystem::RHS (realtype t, N_Vector x, N_Vector xdot, void * data) {
   return CV_SUCCESS;
 }
 
-int balInterpSystem::Events (realtype t, N_Vector x, realtype * event, void * data) {
+int InterpSystem::Events (realtype t, N_Vector x, realtype * event, void * data) {
   /*RHS(t,x,xderiv,data);
   for(int i=0; i<GetNumberOfEvents(); i++)
     event[i] = Ith(xderiv,i);
   */return CV_SUCCESS;
 }
 
-bool balInterpSystem::SpecialOptions(const void *opt) {
+bool InterpSystem::SpecialOptions(const void *opt) {
   bool *b = (bool*) opt;
   backward = b[0];
   arclength = b[1];
   return true;
 }
+
+} // namespace bal
+

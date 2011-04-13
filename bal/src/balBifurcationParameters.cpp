@@ -22,21 +22,23 @@
 
 /** 
  * \file balBifurcationParameters.cpp
- * \brief Implementation of the class balBifurcationParameters
+ * \brief Implementation of the class BifurcationParameters
  */
 
 #include "balBifurcationParameters.h"
 
-balBifurcationParameters::balBifurcationParameters() {
-  plower = balParameters::Create();
-  pupper = balParameters::Create();
+namespace bal {
+
+BifurcationParameters::BifurcationParameters() {
+  plower = Parameters::Create();
+  pupper = Parameters::Create();
   nsteps = NULL;
   isteps = NULL;
   steps = NULL;
   _dealloc = false;
 }
 
-balBifurcationParameters::~balBifurcationParameters() {
+BifurcationParameters::~BifurcationParameters() {
   plower->Destroy();
   pupper->Destroy();
   if(_dealloc) {
@@ -46,21 +48,21 @@ balBifurcationParameters::~balBifurcationParameters() {
   }
 }
 
-balBifurcationParameters * balBifurcationParameters::Create () {
-  return new balBifurcationParameters;
+BifurcationParameters * BifurcationParameters::Create () {
+  return new BifurcationParameters;
 }
 
-void balBifurcationParameters::Destroy () {
+void BifurcationParameters::Destroy () {
   delete this;
 }
 
-const char * balBifurcationParameters::GetClassName () const {
-  return "balBifurcationParameters";
+const char * BifurcationParameters::GetClassName () const {
+  return "BifurcationParameters";
 }
 
-void balBifurcationParameters::SetNumber(int n) {
+void BifurcationParameters::SetNumber(int n) {
   if(n > 0) {
-    balParameters::SetNumber(n);
+    Parameters::SetNumber(n);
     plower->SetNumber(n);
     pupper->SetNumber(n);
     if(_dealloc) {
@@ -81,7 +83,7 @@ void balBifurcationParameters::SetNumber(int n) {
   }
 }
 
-void balBifurcationParameters::SetParameterBounds(balParameters * lower, balParameters * upper) {
+void BifurcationParameters::SetParameterBounds(Parameters * lower, Parameters * upper) {
   if(lower->GetNumber() == upper->GetNumber()) {
     SetNumber(lower->GetNumber());
     for(int i=0; i<lower->GetNumber(); i++) {
@@ -92,7 +94,7 @@ void balBifurcationParameters::SetParameterBounds(balParameters * lower, balPara
   }
 }
 
-bool balBifurcationParameters::SetIthParameterLowerBound(int i, double p) {
+bool BifurcationParameters::SetIthParameterLowerBound(int i, double p) {
   if(i<0 || i>=plower->GetNumber())
     return false;
   plower->At(i) = p;
@@ -100,7 +102,7 @@ bool balBifurcationParameters::SetIthParameterLowerBound(int i, double p) {
   return true;
 }
 
-bool balBifurcationParameters::SetIthParameter(int i, double p) {
+bool BifurcationParameters::SetIthParameter(int i, double p) {
   if(i<0 || i>=pupper->GetNumber())
     return false;
   plower->At(i) = p;
@@ -110,7 +112,7 @@ bool balBifurcationParameters::SetIthParameter(int i, double p) {
   return true;
 }
 
-bool balBifurcationParameters::SetIthParameterUpperBound(int i, double p) {
+bool BifurcationParameters::SetIthParameterUpperBound(int i, double p) {
   if(i<0 || i>=pupper->GetNumber())
     return false;
   pupper->At(i) = p;
@@ -118,25 +120,25 @@ bool balBifurcationParameters::SetIthParameterUpperBound(int i, double p) {
   return true;
 }
 
-double balBifurcationParameters::GetIthParameterLowerBound(int i) throw(balException) {
+double BifurcationParameters::GetIthParameterLowerBound(int i) throw(Exception) {
   if(i<0 || i>=plower->GetNumber())
-    throw balException("Index out of range");
+    throw Exception("Index out of range");
   return plower->At(i);
 }
 
-double balBifurcationParameters::GetIthParameter(int i) throw(balException) {
+double BifurcationParameters::GetIthParameter(int i) throw(Exception) {
   if(i<0 || i>=GetNumber())
-    throw balException("Index out of range");
+    throw Exception("Index out of range");
   return At(i);
 }
 
-double balBifurcationParameters::GetIthParameterUpperBound(int i) throw(balException) {
+double BifurcationParameters::GetIthParameterUpperBound(int i) throw(Exception) {
   if(i<0 || i>=pupper->GetNumber())
-    throw balException("Index out of range");
+    throw Exception("Index out of range");
   return pupper->At(i);
 }
 
-bool balBifurcationParameters::SetNumberOfSteps(int i, int s) {
+bool BifurcationParameters::SetNumberOfSteps(int i, int s) {
   if(i>=0 && i<plower->GetNumber() && s>0)
     nsteps[i] = s;
   else
@@ -145,27 +147,27 @@ bool balBifurcationParameters::SetNumberOfSteps(int i, int s) {
   return true;
 }
 
-void balBifurcationParameters::SetNumberOfSteps(const int * s) {
+void BifurcationParameters::SetNumberOfSteps(const int * s) {
   for(int i=0; i<plower->GetNumber(); i++)
     nsteps[i] = s[i];
   Setup();
 }
 
-int balBifurcationParameters::GetNumberOfSteps(int i) const {
+int BifurcationParameters::GetNumberOfSteps(int i) const {
   if(i>=0 && i<plower->GetNumber())
     return nsteps[i];
   return -1;
 }
 
-int balBifurcationParameters::GetTotalNumberOfTuples() const {
+int BifurcationParameters::GetTotalNumberOfTuples() const {
   return total;
 }
 
-void balBifurcationParameters::Reset() {
+void BifurcationParameters::Reset() {
   Setup();
 }
 
-void balBifurcationParameters::Setup() {
+void BifurcationParameters::Setup() {
   total = 1;
   for(int i=0; i<plower->GetNumber(); i++) {
     At(i) = plower->At(i);
@@ -181,7 +183,7 @@ void balBifurcationParameters::Setup() {
   count = 1;
 }
 
-bool balBifurcationParameters::Next() {
+bool BifurcationParameters::Next() {
   count++;
   if(count <= total) {
     for(int i=0; i<plower->GetNumber(); i++) {
@@ -200,19 +202,21 @@ bool balBifurcationParameters::Next() {
   return false;
 }
 
-bool balBifurcationParameters::HasTuples() const {
+bool BifurcationParameters::HasTuples() const {
   return count <= total;
 }
 
-bool balBifurcationParameters::HasNext() const {
+bool BifurcationParameters::HasNext() const {
   return count < total;
 }
 
-bool balBifurcationParameters::IsFirst() const {
+bool BifurcationParameters::IsFirst() const {
   return count == 1;
 }
 
-bool balBifurcationParameters::IsLast() const {
+bool BifurcationParameters::IsLast() const {
   return count == total;
 }
+
+} // namespace bal
 

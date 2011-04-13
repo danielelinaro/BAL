@@ -1,35 +1,40 @@
 #include "balInterpolator.h"
 
-const char * balInterpolator::getClassName() const {
-    return "balInterpolator";
+namespace bal {
+
+const char * Interpolator::getClassName() const {
+    return "Interpolator";
  }
 
-//virtual balInterpolator * Clone(balInterpolator *interp);
+//virtual Interpolator * Clone(Interpolator *interp);
 
-void balInterpolator::Destroy() {
+void Interpolator::Destroy() {
    delete this;
  }
 
-int balInterpolator::Init() {
+int Interpolator::Init() {
   return 0;
  }
 
-balInterpolator::balInterpolator(const balInterpolator & interp) {
+Interpolator::Interpolator(const Interpolator & interp) {
   nnd = interp.nnd;
   nnf = interp.nnf;
 }
 
-balInterpolator::balInterpolator() {
+Interpolator::Interpolator() {
   nnd = 0;
   nnf = 0;
 }
 
-balInterpolator::~balInterpolator() {}
+Interpolator::~Interpolator() {}
 
-int balInterpolator::GetDomainDimensions(){
+int Interpolator::GetDomainDimensions(){
   return nnd;
 }
 
-int balInterpolator::GetCodomainDimensions(){
+int Interpolator::GetCodomainDimensions(){
   return nnf;
 }
+
+} // namespace bal
+

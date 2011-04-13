@@ -22,51 +22,53 @@
 
 /** 
  * \file balPLL.cpp
- * \brief Implementation of the class balPLL
+ * \brief Implementation of the class PLL
  */
 
 #include "balPLL.h"
 
-const int balPLL::npar = 14;
-const char * balPLL::parname[14] = {"fref","r1","fvco","vdd","rho0","rhoap","k0","krho","kap","alpha","kvcoa","kvcob","kvcoc","tuning"};
-
-balDynamicalSystem* balPLLFactory() {
-  return balPLL::Create();
+bal::DynamicalSystem* PLLFactory() {
+  return bal::PLL::Create();
 }
 
-const char * balPLL::GetClassName () const {
-  return "balPLL";
+namespace bal {
+
+const int PLL::npar = 14;
+const char * PLL::parname[14] = {"fref","r1","fvco","vdd","rho0","rhoap","k0","krho","kap","alpha","kvcoa","kvcob","kvcoc","tuning"};
+
+const char * PLL::GetClassName () const {
+  return "PLL";
 }
 
-balPLL * balPLL::Create () {
-  return new balPLL;
+PLL * PLL::Create () {
+  return new PLL;
 }
 
-balPLL * balPLL::Copy(balPLL *pll) {
-  return new balPLL(*pll);
+PLL * PLL::Copy(PLL *pll) {
+  return new PLL(*pll);
 }
 
-balDynamicalSystem * balPLL::Clone() const {
-  return new balPLL(*this);
+DynamicalSystem * PLL::Clone() const {
+  return new PLL(*this);
 }
 
-void balPLL::Destroy () {
+void PLL::Destroy () {
   delete this;
 }
 
-bool balPLL::HasJacobian() const {
+bool PLL::HasJacobian() const {
   return false;
 }
 
-bool balPLL::HasEvents() const {
+bool PLL::HasEvents() const {
   return true;
 }
 
-bool balPLL::HasEventsConstraints() const {
+bool PLL::HasEventsConstraints() const {
   return true;
 }
 
-balPLL::balPLL() : pi(3.141592653589793) {
+PLL::PLL() : pi(3.141592653589793) {
 #ifndef WITHPHIERR
   SetNumberOfEvents(3);
 #else
@@ -122,16 +124,16 @@ balPLL::balPLL() : pi(3.141592653589793) {
   Reset();
 }
 
-balPLL::~balPLL() {
+PLL::~PLL() {
 }
 
-int balPLL::RHS (realtype t, N_Vector X, N_Vector Xdot, void * data) {
+int PLL::RHS (realtype t, N_Vector X, N_Vector Xdot, void * data) {
   realtype x, y, r, w;
 #ifdef WITHPHIERR
   realtype phierr;
 #endif
   realtype icp;
-  balParameters * parameters = (balParameters *) data;
+  Parameters * parameters = (Parameters *) data;
 
   fREF = parameters->At(0);
   T = 1.0/fREF;
@@ -157,7 +159,7 @@ int balPLL::RHS (realtype t, N_Vector X, N_Vector Xdot, void * data) {
   phierr = Ith (X, 4);
 #endif
   
-  realtype gamma = sqrt(max(x*x+y*y,1e-12));
+  realtype gamma = sqrt(std::max(x*x+y*y,1e-12));
   // saturation
   if(w > 3.0) {
     w = 3.0;
@@ -225,17 +227,17 @@ int balPLL::RHS (realtype t, N_Vector X, N_Vector Xdot, void * data) {
 }
 
 #ifdef CVODE25
-int balPLL::Jacobian (long int N, DenseMat J, realtype t, N_Vector x, N_Vector fy, 
+int PLL::Jacobian (long int N, DenseMat J, realtype t, N_Vector x, N_Vector fy, 
 		      void *jac_data, N_Vector tmp1, N_Vector tmp2, N_Vector tmp3) {
 #endif
 #ifdef CVODE26
-int balPLL::Jacobian (int N, realtype t, N_Vector x, N_Vector fy, DlsMat J, 
+int PLL::Jacobian (int N, realtype t, N_Vector x, N_Vector fy, DlsMat J, 
 		      void *jac_data, N_Vector tmp1, N_Vector tmp2, N_Vector tmp3) {
 #endif
   return ! CV_SUCCESS;
 }
 
-void balPLL::Reset() {
+void PLL::Reset() {
 #ifndef WITHPHIERR
   wait_reset = false;
   n = 1;
@@ -249,10 +251,10 @@ void balPLL::Reset() {
 #endif
 }
 
-int balPLL::Events (realtype t, N_Vector X, realtype * event, void * data) {
+int PLL::Events (realtype t, N_Vector X, realtype * event, void * data) {
 #ifndef WITHPHIERR
   realtype x, y, r, w;
-  balParameters * parameters = (balParameters *) data;
+  Parameters * parameters = (Parameters *) data;
   
   x = Ith (X, 0);
   y = Ith (X, 1);
@@ -287,7 +289,7 @@ int balPLL::Events (realtype t, N_Vector X, realtype * event, void * data) {
   return CV_SUCCESS;
 }
  
-void balPLL::EventsConstraints (realtype t, N_Vector X, int * constraints, void * data) {
+void PLL::EventsConstraints (realtype t, N_Vector X, int * constraints, void * data) {
 #ifndef WITHPHIERR
   constraints[0] = 1;
   // minimum of x [we know that x is a sinusoid with mean 0]
@@ -296,7 +298,7 @@ void balPLL::EventsConstraints (realtype t, N_Vector X, int * constraints, void 
 #endif
 }
 
-void balPLL::ManageEvents(realtype t, N_Vector X, int * events, int * constraints) {
+void PLL::ManageEvents(realtype t, N_Vector X, int * events, int * constraints) {
 #ifndef WITHPHIERR
   // everything is off for t < T
   if(t < T) {
@@ -345,5 +347,9 @@ void balPLL::ManageEvents(realtype t, N_Vector X, int * events, int * constraint
     treset = t;
     wait_reset = true;
   }
-#endif
 }
+
+} // namespace bal
+
+#endif
+

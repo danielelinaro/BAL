@@ -34,7 +34,7 @@ from pybal import bal, util
 
 # the dynamical system
 eye = bal.DynamicalSystem()
-eye.create('balEye')
+eye.create('Eye')
 eye.options = vectorfile
 
 # the parameters

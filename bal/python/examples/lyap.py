@@ -69,8 +69,8 @@ from numpy.random import random
 
 # the system
 sys = bal.DynamicalSystem()
-sys.create('balLorenz')
-#sys.create('balHindmarshRose')
+sys.create('Lorenz')
+#sys.create('HindmarshRose')
 
 # the parameters
 par = bal.Parameters(sys.npar)

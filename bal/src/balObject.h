@@ -31,6 +31,8 @@
 #include <cstdio>
 #include <cstring>
 
+namespace bal {
+
 /**
  *  \class balObject
  *  \brief Base class for all BAL objects.
@@ -45,7 +47,7 @@
  *  method. They cannot be allocated off the stack (i.e., automatic
  *  objects) because the constructor is a protected method.
  */
-class balObject {
+class Object {
 
  public:
 
@@ -53,7 +55,7 @@ class balObject {
   virtual const char * GetClassName() const;
 
   /** Creates a new balObject. */
-  static balObject * Create();
+  static Object * Create();
 
   /** Destroys a balObject. */
   virtual void Destroy();
@@ -64,11 +66,13 @@ class balObject {
  protected:
 
   /** Protected constructor of the class. */
-  balObject();
+  Object();
 
   /** Protected destructor of the class. */
-  virtual ~balObject();
+  virtual ~Object();
 };
+
+} // namespace bal
 
 #endif
 

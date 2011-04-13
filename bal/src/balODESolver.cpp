@@ -22,28 +22,30 @@
 
 /** 
  * \file balODESolver.cpp
- * \brief Implementation of the class balODESolver
+ * \brief Implementation of the class ODESolver
  */
 
 #include "balODESolver.h"
 
-const char * balODESolver::GetClassName() const {
-  return "balODESolver";
+namespace bal {
+
+const char * ODESolver::GetClassName() const {
+  return "ODESolver";
 }
 
-balODESolver * balODESolver::Create() {
-  return new balODESolver;
+ODESolver * ODESolver::Create() {
+  return new ODESolver;
 }
 
-balODESolver * balODESolver::Copy (balODESolver * solver) {
-  return new balODESolver(*solver);
+ODESolver * ODESolver::Copy (ODESolver * solver) {
+  return new ODESolver(*solver);
 }
 
-void balODESolver::Destroy() {
+void ODESolver::Destroy() {
   delete this;
 }
 
-balODESolver::balODESolver() {
+ODESolver::ODESolver() {
   neq = npar = nev = 0;
   buffer = NULL;
   delete_buffer = false;
@@ -86,7 +88,7 @@ balODESolver::balODESolver() {
   class_event = 1;
 }
 
-balODESolver::balODESolver(const balODESolver& solver) {
+ODESolver::ODESolver(const ODESolver& solver) {
   int i;
   buffer = NULL;
   delete_buffer = false;
@@ -133,7 +135,7 @@ balODESolver::balODESolver(const balODESolver& solver) {
   class_event = solver.GetClassificationEvent();
 }
 
-balODESolver::~balODESolver() {
+ODESolver::~ODESolver() {
   if(delete_buffer || buffer != NULL) {
     delete [] buffer;
   }
@@ -159,20 +161,20 @@ balODESolver::~balODESolver() {
     dynsys->Destroy();
 }
 
-double * balODESolver::GetBuffer() const {
+double * ODESolver::GetBuffer() const {
   return buffer;
 }
 
-int balODESolver::GetBufferSize() const {
+int ODESolver::GetBufferSize() const {
   return bufsize;
 }
 
-void balODESolver::GetBufferSize(int * r, int * c) const {
+void ODESolver::GetBufferSize(int * r, int * c) const {
   *r = rows;
   *c = cols;
 }
 
-void balODESolver::SetDynamicalSystem(balDynamicalSystem * ds) {
+void ODESolver::SetDynamicalSystem(DynamicalSystem * ds) {
   if(ds != NULL) {
     dynsys = ds;
     neq	= dynsys->GetDimension();
@@ -220,19 +222,19 @@ void balODESolver::SetDynamicalSystem(balDynamicalSystem * ds) {
   }
 }
 
-balDynamicalSystem * balODESolver::GetDynamicalSystem() const {
+DynamicalSystem * ODESolver::GetDynamicalSystem() const {
   return dynsys;
 }
 
-void balODESolver::SetDynamicalSystemParameters(balParameters * par){
+void ODESolver::SetDynamicalSystemParameters(Parameters * par){
   dynsys->SetParameters(par);
   params = par;
 }
 
-balSolution * balODESolver::GetSolution() const {
+Solution * ODESolver::GetSolution() const {
   if(rows == 0)
     return NULL;
-  balSolution * solution = balSolution::Create();
+  Solution * solution = Solution::Create();
   solution->SetData(rows,cols,buffer);
   solution->SetParameters(params);
   if (mode == balLYAP)
@@ -242,20 +244,20 @@ balSolution * balODESolver::GetSolution() const {
   return solution;
 }
 
-realtype balODESolver::GetInitialTime() const {
+realtype ODESolver::GetInitialTime() const {
   return t0;
 }
 
-void balODESolver::SetInitialTime(realtype T0) {
+void ODESolver::SetInitialTime(realtype T0) {
   if(T0 >= 0)
     t0 = T0;
 }
 
-realtype balODESolver::GetTransientDuration () const {
+realtype ODESolver::GetTransientDuration () const {
   return ttran;
 }
 
-void balODESolver::SetTransientDuration (realtype tran) {
+void ODESolver::SetTransientDuration (realtype tran) {
   if (tran >= 0) {
     ttran = tran;
     if(buffer != NULL) {
@@ -264,11 +266,11 @@ void balODESolver::SetTransientDuration (realtype tran) {
   }
 }
 
-realtype balODESolver::GetFinalTime () const {
+realtype ODESolver::GetFinalTime () const {
   return tfinal;
 }
 
-void balODESolver::SetFinalTime (realtype final) {
+void ODESolver::SetFinalTime (realtype final) {
   if (final >= 0) {
     tfinal = final;
     if(buffer != NULL) {
@@ -277,11 +279,11 @@ void balODESolver::SetFinalTime (realtype final) {
   }
 }
 
-realtype balODESolver::GetTimeStep () const {
+realtype ODESolver::GetTimeStep () const {
   return tstep;
 }
 
-void balODESolver::SetTimeStep (realtype step) {
+void ODESolver::SetTimeStep (realtype step) {
   if (step > 0) {
     tstep = step;
     if(buffer != NULL) {
@@ -290,53 +292,53 @@ void balODESolver::SetTimeStep (realtype step) {
   }
 }
 
-realtype balODESolver::GetLyapunovTimeStep () const {
+realtype ODESolver::GetLyapunovTimeStep () const {
   return lyap_tstep;
 }
 
-void balODESolver::SetLyapunovTimeStep (realtype tstep) {
+void ODESolver::SetLyapunovTimeStep (realtype tstep) {
   if (tstep > 0)
     lyap_tstep = tstep;
 }
 
-realtype balODESolver::GetRelativeTolerance () const {
+realtype ODESolver::GetRelativeTolerance () const {
   return reltol;
 }
 
-void balODESolver::SetRelativeTolerance (realtype rtol) {
+void ODESolver::SetRelativeTolerance (realtype rtol) {
   if (rtol > 0)
     reltol = rtol;
 }
 
-realtype balODESolver::GetAbsoluteTolerance () const {
+realtype ODESolver::GetAbsoluteTolerance () const {
   return abstol;
 }
 
-void balODESolver::SetAbsoluteTolerance (realtype atol) {
+void ODESolver::SetAbsoluteTolerance (realtype atol) {
   if (atol > 0)
     abstol = atol;
 }
 
-integration_mode balODESolver::GetIntegrationMode () const {
+integration_mode ODESolver::GetIntegrationMode () const {
   return mode;
 }
 
-void balODESolver::SetIntegrationMode (integration_mode m) {
+void ODESolver::SetIntegrationMode (integration_mode m) {
   mode = m;
   if(buffer != NULL) {
     delete_buffer = true;
   }
 }
 
-void balODESolver::IsStiff(bool stiffness) {
+void ODESolver::IsStiff(bool stiffness) {
   stiff = stiffness;
 }
 
-int balODESolver::GetMaxNumberOfIntersections() const {
+int ODESolver::GetMaxNumberOfIntersections() const {
   return max_intersections;
 }
 
-void balODESolver::SetMaxNumberOfIntersections(int intersections) {
+void ODESolver::SetMaxNumberOfIntersections(int intersections) {
   if(intersections > 0) {
     max_intersections = intersections;
     if(buffer != NULL) {
@@ -345,7 +347,7 @@ void balODESolver::SetMaxNumberOfIntersections(int intersections) {
   }
 }
 
-bool balODESolver::SaveOrbit(const char *filename) const {
+bool ODESolver::SaveOrbit(const char *filename) const {
   int i, cnt, start, stop;
   FILE *fp;
 
@@ -381,72 +383,72 @@ bool balODESolver::SaveOrbit(const char *filename) const {
   return true;
 }
 
-void balODESolver::HaltAtEquilibrium(bool halt) {
+void ODESolver::HaltAtEquilibrium(bool halt) {
   halt_at_equilibrium = halt;
 }
 
-bool balODESolver::HaltsAtEquilibrium() const {
+bool ODESolver::HaltsAtEquilibrium() const {
   return halt_at_equilibrium;
 }
 
-void balODESolver::HaltAtCycle(bool halt) {
+void ODESolver::HaltAtCycle(bool halt) {
   halt_at_cycle = halt;
 }
 
-bool balODESolver::HaltsAtCycle() const {
+bool ODESolver::HaltsAtCycle() const {
   return halt_at_cycle;
 }
 
-void balODESolver::SetClassificationEvent(int ce) {
+void ODESolver::SetClassificationEvent(int ce) {
   if(ce > 0)
     class_event = ce;
 }
 
-int balODESolver::GetClassificationEvent() const {
+int ODESolver::GetClassificationEvent() const {
   return class_event;
 }
 
-int balODESolver::GetNumberOfTurns() const {
+int ODESolver::GetNumberOfTurns() const {
   return nturns;
 }
 
-realtype balODESolver::GetEquilibriumTolerance() const {
+realtype ODESolver::GetEquilibriumTolerance() const {
   return equilibrium_tolerance;
 }
 
-void balODESolver::SetEquilibriumTolerance(realtype tol) {
+void ODESolver::SetEquilibriumTolerance(realtype tol) {
   if(tol > 0)
     equilibrium_tolerance = tol;
 }
 
-realtype balODESolver::GetCycleTolerance() const {
+realtype ODESolver::GetCycleTolerance() const {
   return cycle_tolerance;
 }
 
-void balODESolver::SetCycleTolerance(realtype tol) {
+void ODESolver::SetCycleTolerance(realtype tol) {
   if(tol > 0)
     cycle_tolerance = tol;
 }
 
-N_Vector balODESolver::GetX() const {
+N_Vector ODESolver::GetX() const {
   return x;
 }
 
-N_Vector balODESolver::GetXdot() const {
+N_Vector ODESolver::GetXdot() const {
   return xdot;
 }
 
-N_Vector balODESolver::GetX0() const {
+N_Vector ODESolver::GetX0() const {
   return x0;
 }
 
-realtype * balODESolver::GetXEnd() const {
+realtype * ODESolver::GetXEnd() const {
   if(rows == 0)
     return NULL;
   return buffer + (rows-1)*cols + 1;
 }
 
-void balODESolver::SetX0(N_Vector X0, int n) {
+void ODESolver::SetX0(N_Vector X0, int n) {
   if(X0 != NULL && dynsys != NULL) {
     int stop;
     if(n == -1)
@@ -458,7 +460,7 @@ void balODESolver::SetX0(N_Vector X0, int n) {
   }
 }
 
-void balODESolver::SetX0(realtype * X0, int n) {
+void ODESolver::SetX0(realtype * X0, int n) {
   if(X0 != NULL && dynsys != NULL) {
     int stop;
     if(n == -1)
@@ -470,7 +472,7 @@ void balODESolver::SetX0(realtype * X0, int n) {
   }
 }
 
-inline void balODESolver::SetOrthonormalBaseIC() {
+inline void ODESolver::SetOrthonormalBaseIC() {
   int length = dynsys->GetOriginalDimension();
   for(int i=0; i<length; i++) {
     for(int j=0; j<length; j++)
@@ -478,11 +480,11 @@ inline void balODESolver::SetOrthonormalBaseIC() {
   }
 }
 
-realtype * balODESolver::GetLyapunovExponents() const {
+realtype * ODESolver::GetLyapunovExponents() const {
   return lyapunov_exponents;
 }
 
-bool balODESolver::Setup() {
+bool ODESolver::Setup() {
   int flag;
 
   if (cvode_mem != NULL) {
@@ -500,14 +502,14 @@ bool balODESolver::Setup() {
   }
   
 #ifdef CVODE25
-  flag = CVodeMalloc (cvode_mem, balDynamicalSystem::RHSWrapper, 0.0, x, CV_SS, reltol, &abstol);
+  flag = CVodeMalloc (cvode_mem, DynamicalSystem::RHSWrapper, 0.0, x, CV_SS, reltol, &abstol);
   if (flag != CV_SUCCESS) {
     fprintf (stderr, "Error on CVodeMalloc.\n");
     return false;
   }
 #endif
 #ifdef CVODE26
-  flag = CVodeInit (cvode_mem, balDynamicalSystem::RHSWrapper, 0.0, x);
+  flag = CVodeInit (cvode_mem, DynamicalSystem::RHSWrapper, 0.0, x);
   if (flag != CV_SUCCESS) {
     fprintf (stderr, "Error on CVodeInit.\n");
     return false;
@@ -550,14 +552,14 @@ bool balODESolver::Setup() {
   if (dynsys->HasJacobian()) {
     /* Set the Jacobian routine to Jac (user-supplied) */
 #ifdef CVODE25
-    flag = CVDenseSetJacFn (cvode_mem, balDynamicalSystem::JacobianWrapper, dynsys);
+    flag = CVDenseSetJacFn (cvode_mem, DynamicalSystem::JacobianWrapper, dynsys);
     if (flag != CV_SUCCESS) {
       fprintf (stderr, "Error on CVDenseSetJacFn.\n");
       return false;
     }
 #endif
 #ifdef CVODE26
-    flag = CVDlsSetDenseJacFn (cvode_mem, balDynamicalSystem::JacobianWrapper);
+    flag = CVDlsSetDenseJacFn (cvode_mem, DynamicalSystem::JacobianWrapper);
     if (flag != CV_SUCCESS) {
       fprintf (stderr, "Error on CVDlsSetDenseJacFn.\n");
       return false;
@@ -576,7 +578,7 @@ bool balODESolver::Setup() {
   return true;
 }
 
-bool balODESolver::AllocateSolutionBuffer() {
+bool ODESolver::AllocateSolutionBuffer() {
   if(delete_buffer || buffer == NULL) {
     int lrows;
     if(delete_buffer) {
@@ -609,7 +611,7 @@ bool balODESolver::AllocateSolutionBuffer() {
     bufsize = lrows * cols;
     try {
       buffer = new realtype[bufsize];
-    } catch (bad_alloc&) {
+    } catch (std::bad_alloc&) {
       fprintf (stderr, "Not enough memory to allocate for the solution buffer...\n");
       return false;
     }
@@ -617,7 +619,7 @@ bool balODESolver::AllocateSolutionBuffer() {
   return true;
 }
 
-void balODESolver::ResetInitialCondition() {
+void ODESolver::ResetInitialCondition() {
   t = t0;
   for(int i=0; i<neq; i++) {
     Ith(x,i) = Ith(x0,i);
@@ -626,11 +628,11 @@ void balODESolver::ResetInitialCondition() {
   StoreRecordInBuffer(balSTART);
 }
 
-void balODESolver::ResetPositionInBuffer() {
+void ODESolver::ResetPositionInBuffer() {
   rows = 0;
 }
 
-void balODESolver::StoreRecordInBuffer(int lbl) {
+void ODESolver::StoreRecordInBuffer(int lbl) {
   int actual_pos = rows*cols;
   buffer[actual_pos] = t;
   for(int i=0; i<neq; i++)
@@ -639,11 +641,11 @@ void balODESolver::StoreRecordInBuffer(int lbl) {
   rows++;
 }
 
-void balODESolver::ChangeCurrentLabel(int lbl) {
+void ODESolver::ChangeCurrentLabel(int lbl) {
   buffer[rows*cols-1] = (realtype) lbl;
 }
 
-void balODESolver::SkipTransient(bool *equilibrium, bool *error) {
+void ODESolver::SkipTransient(bool *equilibrium, bool *error) {
   int flag;
   realtype tout;
   *equilibrium = false;
@@ -687,7 +689,7 @@ void balODESolver::SkipTransient(bool *equilibrium, bool *error) {
   StoreRecordInBuffer(balTRAN_END);
 }
 
-int balODESolver::CheckEquilibrium() {
+int ODESolver::CheckEquilibrium() {
   dynsys->RHS (t, x, xdot, params);
   if(EuclideanDistance(neq,xdot) < equilibrium_tolerance) {
     nturns = 0;
@@ -700,7 +702,7 @@ int balODESolver::CheckEquilibrium() {
   return EQUIL_FALSE;
 }
 
-int balODESolver::CheckCycle(int guess) {
+int ODESolver::CheckCycle(int guess) {
   if(EuclideanDistance(neq,x,x_inters) < cycle_tolerance) {
     if(guess > 0) {
       nturns = guess;
@@ -712,13 +714,13 @@ int balODESolver::CheckCycle(int guess) {
   return CYCLE_FALSE;
 }
 
-void balODESolver::SetSolutionLength(int length) {
+void ODESolver::SetSolutionLength(int length) {
   if (length > 0) {
     rows = length / cols;
   }
 }
 
-realtype balODESolver::EuclideanDistance(int length, N_Vector x, N_Vector y) const {
+realtype ODESolver::EuclideanDistance(int length, N_Vector x, N_Vector y) const {
   realtype dst = 0.0;
   if(y != NULL) {
     for(int i=0; i<length; i++)
@@ -731,7 +733,7 @@ realtype balODESolver::EuclideanDistance(int length, N_Vector x, N_Vector y) con
   return sqrt(dst);
 }
 
-bool balODESolver::GramSchmidtOrthonorm(realtype * znorm) const {
+bool ODESolver::GramSchmidtOrthonorm(realtype * znorm) const {
   int i, n;
   realtype *xx, *xnorm;
   n = dynsys->GetOriginalDimension();
@@ -747,7 +749,7 @@ bool balODESolver::GramSchmidtOrthonorm(realtype * znorm) const {
   return true;
 }
 
-bool balODESolver::GramSchmidtOrthonorm(realtype * x, realtype * xnorm, realtype * znorm) const {
+bool ODESolver::GramSchmidtOrthonorm(realtype * x, realtype * xnorm, realtype * znorm) const {
   int n = dynsys->GetOriginalDimension();
   int i,j,k;
   realtype dp;
@@ -778,21 +780,21 @@ bool balODESolver::GramSchmidtOrthonorm(realtype * x, realtype * xnorm, realtype
   return true;
 } 
 
-inline realtype balODESolver::Norm(int length, realtype * x) const {
+inline realtype ODESolver::Norm(int length, realtype * x) const {
   realtype norm = 0.0;
   for(int i = 0; i<length; i++)
     norm += x[i]*x[i];
   return sqrt(norm);
 }  
 
-inline realtype balODESolver::DotProduct(int length, realtype * x, realtype * y) const {
+inline realtype ODESolver::DotProduct(int length, realtype * x, realtype * y) const {
   realtype res = 0.0;
   for(int i=0; i<length; i++)
     res += x[i]*y[i];
   return res;
 }
 
-bool balODESolver::ResetCVode() {
+bool ODESolver::ResetCVode() {
   int flag;
 
   switch(mode) {
@@ -808,10 +810,10 @@ bool balODESolver::ResetCVode() {
   case balEVENTS:
   case balBOTH:
 #ifdef CVODE25
-    flag = CVodeRootInit (cvode_mem, nev, balDynamicalSystem::EventsWrapper, dynsys);
+    flag = CVodeRootInit (cvode_mem, nev, DynamicalSystem::EventsWrapper, dynsys);
 #endif
 #ifdef CVODE26
-    flag = CVodeRootInit (cvode_mem, nev, balDynamicalSystem::EventsWrapper);
+    flag = CVodeRootInit (cvode_mem, nev, DynamicalSystem::EventsWrapper);
 #endif
   }
   if (flag != CV_SUCCESS) {
@@ -820,7 +822,7 @@ bool balODESolver::ResetCVode() {
   }
 
 #ifdef CVODE25
-  flag = CVodeReInit (cvode_mem, balDynamicalSystem::RHSWrapper, t0, x, CV_SS, reltol, &abstol);
+  flag = CVodeReInit (cvode_mem, DynamicalSystem::RHSWrapper, t0, x, CV_SS, reltol, &abstol);
 #endif
 #ifdef CVODE26
   flag = CVodeReInit (cvode_mem, t0, x);
@@ -832,7 +834,7 @@ bool balODESolver::ResetCVode() {
   return true;
 }
 
-bool balODESolver::Solve() {
+bool ODESolver::Solve() {
   bool retval;
 
   if(mode == balLYAP) {
@@ -868,7 +870,7 @@ bool balODESolver::Solve() {
   return retval;
 }
 
-bool balODESolver::SolveWithoutEventsLyapunov() {
+bool ODESolver::SolveWithoutEventsLyapunov() {
   int i, j, flag;
   int n, N;
   realtype tout;
@@ -924,7 +926,7 @@ bool balODESolver::SolveWithoutEventsLyapunov() {
     while (tout < t0+tfinal+lyap_tstep) {
       // the integrator must be re-initialised every time the state is modified
 #ifdef CVODE25
-      flag = CVodeReInit (cvode_mem, balDynamicalSystem::RHSWrapper, t, x, CV_SS, reltol, &abstol);
+      flag = CVodeReInit (cvode_mem, DynamicalSystem::RHSWrapper, t, x, CV_SS, reltol, &abstol);
 #endif
 #ifdef CVODE26
       flag = CVodeReInit (cvode_mem, t, x);
@@ -958,7 +960,7 @@ bool balODESolver::SolveWithoutEventsLyapunov() {
 
       GramSchmidtOrthonorm(znorm);
       for(i=0; i<n; i++)
-	cum[i] += log(max(znorm[i],1e-12))/log(2.0);
+	cum[i] += log(std::max(znorm[i],1e-12))/log(2.0);
 
       tout += lyap_tstep;
     }
@@ -981,8 +983,8 @@ bool balODESolver::SolveWithoutEventsLyapunov() {
 }
 
 /*** DEPRECATED ***/
-bool balODESolver::SolveLyapunov() {
-  fprintf(stderr, "balODESolver::SolveLyapunov>> This function is deprecated.\n");
+bool ODESolver::SolveLyapunov() {
+  fprintf(stderr, "ODESolver::SolveLyapunov>> This function is deprecated.\n");
   SetIntegrationMode(balTRAJ);
 
   int i;
@@ -1035,7 +1037,7 @@ bool balODESolver::SolveLyapunov() {
     for(i=0; i<n*n; i++)
       x_[i+n] = xnorm[i];
     for(i=0; i<n; i++)
-      cum[i] += log(max(znorm[i],1e-12))/log(2.0);
+      cum[i] += log(std::max(znorm[i],1e-12))/log(2.0);
     SetX0(x_);
   }
   
@@ -1060,7 +1062,7 @@ bool balODESolver::SolveLyapunov() {
   return true;
 }
 
-bool balODESolver::SolveWithoutEvents() {
+bool ODESolver::SolveWithoutEvents() {
   int flag;
   realtype tout;
   bool eq, err;
@@ -1128,7 +1130,7 @@ bool balODESolver::SolveWithoutEvents() {
   return true;
 }
 
-bool balODESolver::SolveWithEvents() {
+bool ODESolver::SolveWithEvents() {
   int flag, eq_flag, i, j;
   int intersections; // the total number of intersections with Poincare' sections
   int class_inters; // the number of intersections with the Poincare' section used to detect cycles
@@ -1193,7 +1195,7 @@ bool balODESolver::SolveWithEvents() {
 	  /* 
 	   * call ManageEvents so that the dynamical system can (optionally)
 	   * change something in its internal structure. See for example
-	   * balPLL, a switch system.
+	   * PLL, a switch system.
 	   */
 	  dynsys->ManageEvents(t,x,events,events_constraints);
 	}
@@ -1279,4 +1281,6 @@ bool balODESolver::SolveWithEvents() {
     
   return true;
 }
+
+} // namespace bal
 

@@ -22,7 +22,7 @@
 
 /** 
  * \file balDoubleGyre.h
- * \brief Definition of the class balDoubleGyre
+ * \brief Definition of the class DoubleGyre
  */
 
 #ifndef _BALDOUBLEGYRE_
@@ -33,18 +33,20 @@
 #include "balDynamicalSystem.h"
 #include <cvode/cvode.h>
 
+namespace bal {
+
 /**
- * \class balDoubleGyre
+ * \class DoubleGyre
  * \brief Implementation of a dynamical system that describes a double gyre
  * 
- * \sa balDynamicalSystem
+ * \sa DynamicalSystem
  */
-class balDoubleGyre : public balDynamicalSystem {
+class DoubleGyre : public DynamicalSystem {
  public:
   virtual const char * GetClassName () const;
-  static balDoubleGyre * Create ();
-  static balDoubleGyre * Copy(balDoubleGyre *gyre);
-  virtual balDynamicalSystem * Clone() const;
+  static DoubleGyre * Create ();
+  static DoubleGyre * Copy(DoubleGyre *gyre);
+  virtual DynamicalSystem * Clone() const;
   virtual void Destroy ();
   
   int RHS (realtype t, N_Vector x, N_Vector xdot, void * data);
@@ -59,9 +61,9 @@ class balDoubleGyre : public balDynamicalSystem {
   bool HasJacobian() const;
   
  protected:
-  balDoubleGyre();
-  balDoubleGyre(const balDoubleGyre& hr);
-  virtual ~balDoubleGyre();
+  DoubleGyre();
+  DoubleGyre(const DoubleGyre& hr);
+  virtual ~DoubleGyre();
   
  private:
   realtype f(realtype t, realtype x, realtype omega, realtype eps) const;
@@ -69,11 +71,13 @@ class balDoubleGyre : public balDynamicalSystem {
   realtype pi;
 };
 
+} // namespace bal
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-balDynamicalSystem* balDoubleGyreFactory();
+bal::DynamicalSystem* DoubleGyreFactory();
 	
 #ifdef __cplusplus
 }

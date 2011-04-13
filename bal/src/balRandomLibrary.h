@@ -22,7 +22,7 @@
 
 /** 
  * \file balRandomLibrary.h
- * \brief Definition of the classes balUniformRandom and balNormalBM
+ * \brief Definition of the classes UniformRandom and NormalBM
  */
 
 #ifndef _BALRANDLIB_
@@ -33,15 +33,19 @@
 typedef unsigned long long ullong;
 typedef unsigned int uint;
 
+namespace bal {
+
+namespace random {
+
 /**
- * \class balUniformRandom
+ * \class UniformRandom
  * \brief Random number generator uniformly distributed in the interval [0,1]. Taken from Numerical Recipes in C++
  */
-class balUniformRandom { 
+class UniformRandom { 
  private:
   ullong u,v,w; 
  public:
-  balUniformRandom(ullong j) : v(4101842887655102017LL), w(1) { 
+  UniformRandom(ullong j) : v(4101842887655102017LL), w(1) { 
     u = j ^ v; int64(); 
     v = u; int64(); 
     w = v; int64(); 
@@ -65,17 +69,17 @@ class balUniformRandom {
 };
 
 /**
- * \class balNormalBM
+ * \class NormalBM
  * \brief Gaussian random number generator with given mean and variance. Taken from Numerical Recipes in C++, it uses
  * the Box-Muller algorithm.
  */
-class balNormalBM : balUniformRandom {
+class NormalBM : UniformRandom {
  private:
   double mu,sig;
   double storedval;
  public:
- balNormalBM(double mmu, double ssig, ullong i)
-   : balUniformRandom(i), mu(mmu), sig(ssig), storedval(0.) {}
+ NormalBM(double mmu, double ssig, ullong i)
+   : UniformRandom(i), mu(mmu), sig(ssig), storedval(0.) {}
   
   double deviate() {
     double v1,v2,rsq,fac;
@@ -96,5 +100,9 @@ class balNormalBM : balUniformRandom {
   } 
 };
 
+} // namespace random
+
+} // namespace bal
 
 #endif
+

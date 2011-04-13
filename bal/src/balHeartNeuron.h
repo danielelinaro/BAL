@@ -22,7 +22,7 @@
 
 /** 
  * \file balHeartNeuron.h
- * \brief Definition of the class balHeartNeuron
+ * \brief Definition of the class HeartNeuron
  */
 
 #ifndef _BALHEARTNEURON_
@@ -33,19 +33,21 @@
 #include "balDynamicalSystem.h"
 #include <cvode/cvode.h>
 
+namespace bal {
+
 /**
- * \class balHeartNeuron
+ * \class HeartNeuron
  * \brief Implementation of a dynamical system that describes a heart
  * neuron model
  * 
- * \sa balDynamicalSystem balHindmarshRose
+ * \sa DynamicalSystem HindmarshRose
  */
-class balHeartNeuron : public balDynamicalSystem {
+class HeartNeuron : public DynamicalSystem {
  public:
   virtual const char * GetClassName () const;
-  static balHeartNeuron * Create ();
-  static balHeartNeuron * Copy(balHeartNeuron * hn);
-  virtual balDynamicalSystem * Clone() const;
+  static HeartNeuron * Create ();
+  static HeartNeuron * Copy(HeartNeuron * hn);
+  virtual DynamicalSystem * Clone() const;
   virtual void Destroy ();
   
   int RHS (realtype t, N_Vector x, N_Vector xdot, void * data);
@@ -74,8 +76,8 @@ class balHeartNeuron : public balDynamicalSystem {
   }
   
  protected:
-  balHeartNeuron();
-  virtual ~balHeartNeuron();
+  HeartNeuron();
+  virtual ~HeartNeuron();
   
  private:
   N_Vector xderiv;
@@ -84,11 +86,13 @@ class balHeartNeuron : public balDynamicalSystem {
 };
 
 
+} // namespace bal
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-balDynamicalSystem* balHeartNeuronFactory();
+bal::DynamicalSystem* HeartNeuronFactory();
 	
 #ifdef __cplusplus
 }

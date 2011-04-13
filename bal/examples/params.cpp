@@ -23,21 +23,21 @@
 #include <iostream>
 #include "balObject.h"
 #include "balParameters.h"
-using namespace std;
+using namespace bal;
 
-// TEST balParameters
+// TEST Parameters
 int main(int argc, char *argv[]) {
 
-	balParameters * pars = balParameters::Create();
-	cout << pars->GetClassName() << endl;
+	Parameters * pars = Parameters::Create();
+	std::cout << pars->GetClassName() << std::endl;
 	pars->SetNumber(4);
 	pars->At(0) = 3.0;
 	pars->At(1) = 5.0;
 	pars->At(2) = 0.01;
 	pars->At(3) = 4.0;
-	cout << *pars << endl;
-	balParameters * parsCopy = balParameters::Copy(pars);
-	cout << *parsCopy << endl;
+	std::cout << *pars << std::endl;
+	Parameters * parsCopy = Parameters::Copy(pars);
+	std::cout << *parsCopy << std::endl;
 
 	return 0;
 }

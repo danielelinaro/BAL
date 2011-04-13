@@ -22,62 +22,64 @@
 
 /** 
  * \file balLogger.cpp
- * \brief Implementation of classes balLogger and balH5Logger
+ * \brief Implementation of classes Logger and H5Logger
  */
 
 #include "balLogger.h"
 
+namespace bal {
+
 ///// BALLOGGER /////
 
-balLogger::balLogger() : opened(false), cols(-1), params(NULL) {}
+Logger::Logger() : opened(false), cols(-1), params(NULL) {}
 
-balLogger::~balLogger() {}
+Logger::~Logger() {}
 
-void balLogger::SetFileIsOpen(bool open) {
+void Logger::SetFileIsOpen(bool open) {
   opened = open;
 }
 
-const char * balLogger::GetClassName () const {
-  return "balLogger";
+const char * Logger::GetClassName () const {
+  return "Logger";
 }
 
-const char * balLogger::GetFilename() const {
+const char * Logger::GetFilename() const {
   return filename;
 }
 
-void balLogger::SetParameters(balParameters * p) {
+void Logger::SetParameters(Parameters * p) {
   params = p;
 }
 
-balParameters * balLogger::GetParameters() const {
+Parameters * Logger::GetParameters() const {
   return params;
 }
 
-void balLogger::SetNumberOfColumns(int c) {
+void Logger::SetNumberOfColumns(int c) {
   cols = c;
 }
 
-int balLogger::GetNumberOfColumns() const {
+int Logger::GetNumberOfColumns() const {
   return cols;
 }
 
-bool balLogger::IsFileOpen() const {
+bool Logger::IsFileOpen() const {
   return opened;
 }
 
-bool balLogger::SaveBuffer(realtype * buffer, int rows, int id) { 
+bool Logger::SaveBuffer(realtype * buffer, int rows, int id) { 
   if(!IsFileOpen()) 
     OpenFile(); 
   return false; 
 }
 
-bool balLogger::SaveSolution(balSolution * solution) { 
+bool Logger::SaveSolution(Solution * solution) { 
   SetNumberOfColumns(solution->GetColumns());
   SetParameters(solution->GetParameters());
   return SaveBuffer(solution->GetData(), solution->GetRows(), solution->GetID()); 
 }
 
-bool balLogger::SaveSolutionThreaded(list <balSolution *> * sol_list,
+bool Logger::SaveSolutionThreaded(list <Solution *> * sol_list,
 				     boost::mutex * list_mutex,
 				     boost::condition_variable * q_empty,
 				     boost::condition_variable * q_full) {
@@ -130,12 +132,12 @@ bool balLogger::SaveSolutionThreaded(list <balSolution *> * sol_list,
   return true;
 }
 
-bool balLogger::SortAndWriteSolutionList(list <balSolution *> * sol_list) {
-  balSolution * solution;
+bool Logger::SortAndWriteSolutionList(list <Solution *> * sol_list) {
+  Solution * solution;
   
-  /* balSolutionComparer is a struct defined in balSolution.h defining a method on operator() *
-   * to compare two balSolution pointers */
-  //sol_list->sort(balSolutionComparer());
+  /* SolutionComparer is a struct defined in balSolution.h defining a method on operator() *
+   * to compare two Solution pointers */
+  //sol_list->sort(SolutionComparer());
   sol_list->sort(CompareBalSolutions);
   
   while (!sol_list->empty()) {
@@ -147,36 +149,36 @@ bool balLogger::SortAndWriteSolutionList(list <balSolution *> * sol_list) {
   return true;
 }
 
-void balLogger::SetFilename(const char *fname, bool compress) {
+void Logger::SetFilename(const char *fname, bool compress) {
   strncpy(filename, fname, FILENAME_LENGTH);
 }
 
 ///// BALH5LOGGER /////
 
-const char * balH5Logger::GetClassName () const {
-  return "balH5Logger";
+const char * H5Logger::GetClassName () const {
+  return "H5Logger";
 }
 
-balH5Logger * balH5Logger::Create() {
-  return new balH5Logger;
+H5Logger * H5Logger::Create() {
+  return new H5Logger;
 }
 
-void balH5Logger::Destroy() {
+void H5Logger::Destroy() {
   delete this;
 }
 
-balH5Logger::balH5Logger() {
+H5Logger::H5Logger() {
   h5_fid = -1;
   chunk[0] = chunk[1] = -1;
 }
 
-balH5Logger::~balH5Logger() {
+H5Logger::~H5Logger() {
   if(IsFileOpen())
     CloseFile();
 }
 
-void balH5Logger::SetFilename(const char * fname, bool compress) {
-  balLogger::SetFilename(fname,compress);
+void H5Logger::SetFilename(const char * fname, bool compress) {
+  Logger::SetFilename(fname,compress);
 
   compressed = false;
   if(compress) {
@@ -220,7 +222,7 @@ void balH5Logger::SetFilename(const char * fname, bool compress) {
   }
 }
 
-bool balH5Logger::OpenFile() {
+bool H5Logger::OpenFile() {
   if(IsFileOpen()) CloseFile();
 
   h5_fid = H5Fcreate(GetFilename(), H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
@@ -247,7 +249,7 @@ bool balH5Logger::OpenFile() {
   return true;
 }
 
-bool balH5Logger::CloseFile() {
+bool H5Logger::CloseFile() {
   if(!IsFileOpen())
     return false;
   
@@ -260,7 +262,7 @@ bool balH5Logger::CloseFile() {
   return flag == 0;
 }
 
-bool balH5Logger::SaveBuffer(realtype * buffer, int rows, int id) {
+bool H5Logger::SaveBuffer(realtype * buffer, int rows, int id) {
   if(buffer == NULL || rows <= 0 || GetNumberOfColumns() <= 0 || GetParameters() == NULL) {
     return false;
   }
@@ -322,4 +324,6 @@ bool balH5Logger::SaveBuffer(realtype * buffer, int rows, int id) {
 
   return status >= 0;
 }
+
+} // namespace bal
 

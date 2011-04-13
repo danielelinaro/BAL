@@ -22,7 +22,7 @@
 
 /** 
  * \file balHindmarshRose.h
- * \brief Definition of the class balHindmarshRose
+ * \brief Definition of the class HindmarshRose
  */
 
 #ifndef _BALHINDMARSHROSE_
@@ -35,19 +35,21 @@
 
 #define XREST (-1.6)
 
+namespace bal {
+
 /**
- * \class balHindmarshRose
+ * \class HindmarshRose
  * \brief Implementation of a dynamical system that describes a the
  * Hindmarsh-Rose neuron model
  * 
- * \sa balDynamicalSystem
+ * \sa DynamicalSystem
  */
-class balHindmarshRose : public balDynamicalSystem {
+class HindmarshRose : public DynamicalSystem {
  public:
   virtual const char * GetClassName () const;
-  static balHindmarshRose * Create ();
-  static balHindmarshRose * Copy (balHindmarshRose *hr);
-  virtual balDynamicalSystem * Clone() const;
+  static HindmarshRose * Create ();
+  static HindmarshRose * Copy (HindmarshRose *hr);
+  virtual DynamicalSystem * Clone() const;
   virtual void Destroy ();
   
   int RHS (realtype t, N_Vector x, N_Vector xdot, void * data);
@@ -69,19 +71,21 @@ class balHindmarshRose : public balDynamicalSystem {
   //const double xrest;
 
  protected:
-  balHindmarshRose();
-  balHindmarshRose(const balHindmarshRose& hr);
-  virtual ~balHindmarshRose();
+  HindmarshRose();
+  HindmarshRose(const HindmarshRose& hr);
+  virtual ~HindmarshRose();
   
  private:
   N_Vector xderiv;
 };
 
+} // namespace bal
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-balDynamicalSystem* balHindmarshRoseFactory();
+bal::DynamicalSystem* HindmarshRoseFactory();
 	
 #ifdef __cplusplus
 }

@@ -7,12 +7,13 @@
 #include "balODESolver.h"
 #include "balBifurcationDiagram.h"
 #include "balBifurcationParameters.h"
+using namespace std;
 
 int main(int argc, char *argv[]) {
 	
   int steps[3] = {1,4,5};
   realtype x0[3] = {0.5,0.5,0.5};
-  balBifurcationParameters * bp = balBifurcationParameters::Create();
+  BifurcationParameters * bp = BifurcationParameters::Create();
   bp->SetNumber(3);
   bp->SetIthParameter(0,0.25);
   bp->SetIthParameterLowerBound(1,0.2);
@@ -22,10 +23,10 @@ int main(int argc, char *argv[]) {
 	//bp->SetIthParameter(2,4.3);
   bp->SetNumberOfSteps(steps);
   
-	balRossler * ros = balRossler::Create();
+	Rossler * ros = Rossler::Create();
   ros->SetParameters(bp);
   
-	balBifurcationDiagram * bifd = balBifurcationDiagram::Create();
+	BifurcationDiagram * bifd = BifurcationDiagram::Create();
   bifd->SetDynamicalSystem(ros);
   bifd->GetODESolver()->SetIntegrationMode(balLYAP);
   bifd->GetODESolver()->SetTransientDuration(1e3);

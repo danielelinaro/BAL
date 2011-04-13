@@ -21,11 +21,13 @@
  *=========================================================================*/
 
 /** 
- * \file balBifurcationDiagram.cpp
- * \brief Implementation of the class balBifurcationDiagram
+ * \file BifurcationDiagram.cpp
+ * \brief Implementation of the class BifurcationDiagram
  */
 
 #include "balBifurcationDiagram.h"
+
+namespace bal {
 
 void ResetColours(int d) {
   printf("%c%s", ESC, RED);
@@ -35,13 +37,13 @@ void ResetColours(int d) {
   exit(1);
 }
 
-bool CompareBalSummaryEntries(balSummaryEntry *entry1, balSummaryEntry *entry2) {
+bool CompareBalSummaryEntries(SummaryEntry *entry1, SummaryEntry *entry2) {
   return entry1->GetID() < entry2->GetID();
 }
 
-/***** balSummaryEntry *****/
+/***** SummaryEntry *****/
 
-balSummaryEntry::balSummaryEntry(balSolution *sol, int mode) {
+SummaryEntry::SummaryEntry(Solution *sol, int mode) {
   int r, c, np, nx;
   realtype *buffer;
   np = sol->GetParameters()->GetNumber();
@@ -73,40 +75,40 @@ balSummaryEntry::balSummaryEntry(balSolution *sol, int mode) {
   }
 }
 
-balSummaryEntry::~balSummaryEntry() {
+SummaryEntry::~SummaryEntry() {
   delete data;
 }
 
-int balSummaryEntry::GetN() const {
+int SummaryEntry::GetN() const {
   return n;
 }
 
-int balSummaryEntry::GetID() const {
+int SummaryEntry::GetID() const {
   return id;
 }
 
-double* balSummaryEntry::GetData() const {
+double* SummaryEntry::GetData() const {
   return data;
 }
 
-/***** balBifurcationDiagram *****/
+/***** BifurcationDiagram *****/
 
-const char * balBifurcationDiagram::GetClassName() const {
-  return "balBifurcationDiagram";
+const char * BifurcationDiagram::GetClassName() const {
+  return "BifurcationDiagram";
 }
 
-balBifurcationDiagram * balBifurcationDiagram::Create() {
-  return new balBifurcationDiagram;
+BifurcationDiagram * BifurcationDiagram::Create() {
+  return new BifurcationDiagram;
 }
 
-void balBifurcationDiagram::Destroy() {
+void BifurcationDiagram::Destroy() {
   delete this;
 }
 
-balBifurcationDiagram::balBifurcationDiagram() {
-  logger = balH5Logger::Create();
+BifurcationDiagram::BifurcationDiagram() {
+  logger = H5Logger::Create();
   destroy_logger = true;
-  solver = balODESolver::Create();
+  solver = ODESolver::Create();
   destroy_solver = true;
   restart_from_x0 = true;
   nthreads = 2;
@@ -116,20 +118,20 @@ balBifurcationDiagram::balBifurcationDiagram() {
   destroy_lists = false;
   nX0 = 0;
   X0 = NULL;
-  //SetFilename("balBifurcationDiagram.h5",false,false);
+  //SetFilename("BifurcationDiagram.h5",false,false);
   signal(SIGINT, ResetColours);
 }
 
-void balBifurcationDiagram::SetNumberOfThreads(int _nthreads) {
+void BifurcationDiagram::SetNumberOfThreads(int _nthreads) {
   if(_nthreads > 0)
     nthreads = _nthreads;
 }
 
-int balBifurcationDiagram::GetNumberOfThreads() const {
+int BifurcationDiagram::GetNumberOfThreads() const {
   return nthreads;
 }
 
-balBifurcationDiagram::~balBifurcationDiagram() {
+BifurcationDiagram::~BifurcationDiagram() {
   if(destroy_logger)
     logger->Destroy();
   if(destroy_solver)
@@ -140,7 +142,7 @@ balBifurcationDiagram::~balBifurcationDiagram() {
   }
 }
 
-void balBifurcationDiagram::SetDynamicalSystem(balDynamicalSystem * sys) {
+void BifurcationDiagram::SetDynamicalSystem(DynamicalSystem * sys) {
   system = sys;
   ndim = system->GetDimension();
   solver->SetDynamicalSystem(sys);
@@ -148,11 +150,11 @@ void balBifurcationDiagram::SetDynamicalSystem(balDynamicalSystem * sys) {
   npar = parameters->GetNumber();
 }
 
-balDynamicalSystem * balBifurcationDiagram::GetDynamicalSystem() const {
+DynamicalSystem * BifurcationDiagram::GetDynamicalSystem() const {
   return system;
 }
 
-void balBifurcationDiagram::SetLogger(balLogger * log) {
+void BifurcationDiagram::SetLogger(Logger * log) {
   if(destroy_logger) {
     logger->Destroy();
     destroy_logger = false;
@@ -160,11 +162,11 @@ void balBifurcationDiagram::SetLogger(balLogger * log) {
   logger = log;
 }
 
-balLogger * balBifurcationDiagram::GetLogger() const {
+Logger * BifurcationDiagram::GetLogger() const {
   return logger;
 }
 
-void balBifurcationDiagram::SetODESolver(balODESolver * sol) {
+void BifurcationDiagram::SetODESolver(ODESolver * sol) {
   if(destroy_solver) {
     solver->Destroy();
     destroy_solver = false;
@@ -172,19 +174,19 @@ void balBifurcationDiagram::SetODESolver(balODESolver * sol) {
   solver = sol;
 }
 
-balODESolver * balBifurcationDiagram::GetODESolver() const {
+ODESolver * BifurcationDiagram::GetODESolver() const {
   return solver;
 }
 
-void balBifurcationDiagram::SetFilename(const char * filename, bool compress) {
+void BifurcationDiagram::SetFilename(const char * filename, bool compress) {
   logger->SetFilename(filename,compress);
 }
 
-const char * balBifurcationDiagram::GetFilename() {
+const char * BifurcationDiagram::GetFilename() {
   return logger->GetFilename();
 }
 
-bool balBifurcationDiagram::SaveSummaryData(const char *filename) const {
+bool BifurcationDiagram::SaveSummaryData(const char *filename) const {
   if(!destroy_lists)
     return false;
   
@@ -192,7 +194,7 @@ bool balBifurcationDiagram::SaveSummaryData(const char *filename) const {
   
   int i;
   double *entry;
-  list<balSummaryEntry *>::iterator it;
+  std::list<SummaryEntry *>::iterator it;
   FILE *fid;
   
   fid = fopen(filename,"w"); 
@@ -213,7 +215,7 @@ bool balBifurcationDiagram::SaveSummaryData(const char *filename) const {
   return true;
 }
 
-double** balBifurcationDiagram::GetSummaryData(int *size) const {
+double** BifurcationDiagram::GetSummaryData(int *size) const {
   if(!destroy_lists)
     return NULL;
   
@@ -221,7 +223,7 @@ double** balBifurcationDiagram::GetSummaryData(int *size) const {
   
   int i, j;
   double **data, *entry;
-  list<balSummaryEntry *>::iterator it;
+  std::list<SummaryEntry *>::iterator it;
 
   data = new double*[summary->size()];
   it = summary->begin();
@@ -238,22 +240,22 @@ double** balBifurcationDiagram::GetSummaryData(int *size) const {
   return data;
 }
 
-void balBifurcationDiagram::SetInitialConditions(int nx0, double **x0) {
+void BifurcationDiagram::SetInitialConditions(int nx0, double **x0) {
   if(nx0 > 0) {
     nX0 = nx0;
     X0 = x0;
   }
 }
 
-bool balBifurcationDiagram::RestartsFromX0() const {
+bool BifurcationDiagram::RestartsFromX0() const {
   return restart_from_x0;
 }
 
-void balBifurcationDiagram::RestartFromX0(bool restart) {
+void BifurcationDiagram::RestartFromX0(bool restart) {
   restart_from_x0 = restart;
 }
 
-bool balBifurcationDiagram::SetMode(int _mode) {
+bool BifurcationDiagram::SetMode(int _mode) {
   switch(_mode) {
   case balPARAMS:
     break;
@@ -266,17 +268,17 @@ bool balBifurcationDiagram::SetMode(int _mode) {
   return true;
 }
 
-int balBifurcationDiagram::GetMode() const {
+int BifurcationDiagram::GetMode() const {
   return mode;
 }
 
-void balBifurcationDiagram::ComputeDiagram() {
+void BifurcationDiagram::ComputeDiagram() {
   if(destroy_lists) {
     delete solutions;
     delete summary;
   }
-  solutions = new list<balSolution *>;
-  summary = new list<balSummaryEntry *>;
+  solutions = new std::list<Solution *>;
+  summary = new std::list<SummaryEntry *>;
   destroy_lists = true;
 
   /* this switch is really not necessary: it is safe to always *
@@ -294,18 +296,18 @@ void balBifurcationDiagram::ComputeDiagram() {
 }
 
 /*
-void balBifurcationDiagram::ComputeDiagramSingleThread() {
-  balBifurcationParameters * pars = (balBifurcationParameters *) parameters;
+void BifurcationDiagram::ComputeDiagramSingleThread() {
+  BifurcationParameters * pars = (BifurcationParameters *) parameters;
   pars->Reset();
   int total = pars->GetTotalNumberOfTuples();
-  balSolution * solution;
+  Solution * solution;
   for(int cnt=0; cnt<total; cnt++, pars->Next()) {
     printf("%c%s", ESC, GREEN);
     printf("[%05d/%05d]\r", cnt+1, total); fflush(stdout);
     printf("%c%s", ESC, NORMAL);
     solver->Solve();
     solution = solver->GetSolution();
-    summary->push_back(new balSummaryEntry(solution));
+    summary->push_back(new SummaryEntry(solution));
     logger->SaveSolution(solution);
     solution->Destroy();
     if(! restart_from_x0) {
@@ -316,7 +318,7 @@ void balBifurcationDiagram::ComputeDiagramSingleThread() {
 }
 */
 
-void balBifurcationDiagram::ComputeDiagramMultiThread() {
+void BifurcationDiagram::ComputeDiagramMultiThread() {
   int i, idx, cnt, solutionId;
   // the total number of integrations
   int total;
@@ -325,14 +327,14 @@ void balBifurcationDiagram::ComputeDiagramMultiThread() {
   // the number of for loops that will be performed after the prologue
   int nloops;
 
-  balBifurcationParameters *pars;
+  BifurcationParameters *pars;
 	
   if (solver->GetIntegrationMode() == balLYAP)
     restart_from_x0 = true;
   
   switch(mode) {
   case balPARAMS:
-    pars = (balBifurcationParameters *) parameters;
+    pars = (BifurcationParameters *) parameters;
     pars->Reset();
     total = pars->GetTotalNumberOfTuples();
     break;
@@ -343,7 +345,7 @@ void balBifurcationDiagram::ComputeDiagramMultiThread() {
     total = nX0;
     break;
   default:
-    fprintf(stderr, "Unknown mode of operation in balBifurcationDiagram::ComputeDiagramMultiThread.\n");
+    fprintf(stderr, "Unknown mode of operation in BifurcationDiagram::ComputeDiagramMultiThread.\n");
     return;
   }
   
@@ -354,7 +356,7 @@ void balBifurcationDiagram::ComputeDiagramMultiThread() {
    * launching the thread of the writing routine: it activates only when list size >= LIST_MAX_SIZE
    **/
   if (solver->GetIntegrationMode() != balLYAP) {
-    logger_thread = new boost::thread(&balLogger::SaveSolutionThreaded,logger,solutions,&list_mutex,&q_empty,&q_full);
+    logger_thread = new boost::thread(&Logger::SaveSolutionThreaded,logger,solutions,&list_mutex,&q_empty,&q_full);
   }
   
   /**
@@ -387,11 +389,11 @@ void balBifurcationDiagram::ComputeDiagramMultiThread() {
   /*
    * we make nthreads copies of both the solvers and the parameters of the dynamical system
    */
-  balODESolver** lsol = new balODESolver*[nthreads];
-  balParameters** lpar = new balParameters*[nthreads];
+  ODESolver** lsol = new ODESolver*[nthreads];
+  Parameters** lpar = new Parameters*[nthreads];
   for(i = 0; i < nthreads; i++) {
-    lpar[i] = balParameters::Copy(parameters);
-    lsol[i] = balODESolver::Copy(solver);
+    lpar[i] = Parameters::Copy(parameters);
+    lsol[i] = ODESolver::Copy(solver);
     lsol[i]->SetDynamicalSystemParameters(lpar[i]);
   }
 
@@ -413,7 +415,7 @@ void balBifurcationDiagram::ComputeDiagramMultiThread() {
     
     /* launch the nthread solvers */
     for (i = 0; i < nthreads; i++, solutionId++)
-      threads[i] = new boost::thread(&balBifurcationDiagram::IntegrateAndEnqueue,this,lsol[i],solutionId);
+      threads[i] = new boost::thread(&BifurcationDiagram::IntegrateAndEnqueue,this,lsol[i],solutionId);
 
     for (i = 0; i < nthreads; i++) {
       threads[i]->join();
@@ -450,9 +452,9 @@ void balBifurcationDiagram::ComputeDiagramMultiThread() {
   }
 }
 
-void balBifurcationDiagram::IntegrateAndEnqueue(balODESolver * sol, int solutionId) {
+void BifurcationDiagram::IntegrateAndEnqueue(ODESolver * sol, int solutionId) {
   sol->Solve();
-  balSolution *solution = sol->GetSolution();
+  Solution *solution = sol->GetSolution();
   solution->SetID(solutionId);
   
   {
@@ -475,7 +477,7 @@ void balBifurcationDiagram::IntegrateAndEnqueue(balODESolver * sol, int solution
     if (solver->GetIntegrationMode() != balLYAP)
       solutions->push_back(solution);
     // insert a new summary into the list
-    summary->push_back(new balSummaryEntry(solution,mode));
+    summary->push_back(new SummaryEntry(solution,mode));
   }	
   
   if (solver->GetIntegrationMode() == balLYAP)
@@ -485,3 +487,6 @@ void balBifurcationDiagram::IntegrateAndEnqueue(balODESolver * sol, int solution
     sol->SetX0(sol->GetXEnd());
 
 }
+
+} // namespace bal
+
