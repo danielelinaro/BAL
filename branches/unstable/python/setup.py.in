@@ -1,0 +1,28 @@
+from distutils.core import setup, Extension
+from os.path import realpath
+
+libdir = ['@prefix@/lib']
+incdir = ['@prefix@/include']
+libraries = '@CPPFLAGS@'
+tokens = libraries.split()
+
+for s in tokens:
+    if s[0:2] == '-I':
+        incdir.append(s[2:])
+
+balmodule = Extension('pybal.bal',
+                      library_dirs = libdir,
+                      include_dirs = incdir,
+                      libraries = ['bal'],
+                      sources = ['pybal.cpp'])
+
+setup(name = 'BAL',
+      version = '0.1',
+      description = 'BAL interface for Python',
+      author = 'Daniele Linaro',
+      author_email = 'daniele.linaro@unige.it',
+      url = 'https://sourceforge.net/projects/biflib/',
+      license = 'GPL',
+      packages = ['pybal'],
+      ext_modules = [balmodule])
+

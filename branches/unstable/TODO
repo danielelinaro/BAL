@@ -1,0 +1,11 @@
+# Copyright (c) 2009, 2010 Daniele Linaro
+
+
+                 BAL - a Bifurcation Analysis Library
+
+		       	   To-do list
+
+
+1) aggiungere la possibilita' di salvare gli esponenti di Lyapunov
+2) completare le options di getattro per pyBalDynamicalSystem (SpecialOptions)
+
