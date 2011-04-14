@@ -29,7 +29,8 @@
 #define _BALPARAMETERS_
 
 #include "balObject.h"
-#include <fstream>
+#include "balCommon.h"
+#include <string>
 
 namespace bal {
 
@@ -48,29 +49,27 @@ namespace bal {
  */
 class Parameters : public Object {
  public:
-  virtual const char * GetClassName () const;
-  static Parameters * Create ();
-  static Parameters * Copy (Parameters * params);
-  virtual void Destroy ();
-  virtual void SetNumber (int);
+  Parameters ();
+  Parameters (const Parameters& param);
+  virtual ~Parameters ();
+
+  virtual void SetNumber (int numpars);
   int GetNumber () const;
   
-  double & At (int k);
   double * GetParameters() const;
-  
-  void CopyValues(Parameters* _par);
-  
+  double& At (int k);
+  double& operator[] (int k);
+  void operator=(const Parameters& param);
+
+  virtual std::string ToString() const;
   friend std::ostream & operator<< (std::ostream & out, const Parameters & bp);
   
  protected:
-  Parameters ();
-  Parameters (const Parameters & param);
-  virtual ~Parameters ();
   
  private:
   int p;
   double * pars;
-  bool _dealloc;
+  bool dealloc_;
 };
 
 std::ostream & operator<< (std::ostream & out, const Parameters & bp);

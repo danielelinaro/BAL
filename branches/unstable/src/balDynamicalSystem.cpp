@@ -35,24 +35,14 @@ DynamicalSystem::DynamicalSystem() {
   nev = 0;
   ext = false;
   nExt = 0;
-  pars = Parameters::Create();
   jac = NULL;
-  _dealloc = false;
-  _dealloc_pars = true;
+  dealloc_ = false;
 }
 
-DynamicalSystem::DynamicalSystem(const DynamicalSystem& system) {
+DynamicalSystem::DynamicalSystem(const DynamicalSystem& system) : pars(system.pars) {
   n = system.n;
   nev = system.nev;
-  if (system._dealloc_pars) {
-    pars = Parameters::Copy(system.pars); 
-    _dealloc_pars = true;
-  }
-  else {
-    pars = system.pars;// non rialloco spazio parametri
-    _dealloc_pars = false;
-  }
-  p = (system.GetParameters())->GetNumber();
+  p = pars.GetNumber();
   nExt = system.nExt;
   ext = system.ext;
 #ifdef CVODE25
@@ -61,43 +51,17 @@ DynamicalSystem::DynamicalSystem(const DynamicalSystem& system) {
 #ifdef CVODE26
   jac = NewDenseMat(n,n);
 #endif
-  _dealloc = true;
+  dealloc_ = true;
 }
 
 DynamicalSystem::~DynamicalSystem() {
-  if(_dealloc)
+  if(dealloc_)
 #ifdef CVODE25
     destroyMat(jac);
 #endif
 #ifdef CVODE26
-  DestroyMat(jac);
+    DestroyMat(jac);
 #endif
-  if (_dealloc_pars)
-    pars->Destroy();
-}
-
-const char * DynamicalSystem::GetClassName () const {
-  return "DynamicalSystem";
-}
-
-DynamicalSystem * DynamicalSystem::Create () { 
-  return new DynamicalSystem;
-}
-
-DynamicalSystem * DynamicalSystem::Copy (DynamicalSystem *sys) {
-  return new DynamicalSystem(*sys);
-}
-
-DynamicalSystem * DynamicalSystem::Clone() const {
-  return new DynamicalSystem(*this);
-}
-
-void DynamicalSystem::Destroy () {
-  delete this;
-}
-
-int DynamicalSystem::RHS (realtype t, N_Vector x, N_Vector xdot, void * data) {
-  return ! CV_SUCCESS;
 }
 
 int DynamicalSystem::RHSWrapper (realtype t, N_Vector x, N_Vector xdot, void * sys) {
@@ -109,7 +73,6 @@ int DynamicalSystem::RHSWrapper (realtype t, N_Vector x, N_Vector xdot, void * s
   if(! bds->IsExtended() || flag != CV_SUCCESS) {
     return flag;
   }
-  
   
   // the Jacobian matrix
   if(bds->HasJacobian()) {
@@ -222,17 +185,12 @@ int DynamicalSystem::EventsWrapper (realtype t, N_Vector x, realtype * event, vo
 void DynamicalSystem::EventsConstraints (realtype t, N_Vector x, int * constraints, void * data) {
 }
 
-void DynamicalSystem::SetParameters (Parameters * bp) throw (Exception) {
-  if(bp->GetNumber() != GetNumberOfParameters())
-    throw Exception("Wrong number of parameters in DynamicalSystem::SetParameters");
-  if (_dealloc_pars)
-    pars->Destroy();
-  _dealloc_pars = false;
+void DynamicalSystem::SetParameters (const Parameters& bp) throw (Exception) {
   pars = bp;
 }
  
-Parameters * DynamicalSystem::GetParameters () const {
-  return pars;
+Parameters* DynamicalSystem::GetParameters () const {
+  return &pars;
 }
 
 void DynamicalSystem::SetDimension(int n_) {
@@ -240,7 +198,7 @@ void DynamicalSystem::SetDimension(int n_) {
     return;
   n = n_;
   nExt = n*(n+1);
-  if(_dealloc)
+  if(dealloc_)
 #ifdef CVODE25
     destroyMat(jac);
   jac = newDenseMat(n,n);
@@ -249,7 +207,7 @@ void DynamicalSystem::SetDimension(int n_) {
     DestroyMat(jac);
   jac = NewDenseMat(n,n);
 #endif
-  _dealloc = true;
+  dealloc_ = true;
 }
 
 int DynamicalSystem::GetDimension() const {
@@ -269,7 +227,7 @@ bool DynamicalSystem::IsExtended() const {
 }
 
 bool DynamicalSystem::SpecialOptions(const void *opt) {
-  printf("DynamicalSystem::SpecialOptions\n");
+  std::cout << "DynamicalSystem::SpecialOptions\n";
   return false;
 }
 

@@ -57,16 +57,15 @@ namespace bal {
  */
 class BifurcationParameters : public Parameters {
  public:
-  virtual const char * GetClassName () const;
-  static BifurcationParameters * Create ();
-  virtual void Destroy ();
-  
+  BifurcationParameters();
+  ~BifurcationParameters();
+
   virtual void SetNumber(int n);
   
   bool SetIthParameterLowerBound(int i, double p);
   bool SetIthParameter(int i, double p);
   bool SetIthParameterUpperBound(int i, double p);
-  void SetParameterBounds(Parameters * lower, Parameters * upper);
+  void SetParameterBounds(const Parameters& lower, const Parameters& upper);
   double GetIthParameterUpperBound(int i) throw(Exception);
   double GetIthParameter(int i) throw(Exception);
   double GetIthParameterLowerBound(int i) throw(Exception);
@@ -85,15 +84,13 @@ class BifurcationParameters : public Parameters {
   bool IsLast() const;
   
  protected:
-  BifurcationParameters();
-  ~BifurcationParameters();
   void Setup();
   
  private:
   /** The lower bounds of the parameters. */
-  Parameters * plower;
+  Parameters plower;
   /** The upper bounds of the parameters. */
-  Parameters * pupper;
+  Parameters pupper;
   /** The parameter steps for every parameter. */
   double * steps;
   /** The number of steps associated with every parameter. */
@@ -107,7 +104,7 @@ class BifurcationParameters : public Parameters {
   int count;
 
   /** Tells whether memory has been allocated or not */
-  bool _dealloc;
+  bool dealloc_;
 };
 
 } // namespace bal

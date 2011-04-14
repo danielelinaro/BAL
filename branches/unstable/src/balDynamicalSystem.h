@@ -28,8 +28,7 @@
 #ifndef _BALDYNAMICALSYSTEM_
 #define _BALDYNAMICALSYSTEM_
 
-#include <cmath>
-#include <cstdio>
+#include <iostream>
 
 #include <sundials/sundials_types.h>
 #include <nvector/nvector_serial.h>
@@ -61,13 +60,11 @@ namespace bal {
  */
 class DynamicalSystem : public Object {
  public:
-  virtual const char * GetClassName () const;
-  static DynamicalSystem * Create ();
-  static DynamicalSystem * Copy (DynamicalSystem *sys);
-  virtual DynamicalSystem * Clone() const;
-  virtual void Destroy ();
-  
-  virtual int RHS (realtype t, N_Vector x, N_Vector xdot, void * data);
+  DynamicalSystem();
+  DynamicalSystem(const DynamicalSystem& system);
+  virtual ~DynamicalSystem();
+
+  virtual int RHS (realtype t, N_Vector x, N_Vector xdot, void * data) = 0;
   static int RHSWrapper (realtype t, N_Vector x, N_Vector xdot, void * sys);
   
 #ifdef CVODE25
@@ -89,7 +86,7 @@ class DynamicalSystem : public Object {
 #endif
   
   static int EventsWrapper (realtype t, N_Vector x, realtype * event, void * sys);
-  virtual	int Events (realtype t, N_Vector x, realtype * event, void * data);
+  virtual int Events (realtype t, N_Vector x, realtype * event, void * data);
   
   virtual void EventsConstraints (realtype t, N_Vector x, int * constraints, void * data);
   
@@ -105,16 +102,13 @@ class DynamicalSystem : public Object {
   int GetDimension() const;
   int GetOriginalDimension() const;
   int GetNumberOfParameters() const;
-  void SetParameters(Parameters *) throw(Exception);
-  Parameters * GetParameters() const;
+  void SetParameters(const Parameters& bp) throw(Exception);
+  Parameters* GetParameters() const;
   
   void Extend(bool extend);
   bool IsExtended() const;
   
  protected:
-  DynamicalSystem();
-  DynamicalSystem(const DynamicalSystem& system);
-  virtual ~DynamicalSystem();
   void SetDimension(int n_);
   void SetNumberOfParameters(int p_);
   void SetNumberOfEvents(int nev_);
@@ -127,8 +121,7 @@ class DynamicalSystem : public Object {
   int nExt;
   bool ext;
   
-  bool _dealloc;
-  bool _dealloc_pars;
+  bool dealloc_;
 
 #ifdef CVODE25
   DenseMat jac;
@@ -136,7 +129,7 @@ class DynamicalSystem : public Object {
 #ifdef CVODE26
   DlsMat jac;
 #endif
-  Parameters * pars;
+  Parameters pars;
 };
 
 } // namespace bal

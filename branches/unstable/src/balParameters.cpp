@@ -26,52 +26,31 @@
  */
 
 #include "balParameters.h"
+#include <sstream>
 
 namespace bal {
 
-Parameters::Parameters() {
-  p = 0;
-  pars = NULL;
-  _dealloc = false;
+Parameters::Parameters() : p(0), pars(NULL), dealloc_(false) {
 }
 
-Parameters::Parameters(const Parameters& params) {
-  p = 0;
-  pars = NULL;
-  _dealloc = false;
+Parameters::Parameters(const Parameters& params) : p(0), pars(NULL), dealloc_(false) {
   SetNumber(params.GetNumber());
   for(int i=0; i<p; i++)
     pars[i] = params.pars[i];
 }
 
 Parameters::~Parameters () {
-  if (_dealloc)
+  if (dealloc_)
     delete pars;
-}
-
-const char * Parameters::GetClassName () const {
-  return "Parameters";
-}
-
-Parameters * Parameters::Create () {
-     return new Parameters;
-}
-
-Parameters * Parameters::Copy (Parameters * params) {
-  return new Parameters(*params);
-}
-
-void Parameters::Destroy () {
-  delete this;
 }
 
 void Parameters::SetNumber (int numpars) {
   if(numpars > 0) {
     p = numpars;
-    if(_dealloc)
+    if(dealloc_)
       delete pars;
     pars = new double[p];
-    _dealloc = true;
+    dealloc_ = true;
     for(int i=0; i<p; i++)
       pars[i] = 0.0;
   }
@@ -81,24 +60,44 @@ int Parameters::GetNumber () const {
   return p;
 }
 
-double & Parameters::At (int k) {
+double& Parameters::operator[] (int k) {
   return pars[k];
 }
 
-double * Parameters::GetParameters () const {
+void Parameters::operator= (const Parameters& param) {
+  if(p == 0)
+    SetNumber(param.p);
+  if(p != param.p)
+    throw Exception("Wrong number of parameters in DynamicalSystem::SetParameters");
+  for(int i=0; i<p; i++)
+    pars[i] = param.pars[i];
+}
+
+double& Parameters::At (int k) {
+  return pars[k];
+}
+
+double* Parameters::GetParameters () const {
   return pars;
 }
 
-void Parameters::CopyValues(Parameters* _par){
-  for (int i = 0; i < _par->GetNumber(); i++)
-    pars[i] = _par->At(i);
+std::string Parameters::ToString() const {
+  std::stringstream ss;
+  ss << "(";
+  for(int i=0; i<p-1; i++)
+    ss << pars[i] << ",";
+  ss << pars[p-1] << ")";
+  return ss.str();
 }
 
 std::ostream& operator<< (std::ostream& out, const Parameters& bp) {
   out << "(";
-  for(int i=0; i<bp.p-1; i++)
-    out << bp.pars[i] << ",";
-  out << bp.pars[bp.p-1] << ")";
+  if(bp.p > 0) {
+    for(int i=0; i<bp.p-1; i++)
+      out << bp.pars[i] << ",";
+    out << bp.pars[bp.p-1];
+  }
+  out << ")";
   return out;
 }
 
