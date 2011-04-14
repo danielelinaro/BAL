@@ -1,0 +1,26 @@
+
+CXX = g++
+CFLAGS = -I../src -I/Users/daniele/local/include -DCVODE26
+LDFLAGS = -L/Users/daniele/local/lib
+LIBS = -lsundials_cvode -lsundials_nvecserial
+
+all: params bifparams dynsys
+
+params: params.o
+	$(CXX) -o params params.o ../src/balParameters.o ../src/balObject.o $(LDFLAGS) $(LIBS) 
+
+params.o: params.cpp
+	$(CXX) -c params.cpp $(CFLAGS)
+
+bifparams: bifparams.o
+	$(CXX) -o bifparams bifparams.o ../src/balBifurcationParameters.o ../src/balParameters.o ../src/balObject.o $(LDFLAGS) $(LIBS) 
+
+bifparams.o: bifparams.cpp
+	$(CXX) -c bifparams.cpp $(CFLAGS)
+
+dynsys: dynsys.o
+	$(CXX) -o dynsys dynsys.o ../src/balHindmarshRose.o ../src/balDynamicalSystem.o ../src/balBifurcationParameters.o ../src/balParameters.o ../src/balObject.o $(LDFLAGS) $(LIBS) 
+
+dynsys.o: dynsys.cpp
+	$(CXX) -c dynsys.cpp $(CFLAGS)
+
