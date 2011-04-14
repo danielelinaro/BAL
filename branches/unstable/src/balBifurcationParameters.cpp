@@ -29,95 +29,52 @@
 
 namespace bal {
 
-BifurcationParameters::BifurcationParameters(int np) : plower(np), pupper(np) {
-  Parameters::SetNumber(np);
-  nsteps = NULL;
-  isteps = NULL;
-  steps = NULL;
-  dealloc_ = false;
+BifurcationParameters::BifurcationParameters(int np) : Parameters(np), plower(np), pupper(np),
+						       steps(new double[np]),
+						       nsteps(new int[np]),
+						       isteps(new int[np]) {
+  for(int i=0; i<np; i++) {
+    steps[i] = 0.0;
+    nsteps[i] = 1;
+    isteps[i] = 0;
+  }
 }
 
 BifurcationParameters::~BifurcationParameters() {
-  if(dealloc_) {
-    delete nsteps;
-    delete isteps;
-    delete steps;
-  }
-}
-
-void BifurcationParameters::SetNumber(int n) {
-  if(n > 0) {
-    Parameters::SetNumber(n);
-    plower.SetNumber(n);
-    pupper.SetNumber(n);
-    if(dealloc_) {
-      delete nsteps;
-      delete isteps;
-      delete steps;
-    }
-    nsteps = new int[n];
-    isteps = new int[n];
-    steps = new double[n];
-    dealloc_ = true;
-    for(int i=0; i<n; i++) {
-      plower[i] = 0.0;
-      pupper[i] = 0.0;
-      nsteps[i] = 1;
-    }
-    Setup();
-  }
 }
 
 void BifurcationParameters::SetParameterBounds(const Parameters& lower, const Parameters& upper) {
-  if(lower.GetNumber() == upper.GetNumber()) {
-    SetNumber(lower.GetNumber());
-    plower = lower;
-    pupper = upper;
-    Setup();
-  }
+  plower = lower;
+  pupper = upper;
+  Setup();
 }
 
-bool BifurcationParameters::SetIthParameterLowerBound(int i, double p) {
-  if(i<0 || i>=plower.GetNumber())
-    return false;
+void BifurcationParameters::SetIthParameterLowerBound(int i, double p) {
   plower[i] = p;
   Setup();
-  return true;
 }
 
-bool BifurcationParameters::SetIthParameter(int i, double p) {
-  if(i<0 || i>=pupper.GetNumber())
-    return false;
+void BifurcationParameters::SetIthParameter(int i, double p) {
   plower[i] = p;
   pupper[i] = p;
   nsteps[i] = 1;
   Setup();
-  return true;
 }
 
-bool BifurcationParameters::SetIthParameterUpperBound(int i, double p) {
-  if(i<0 || i>=pupper.GetNumber())
-    return false;
+void BifurcationParameters::SetIthParameterUpperBound(int i, double p) {
   pupper[i] = p;
   Setup();
-  return true;
 }
 
-double BifurcationParameters::GetIthParameterLowerBound(int i) throw(Exception) {
-  if(i<0 || i>=plower.GetNumber())
-    throw Exception("Index out of range");
+double BifurcationParameters::GetIthParameterLowerBound(int i) {
   return plower[i];
 }
 
-double BifurcationParameters::GetIthParameter(int i) throw(Exception) {
-  if(i<0 || i>=GetNumber())
-    throw Exception("Index out of range");
+double BifurcationParameters::GetIthParameter(int i) {
   return At(i);
 }
 
-double BifurcationParameters::GetIthParameterUpperBound(int i) throw(Exception) {
-  if(i<0 || i>=pupper.GetNumber())
-    throw Exception("Index out of range");
+double BifurcationParameters::GetIthParameterUpperBound(int i) {
   return pupper[i];
 }
 
@@ -130,7 +87,7 @@ bool BifurcationParameters::SetNumberOfSteps(int i, int s) {
   return true;
 }
 
-void BifurcationParameters::SetNumberOfSteps(const int * s) {
+void BifurcationParameters::SetNumberOfSteps(const int *s) {
   for(int i=0; i<plower.GetNumber(); i++)
     nsteps[i] = s[i];
   Setup();
@@ -153,7 +110,7 @@ void BifurcationParameters::Reset() {
 void BifurcationParameters::Setup() {
   total = 1;
   for(int i=0; i<plower.GetNumber(); i++) {
-    pars[i] = plower[i];
+    (*this)[i] = plower[i];
     if(nsteps[i] == 1) {
       steps[i] = (pupper[i] - plower[i]);
     }
@@ -170,10 +127,10 @@ bool BifurcationParameters::Next() {
   count++;
   if(count <= total) {
     for(int i=0; i<plower.GetNumber(); i++) {
-      pars[i] += steps[i];
+      (*this)[i] += steps[i];
       isteps[i]++;
       if(isteps[i] > nsteps[i]) {
-	pars[i] = plower[i];
+	(*this)[i] = plower[i];
 	isteps[i] = 1;
       }
       else {

@@ -38,26 +38,26 @@ int main(int argc, char *argv[]) {
   pars[3] = 4.0;
   // bifurcation parameters
   BifurcationParameters bp(np);
-  Parameters parupper = pars;
+  Parameters parupper(pars);
   parupper[0] = parupper[0] + 1;
   parupper[1] = parupper[1] + 1;
   bp.SetParameterBounds(pars, parupper);
   int steps[4] = {3,3,1,1};
   bp.SetNumberOfSteps(steps);
 
-  std::cout << "par lower: " << pars << std::endl;
-  std::cout << "par upper: " << parupper << std::endl;
+  std::cout << "par lower: " << pars.ToString() << std::endl;
+  std::cout << "par upper: " << parupper.ToString() << std::endl;
 
   // print all tuples
   while(bp.HasTuples()) {
-    std::cout << bp << std::endl;
+    std::cout << bp.ToString() << std::endl;
     bp.Next();
   }
   std::cout << std::endl;
   bp.Reset();
   // leave last tuple out
   while(bp.HasNext()) {
-    std::cout << bp << std::endl;
+    std::cout << bp.ToString() << std::endl;
     bp.Next();
   }
   std::cout << std::endl;

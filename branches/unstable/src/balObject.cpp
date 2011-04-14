@@ -31,11 +31,9 @@
 namespace bal {
 
 Object::Object() {
-  std::cout << "Object constructor.\n";
 }
 
 Object::~Object() {
-  std::cout << "Object destructor.\n";
 }
 
 } // namespace bal

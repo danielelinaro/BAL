@@ -23,6 +23,7 @@
 #include <iostream>
 #include "balObject.h"
 #include "balParameters.h"
+#include "balCommon.h"
 using namespace bal;
 
 // TEST Parameters
@@ -33,12 +34,15 @@ int main(int argc, char *argv[]) {
   pars[1] = 5.0;
   pars[2] = 0.01;
   pars[3] = 4.0;
-  std::cout << pars << std::endl;
   std::cout << pars.ToString() << std::endl;
-  Parameters parsCopy;
-  std::cout << parsCopy << std::endl;
-  parsCopy = pars;
-  std::cout << parsCopy << std::endl;
+  Parameters parsCopy(pars);
+  std::cout << parsCopy.ToString() << std::endl;
+  try {
+    Parameters wrong(-1);
+  }
+  catch(std::bad_alloc e) {
+    std::cerr << e.what() << std::endl;
+  }
   return 0;
 }
 

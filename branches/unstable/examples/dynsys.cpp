@@ -74,7 +74,7 @@ int main(int argc, char *argv[]) {
     for(i=0; i<n; i++)
       NV_Ith_S(x,i) = 0.0;
   }
-  hr << pars;
+  hr << &pars;
   std::cout << hr.ToString() << std::endl;
   DynamicalSystem::RHSWrapper(0, x, xdot, (void *) &hr);
 

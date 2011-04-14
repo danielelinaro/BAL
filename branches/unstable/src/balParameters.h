@@ -31,6 +31,7 @@
 #include "balObject.h"
 #include "balCommon.h"
 #include <string>
+#include <boost/shared_array.hpp>
 
 namespace bal {
 
@@ -48,31 +49,23 @@ namespace bal {
  * \sa DynamicalSystem
  */
 class Parameters : public Object {
- public:
-  Parameters (int numpars = 0);
+public:
+  Parameters (int numpars);
   Parameters (const Parameters& param);
   virtual ~Parameters ();
+  virtual std::string ToString() const;
 
-  virtual void SetNumber (int numpars);
   int GetNumber () const;
-  
-  double * GetParameters() const;
+  double* GetParameters () const;
   double At (int k) const;
   double& operator[] (int k);
   void operator=(const Parameters& param);
 
-  virtual std::string ToString() const;
-  friend std::ostream & operator<< (std::ostream & out, const Parameters & bp);
-  
- protected:
+private:
   int p;
-  double * pars;
-  
- private:
-  bool dealloc_;
+  boost::shared_array<double> pars;  
 };
 
-std::ostream & operator<< (std::ostream & out, const Parameters & bp);
 
 } // namespace bal
 

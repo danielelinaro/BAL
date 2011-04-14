@@ -30,31 +30,17 @@
 
 namespace bal {
 
-Parameters::Parameters(int np) : p(np), pars(NULL), dealloc_(false) {
-  SetNumber(p);
+Parameters::Parameters(int np) : p(np), pars(new double[np]) {
+  for(int i=0; i<p; i++)
+    pars[i] = 0.0;
 }
 
-Parameters::Parameters(const Parameters& params) : p(params.p), pars(NULL), dealloc_(false) {
-  SetNumber(p);
+Parameters::Parameters(const Parameters& params) : p(params.p), pars(new double[params.p]) {
   for(int i=0; i<p; i++)
     pars[i] = params.pars[i];
 }
 
 Parameters::~Parameters () {
-  if (dealloc_)
-    delete pars;
-}
-
-void Parameters::SetNumber (int numpars) {
-  if(numpars > 0) {
-    p = numpars;
-    if(dealloc_)
-      delete pars;
-    pars = new double[p];
-    dealloc_ = true;
-    for(int i=0; i<p; i++)
-      pars[i] = 0.0;
-  }
 }
 
 int Parameters::GetNumber () const {
@@ -66,8 +52,6 @@ double& Parameters::operator[] (int k) {
 }
 
 void Parameters::operator= (const Parameters& params) {
-  if(p == 0)
-    SetNumber(params.p);
   if(p != params.p)
     throw Exception("Wrong number of parameters in DynamicalSystem::SetParameters");
   for(int i=0; i<p; i++)
@@ -79,28 +63,19 @@ double Parameters::At (int k) const {
 }
 
 double* Parameters::GetParameters () const {
-  return pars;
+  return pars.get();
 }
 
 std::string Parameters::ToString() const {
   std::stringstream ss;
   ss << "(";
-  for(int i=0; i<p-1; i++)
-    ss << pars[i] << ",";
-  ss << pars[p-1] << ")";
+  if(p > 0) {
+    for(int i=0; i<p-1; i++)
+      ss << pars[i] << ",";
+    ss << pars[p-1];
+  }
+  ss << ")";
   return ss.str();
 }
 
-std::ostream& operator<< (std::ostream& out, const Parameters& bp) {
-  out << "(";
-  if(bp.p > 0) {
-    for(int i=0; i<bp.p-1; i++)
-      out << bp.pars[i] << ",";
-    out << bp.pars[bp.p-1];
-  }
-  out << ")";
-  return out;
-}
-
 } // namespace bal
-

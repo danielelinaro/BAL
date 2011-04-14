@@ -103,9 +103,9 @@ public:
   int GetDimension() const;
   int GetOriginalDimension() const;
   int GetNumberOfParameters() const;
-  void SetParameters(const Parameters& bp) throw(Exception);
-  const Parameters* GetParameters() const;
-  void operator<< (const Parameters& bp) throw (Exception);
+  void SetParameters(Parameters *p) throw(Exception);
+  Parameters* GetParameters() const;
+  void operator<< (Parameters *p) throw (Exception);
 
   void Extend(bool extend);
   bool IsExtended() const;
@@ -124,14 +124,14 @@ private:
   bool ext;
   
   bool dealloc_;
-
 #ifdef CVODE25
   DenseMat jac;
 #endif
 #ifdef CVODE26
   DlsMat jac;
 #endif
-  Parameters pars;
+
+  Parameters *pars;
 };
 
 } // namespace bal

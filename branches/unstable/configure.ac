@@ -86,7 +86,6 @@ AC_ARG_WITH([examples],
  	    [with_examples=yes],[echo "WARNING: not building the examples."])
 AM_CONDITIONAL([EXAMPLES],[test "$with_examples" == "yes"])
 
-echo "$host_os"
 case "$host_os" in
   darwin*)
 		EXTENSION="dylib"

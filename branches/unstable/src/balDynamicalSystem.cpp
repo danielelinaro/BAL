@@ -29,22 +29,24 @@
 
 namespace bal {
 
-DynamicalSystem::DynamicalSystem() : pars(0) {
+DynamicalSystem::DynamicalSystem() {
   n = 0;
   p = 0;
   nev = 0;
   ext = false;
   nExt = 0;
+  pars = NULL;
   jac = NULL;
   dealloc_ = false;
 }
 
-DynamicalSystem::DynamicalSystem(const DynamicalSystem& system) : pars(system.pars) {
+DynamicalSystem::DynamicalSystem(const DynamicalSystem& system) {
   n = system.n;
   nev = system.nev;
-  p = pars.GetNumber();
+  p = pars->GetNumber();
   nExt = system.nExt;
   ext = system.ext;
+  pars = system.pars;
 #ifdef CVODE25
   jac = newDenseMat(n,n);
 #endif
@@ -184,16 +186,16 @@ int DynamicalSystem::EventsWrapper (realtype t, N_Vector x, realtype *event, voi
 void DynamicalSystem::EventsConstraints (realtype t, N_Vector x, int *constraints, void *sys) {
 }
 
-void DynamicalSystem::SetParameters (const Parameters& bp) throw (Exception) {
-  pars = bp;
+void DynamicalSystem::SetParameters (Parameters *p) throw (Exception) {
+  pars = p;
 }
 
-void DynamicalSystem::operator << (const Parameters& bp) throw (Exception) {
-  pars = bp;
+void DynamicalSystem::operator << (Parameters* p) throw (Exception) {
+  pars = p;
 }
 
-const Parameters* DynamicalSystem::GetParameters () const {
-  return &pars;
+Parameters* DynamicalSystem::GetParameters () const {
+  return pars;
 }
 
 void DynamicalSystem::SetDimension(int n_) {
