@@ -42,10 +42,11 @@
 #ifndef _BALLOGGER_
 #define _BALLOGGER_
 
-#include <cstring>
-#include <cstdio>
+
 #include <sundials/sundials_types.h>
 
+#include <string>
+#include <sstream>
 #include <list>
 #include <algorithm>
 #include <boost/thread.hpp>
@@ -60,11 +61,6 @@
 #include "balSolution.h"
 #include "balCommon.h"
 
-#define FILENAME_LENGTH (200)
-#define DATASETNAME_LENGTH (10)
-
-using std::list;
-
 namespace bal {
 
 /**
@@ -73,39 +69,41 @@ namespace bal {
  * \sa ODESolver
  */
 class Logger : public Object {
- public:
-  virtual const char * GetClassName () const;
-  
-  virtual void SetFilename(const char * fname, bool compress = false);
-  const char * GetFilename() const;
-  void SetParameters(Parameters * p);
-  Parameters * GetParameters() const;
+public:
+  Logger();
+  Logger(const std::string& fname, bool compress = false);
+  virtual ~Logger();
+
+  virtual void SetFilename(const std::string& fname, bool compress = false);
+  std::string GetFilename() const;
+
+  void SetParameters(const Parameters& params);
+  const Parameters& GetParameters() const;
+
   void SetNumberOfColumns(int c);
   int GetNumberOfColumns() const;
+
   bool IsFileOpen() const;
   
-  virtual bool SaveBuffer(realtype * buffer, int rows, int id = 1);
-  bool SaveSolution(Solution * solution);
-  bool SaveSolutionThreaded(list <Solution *> * sol_list,
-			    boost::mutex * list_mutex,
-			    boost::condition_variable * q_empty,
-			    boost::condition_variable * q_full);
+  virtual bool SaveBuffer(const realtype *buffer, int rows, int id) = 0;
+  bool SaveSolution(Solution *solution);
+  bool SaveSolutionThreaded(std::list<Solution *>& sol_list,
+			    boost::mutex& list_mutex,
+			    boost::condition_variable& q_empty,
+			    boost::condition_variable& q_full);
   
  protected:
-  Logger();
-  virtual ~Logger();
+  void SetFileIsOpen(bool open);
   virtual bool OpenFile() = 0;
   virtual bool CloseFile() = 0;
-  void SetFileIsOpen(bool open);
-
-  virtual bool SortAndWriteSolutionList(list <Solution *> * sol_list);
+  virtual bool SortAndWriteSolutionList(std::list<Solution *>& sol_list);
   
  private:
   /** Tells whether the logging file is open or not */
-  bool opened;
-  char filename[FILENAME_LENGTH];
   int cols;
-  Parameters * params;
+  bool opened;
+  std::string filename;
+  Parameters params;
 };
 
 /**
@@ -113,18 +111,16 @@ class Logger : public Object {
  * \brief Class for saving integration data to H5 (compressed) files
  * \sa Logger ODESolver
  */
+
 class H5Logger : public Logger {
  public:
-  virtual const char * GetClassName () const;
-  static H5Logger * Create();
-  virtual void Destroy();
-  
-  virtual void SetFilename(const char * fname, bool compress = false);
-  virtual bool SaveBuffer(realtype * buffer, int rows, int id = 1);
-  
- protected:
   H5Logger();
   virtual ~H5Logger();
+  std::string ToString() const;
+  virtual void SetFilename(const std::string& fname, bool compress = false);
+  virtual bool SaveBuffer(const realtype *buffer, int rows, int id);
+  
+ protected:
   virtual bool OpenFile();
   virtual bool CloseFile();
   
@@ -137,8 +133,6 @@ class H5Logger : public Logger {
   hsize_t chunk[2];
   // whether data compression should be enabled (default: no)
   bool compressed;
-  // the name of the dataset in the H5 file
-  char datasetname[DATASETNAME_LENGTH];
 };
 
 } // namespace bal

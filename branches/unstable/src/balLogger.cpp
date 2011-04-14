@@ -33,25 +33,26 @@ namespace bal {
 
 Logger::Logger() : opened(false), cols(-1), params(NULL) {}
 
-Logger::~Logger() {}
+Logger::Logger(const std::string& fname, bool compress) : opened(false), cols(-1), params(NULL) {
+  SetFilename(fname,compress);
+}
+
+Logger::~Logger() {
+}
 
 void Logger::SetFileIsOpen(bool open) {
   opened = open;
 }
 
-const char * Logger::GetClassName () const {
-  return "Logger";
-}
-
-const char * Logger::GetFilename() const {
+std::string Logger::GetFilename() const {
   return filename;
 }
 
-void Logger::SetParameters(Parameters * p) {
+void Logger::SetParameters(const Parameters& p) {
   params = p;
 }
 
-Parameters * Logger::GetParameters() const {
+const Parameters& Logger::GetParameters() const {
   return params;
 }
 
@@ -67,41 +68,33 @@ bool Logger::IsFileOpen() const {
   return opened;
 }
 
-bool Logger::SaveBuffer(realtype * buffer, int rows, int id) { 
-  if(!IsFileOpen()) 
-    OpenFile(); 
-  return false; 
-}
-
-bool Logger::SaveSolution(Solution * solution) { 
+bool Logger::SaveSolution(Solution *solution) {
   SetNumberOfColumns(solution->GetColumns());
   SetParameters(solution->GetParameters());
   return SaveBuffer(solution->GetData(), solution->GetRows(), solution->GetID()); 
 }
 
-bool Logger::SaveSolutionThreaded(list <Solution *> * sol_list,
-				     boost::mutex * list_mutex,
-				     boost::condition_variable * q_empty,
-				     boost::condition_variable * q_full) {
+bool Logger::SaveSolutionThreaded(std::list<Solution *>& sol_list,
+				  boost::mutex& list_mutex,
+				  boost::condition_variable& q_empty,
+				  boost::condition_variable& q_full) {
   if(!IsFileOpen())
     OpenFile();
-  
-  // interrupt enabled by default
   
   /* data writing routine. */
   while (true) {
     try {
       {
-	boost::mutex::scoped_lock lock(*list_mutex);
+	boost::mutex::scoped_lock lock(list_mutex);
 	/* 
 	 * if the data queue is empty the thread is set on wait 
 	 * on condition variable q_full waiting queue and released
 	 * when ComputeDiagramMultiThread() calls notify_one()
 	 * on q_full when new solution is available 
 	 */
-	while (sol_list->size() < LIST_MAX_SIZE) {
+	while (sol_list.size() < LIST_MAX_SIZE) {
 	  
-	  q_full->wait(lock);  // INTERRUPTION POINT
+	  q_full.wait(lock);  // INTERRUPTION POINT
 	  /* 
 	   * Atomically call lock.unlock() and blocks the current thread.
 	   * The thread will unblock when notified by a call
@@ -121,7 +114,7 @@ bool Logger::SaveSolutionThreaded(list <Solution *> * sol_list,
        * mutex list_mutex is locked in lock initialization and unlocked while exiting the scope 
        */
       /* notifies all threaded solvers the queue is now empty, giving them the control */
-      q_empty->notify_all();
+      q_empty.notify_all();
       
     }
     catch (boost::thread_interrupted&) {
@@ -132,40 +125,25 @@ bool Logger::SaveSolutionThreaded(list <Solution *> * sol_list,
   return true;
 }
 
-bool Logger::SortAndWriteSolutionList(list <Solution *> * sol_list) {
-  Solution * solution;
-  
-  /* SolutionComparer is a struct defined in balSolution.h defining a method on operator() *
-   * to compare two Solution pointers */
-  //sol_list->sort(SolutionComparer());
-  sol_list->sort(CompareBalSolutions);
-  
-  while (!sol_list->empty()) {
-    solution = sol_list->front();
-    sol_list->pop_front();
+bool Logger::SortAndWriteSolutionList(std::list<Solution *>& sol_list) {
+  Solution *solution;
+  sol_list.sort(CompareSolutions);
+  while (! sol_list.empty()) {
+    solution = sol_list.front();
+    sol_list.pop_front();
     SaveSolution(solution);
-    solution->Destroy();
+    delete solution;
   }
   return true;
 }
 
-void Logger::SetFilename(const char *fname, bool compress) {
-  strncpy(filename, fname, FILENAME_LENGTH);
+void Logger::SetFilename(const std::string& fname, bool compress) {
+  if(IsFileOpen())
+    CloseFile();
+  filename = fname;
 }
 
 ///// BALH5LOGGER /////
-
-const char * H5Logger::GetClassName () const {
-  return "H5Logger";
-}
-
-H5Logger * H5Logger::Create() {
-  return new H5Logger;
-}
-
-void H5Logger::Destroy() {
-  delete this;
-}
 
 H5Logger::H5Logger() {
   h5_fid = -1;
@@ -177,7 +155,11 @@ H5Logger::~H5Logger() {
     CloseFile();
 }
 
-void H5Logger::SetFilename(const char * fname, bool compress) {
+std::string H5Logger::ToString() const {
+  return "H5Logger";
+}
+
+void H5Logger::SetFilename(const std::string& fname, bool compress) {
   Logger::SetFilename(fname,compress);
 
   compressed = false;
@@ -223,24 +205,23 @@ void H5Logger::SetFilename(const char * fname, bool compress) {
 }
 
 bool H5Logger::OpenFile() {
-  if(IsFileOpen()) CloseFile();
+  if(IsFileOpen())
+    CloseFile();
 
-  h5_fid = H5Fcreate(GetFilename(), H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
+  h5_fid = H5Fcreate(GetFilename().c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
   if(h5_fid == -1) {
     SetFileIsOpen(false);
     return false;
   }
   SetFileIsOpen(true);
   if(compressed) {
-    /*
-     * Create the dataset creation property list and add the shuffle
-     * filter and the gzip compression filter.
-     * The order in which the filters are added here is significant -
-     * we will see much greater results when the shuffle is applied
-     * first.  The order in which the filters are added to the property
-     * list is the order in which they will be invoked when writing
-     * data.
-     */
+    // Create the dataset creation property list and add the shuffle
+    // filter and the gzip compression filter.
+    // The order in which the filters are added here is significant -
+    // we will see much greater results when the shuffle is applied
+    // first.  The order in which the filters are added to the property
+    // list is the order in which they will be invoked when writing
+    // data.
     herr_t status;
     dcpl = H5Pcreate (H5P_DATASET_CREATE);
     status = H5Pset_shuffle (dcpl);
@@ -251,19 +232,17 @@ bool H5Logger::OpenFile() {
 
 bool H5Logger::CloseFile() {
   if(!IsFileOpen())
-    return false;
-  
-  if(compressed) {
+    return true;
+  if(compressed)
     H5Pclose (dcpl);
-  }
   int flag = H5Fclose(h5_fid);
   if(flag == 0)
     SetFileIsOpen(false);
   return flag == 0;
 }
 
-bool H5Logger::SaveBuffer(realtype * buffer, int rows, int id) {
-  if(buffer == NULL || rows <= 0 || GetNumberOfColumns() <= 0 || GetParameters() == NULL) {
+bool H5Logger::SaveBuffer(const realtype *buffer, int rows, int id) {
+  if(buffer == NULL || rows <= 0 || GetNumberOfColumns() <= 0) {
     return false;
   }
   
@@ -278,8 +257,10 @@ bool H5Logger::SaveBuffer(realtype * buffer, int rows, int id) {
   dims[1] = GetNumberOfColumns();
 
   // create the name of the dataset: the letter C in the name means that the H5 file has been saved in C++
-  sprintf(datasetname, "C%06d", id);
-  
+  std::stringstream ss;
+  ss << "C" << std::setfill('0') << std::setw(6) << id;
+  const char *datasetname = ss.str().c_str();
+
   if(compressed) { // do this if compression is enabled
     // set chunk size
     if(dims[0] > 10)
@@ -319,8 +300,8 @@ bool H5Logger::SaveBuffer(realtype * buffer, int rows, int id) {
     return false;
 
   // If there are no parameters the function is not called
-  if (GetParameters()->GetNumber() > 0)
-    status = H5LTset_attribute_double(h5_fid, datasetname, "parameters", GetParameters()->GetParameters(), GetParameters()->GetNumber());
+  if (GetParameters().GetNumber() > 0)
+    status = H5LTset_attribute_double(h5_fid, datasetname, "parameters", GetParameters().GetParameters(), GetParameters().GetNumber());
 
   return status >= 0;
 }

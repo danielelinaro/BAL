@@ -28,27 +28,25 @@ using namespace bal;
 // TEST H5Logger and ASCIILogger
 int main(int argc, char *argv[]) {
 
-	// data
-	double buffer[10] = {0, 0, 0, 0, -2, 1, 1, 1, 1, -1}; 
-	
-	// parameters
-	Parameters * pars = Parameters::Create();
-	pars->SetNumber(4);
-	pars->At(0) = 3.0;
-	pars->At(1) = 5.0;
-	pars->At(2) = 0.01;
-	pars->At(3) = 4.0;
+  // data
+  double buffer[10] = {0, 0, 0, 0, -2, 1, 1, 1, 1, -1}; 
+  
+  // parameters
+  Parameters pars(4);
+  pars[0] = 3.0;
+  pars[1] = 5.0;
+  pars[2] = 0.01;
+  pars[3] = 4.0;
+  
+  // H5Logger
+  H5Logger logger;
+  logger.SetFilename("test.1.h5");
+  logger.SetNumberOfColumns(5);
+  logger.SetParameters(pars);
+  logger.SaveBuffer(buffer, 2, 5683);
+  logger.SetFilename("test.2.h5");
+  logger.SaveBuffer(buffer, 2, 7583);
 
-	// H5Logger
-	Logger * logger = H5Logger::Create();
-	logger->SetFilename("test.1.h5");
-	logger->SetNumberOfColumns(5);
-	logger->SetParameters(pars);
-	logger->SaveBuffer(buffer, 2);
-	logger->SetFilename("test.2.h5");
-	logger->SaveBuffer(buffer, 2);
-	logger->Destroy();
-
-	return 0;
+  return 0;
 }
 
