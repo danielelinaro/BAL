@@ -29,7 +29,7 @@
 
 namespace bal {
 
-DynamicalSystem::DynamicalSystem() {
+DynamicalSystem::DynamicalSystem() : pars(0) {
   n = 0;
   p = 0;
   nev = 0;
@@ -64,48 +64,49 @@ DynamicalSystem::~DynamicalSystem() {
 #endif
 }
 
-int DynamicalSystem::RHSWrapper (realtype t, N_Vector x, N_Vector xdot, void * sys) {
-  DynamicalSystem * bds = (DynamicalSystem *) sys;
+int DynamicalSystem::RHSWrapper (realtype t, N_Vector x, N_Vector xdot, void *sys) {
+  DynamicalSystem *ds = (DynamicalSystem *) sys;
 
   // the first n components of the vector field
-  int flag = bds->RHS(t,x,xdot,(void *)bds->GetParameters());
+  //int flag = ds->RHS(t,x,xdot,(void *)ds->GetParameters());
+  int flag = ds->RHS(t, x, xdot, sys);
 
-  if(! bds->IsExtended() || flag != CV_SUCCESS) {
+  if(! ds->IsExtended() || flag != CV_SUCCESS) {
     return flag;
   }
   
   // the Jacobian matrix
-  if(bds->HasJacobian()) {
+  if(ds->HasJacobian()) {
 #ifdef CVODE25
-    DynamicalSystem::JacobianWrapper(bds->n,bds->jac,t,x,NULL,(void *)bds,NULL,NULL,NULL);
+    DynamicalSystem::JacobianWrapper(ds->n, ds->jac, t, x, NULL, sys, NULL, NULL, NULL);
 #endif
 #ifdef CVODE26
-    DynamicalSystem::JacobianWrapper(bds->n,t,x,NULL,bds->jac,(void *)bds,NULL,NULL,NULL);
+    DynamicalSystem::JacobianWrapper(ds->n, t, x, NULL, ds->jac, sys, NULL, NULL, NULL);
 #endif
   }
   else {
-    DynamicalSystem::JacobianFiniteDifferences(bds->n,t,x,bds->jac,(void *)bds);
+    DynamicalSystem::JacobianFiniteDifferences(ds->n, t, x, ds->jac, sys);
   }
 
-  realtype Y[bds->n][bds->n], F[bds->n][bds->n];
+  realtype Y[ds->n][ds->n], F[ds->n][ds->n];
   int i, j, k;
   
   // extend
-  for(i=0, k=0; i<bds->n; i++) {
-    for(j=0; j<bds->n; j++, k++)
+  for(i=0, k=0; i<ds->n; i++) {
+    for(j=0; j<ds->n; j++, k++)
       Y[j][i] = Ith(x,3+k);
   }
   // multiply the matrices
-  for(i=0; i<bds->n; i++) {
-    for(j=0; j<bds->n; j++) {
+  for(i=0; i<ds->n; i++) {
+    for(j=0; j<ds->n; j++) {
       F[i][j] = 0.;
-      for(k=0; k<bds->n; k++)
-				F[i][j] += IJth(bds->jac,i,k)*Y[k][j];
+      for(k=0; k<ds->n; k++)
+	F[i][j] += IJth(ds->jac,i,k)*Y[k][j];
     }
   }
   // the last n*n components of the vector field
-  for(i=0, k=0; i<bds->n; i++) {
-    for(j=0; j<bds->n; j++,k++)
+  for(i=0, k=0; i<ds->n; i++) {
+    for(j=0; j<ds->n; j++,k++)
       Ith(xdot,3+k) = F[j][i];
   }
   
@@ -114,11 +115,11 @@ int DynamicalSystem::RHSWrapper (realtype t, N_Vector x, N_Vector xdot, void * s
 
 #ifdef CVODE25
 int DynamicalSystem::Jacobian (long int N, DenseMat J, realtype t, N_Vector x, 
-				  N_Vector fy, void *jac_data, N_Vector tmp1, N_Vector tmp2, N_Vector tmp3) {
+			       N_Vector fy, void *sys, N_Vector tmp1, N_Vector tmp2, N_Vector tmp3) {
 #endif
 #ifdef CVODE26
 int DynamicalSystem::Jacobian (int N, realtype t, N_Vector x, N_Vector fy, 
-				  DlsMat J, void *jac_data, N_Vector tmp1, N_Vector tmp2, N_Vector tmp3) {
+				  DlsMat J, void *sys, N_Vector tmp1, N_Vector tmp2, N_Vector tmp3) {
 #endif
   return ! CV_SUCCESS;
 }
@@ -131,24 +132,22 @@ int DynamicalSystem::JacobianWrapper (long int N, DenseMat J, realtype t, N_Vect
 int DynamicalSystem::JacobianWrapper (int N, realtype t, N_Vector x, N_Vector fy, 
 					 DlsMat J, void *sys, N_Vector tmp1, N_Vector tmp2, N_Vector tmp3) {
 #endif
-  DynamicalSystem * bds = (DynamicalSystem *) sys;
+  DynamicalSystem *ds = (DynamicalSystem *) sys;
 #ifdef CVODE25
-  return bds->Jacobian(N,J,t,x,fy,(void *)bds->GetParameters(),tmp1,tmp2,tmp3);
+  return ds->Jacobian(N, J, t, x, fy, sys, tmp1, tmp2, tmp3);
 #endif
 #ifdef CVODE26
-  return bds->Jacobian(N,t,x,fy,J,(void *)bds->GetParameters(),tmp1,tmp2,tmp3);
+  return ds->Jacobian(N, t, x, fy, J, sys, tmp1, tmp2, tmp3);
 #endif
 }
 
 #ifdef CVODE25
-int DynamicalSystem::JacobianFiniteDifferences (long int N, realtype t, N_Vector x,
-						   DenseMat J, void *sys) {
+int DynamicalSystem::JacobianFiniteDifferences (long int N, realtype t, N_Vector x, DenseMat J, void *sys) {
 #endif
 #ifdef CVODE26
-int DynamicalSystem::JacobianFiniteDifferences (long int N, realtype t, N_Vector x,
-						   DlsMat J, void *sys) {
+int DynamicalSystem::JacobianFiniteDifferences (long int N, realtype t, N_Vector x, DlsMat J, void *sys) {
 #endif
-  DynamicalSystem * bds = (DynamicalSystem *) sys;
+  DynamicalSystem *ds = (DynamicalSystem *) sys;
   N_Vector ref, perturb;
   double eps = 1e-8;
   int i, j;
@@ -156,11 +155,11 @@ int DynamicalSystem::JacobianFiniteDifferences (long int N, realtype t, N_Vector
   ref = N_VNew_Serial(N);
   perturb = N_VNew_Serial(N);
 
-  bds->RHS(t,x,ref,(void *)bds->GetParameters());
+  ds->RHS(t, x, ref, sys);
 
   for(j=0; j<N; j++) {
     Ith(x,j) = Ith(x,j) + eps;
-    bds->RHS(t,x,perturb,(void *)bds->GetParameters());
+    ds->RHS(t, x, perturb, sys);
     for(i=0; i<N; i++)
       IJth(J,i,j) = (Ith(perturb,i)-Ith(ref,i)) / eps;
     Ith(x,j) = Ith(x,j) - eps;
@@ -173,23 +172,27 @@ int DynamicalSystem::JacobianFiniteDifferences (long int N, realtype t, N_Vector
 }
   
 
-int DynamicalSystem::Events (realtype t, N_Vector x, realtype * event, void * data) {
+int DynamicalSystem::Events (realtype t, N_Vector x, realtype *event, void *sys) {
   return ! CV_SUCCESS;
 }
 
-int DynamicalSystem::EventsWrapper (realtype t, N_Vector x, realtype * event, void * sys) {
-  DynamicalSystem * bds = (DynamicalSystem *) sys;
-  return bds->Events(t,x,event,(void *)bds->GetParameters());
+int DynamicalSystem::EventsWrapper (realtype t, N_Vector x, realtype *event, void *sys) {
+  DynamicalSystem *ds = (DynamicalSystem *) sys;
+  return ds->Events(t, x, event, sys);
 }
 
-void DynamicalSystem::EventsConstraints (realtype t, N_Vector x, int * constraints, void * data) {
+void DynamicalSystem::EventsConstraints (realtype t, N_Vector x, int *constraints, void *sys) {
 }
 
 void DynamicalSystem::SetParameters (const Parameters& bp) throw (Exception) {
   pars = bp;
 }
- 
-Parameters* DynamicalSystem::GetParameters () const {
+
+void DynamicalSystem::operator << (const Parameters& bp) throw (Exception) {
+  pars = bp;
+}
+
+const Parameters* DynamicalSystem::GetParameters () const {
   return &pars;
 }
 
@@ -246,7 +249,7 @@ bool DynamicalSystem::HasEventsConstraints() const {
 void DynamicalSystem::Reset() {
 }
 
-void DynamicalSystem::ManageEvents(realtype t, N_Vector X, int * events, int * constraints) {
+void DynamicalSystem::ManageEvents(realtype t, N_Vector X, int *events, int *constraints) {
 }
   
 int DynamicalSystem::GetNumberOfEvents() const {

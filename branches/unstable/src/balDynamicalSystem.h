@@ -28,7 +28,7 @@
 #ifndef _BALDYNAMICALSYSTEM_
 #define _BALDYNAMICALSYSTEM_
 
-#include <iostream>
+#include <string>
 
 #include <sundials/sundials_types.h>
 #include <nvector/nvector_serial.h>
@@ -59,13 +59,15 @@ namespace bal {
  * \sa Parameters
  */
 class DynamicalSystem : public Object {
- public:
+public:
   DynamicalSystem();
   DynamicalSystem(const DynamicalSystem& system);
   virtual ~DynamicalSystem();
 
-  virtual int RHS (realtype t, N_Vector x, N_Vector xdot, void * data) = 0;
-  static int RHSWrapper (realtype t, N_Vector x, N_Vector xdot, void * sys);
+  virtual std::string ToString() const = 0;
+
+  virtual int RHS (realtype t, N_Vector x, N_Vector xdot, void *sys) = 0;
+  static int RHSWrapper (realtype t, N_Vector x, N_Vector xdot, void *sys);
   
 #ifdef CVODE25
   static int JacobianWrapper (long int N, DenseMat J, realtype t, N_Vector x, 
@@ -73,7 +75,7 @@ class DynamicalSystem : public Object {
   static int JacobianFiniteDifferences (long int N, realtype t, N_Vector x,
 					DenseMat J, void *sys);
   virtual int Jacobian (long int N, DenseMat J, realtype t, N_Vector x, 
-			N_Vector fy, void *jac_data, N_Vector tmp1, N_Vector tmp2, N_Vector tmp3);
+			N_Vector fy, void *sys, N_Vector tmp1, N_Vector tmp2, N_Vector tmp3);
 #endif
   
 #ifdef CVODE26
@@ -82,13 +84,12 @@ class DynamicalSystem : public Object {
   static int JacobianFiniteDifferences (long int N, realtype t, N_Vector x,
 					DlsMat J, void *sys);
   virtual int Jacobian (int N, realtype t, N_Vector x, N_Vector fy, 
-			DlsMat J, void *jac_data, N_Vector tmp1, N_Vector tmp2, N_Vector tmp3);
+			DlsMat J, void *sys, N_Vector tmp1, N_Vector tmp2, N_Vector tmp3);
 #endif
   
-  static int EventsWrapper (realtype t, N_Vector x, realtype * event, void * sys);
-  virtual int Events (realtype t, N_Vector x, realtype * event, void * data);
-  
-  virtual void EventsConstraints (realtype t, N_Vector x, int * constraints, void * data);
+  static int EventsWrapper (realtype t, N_Vector x, realtype *event, void *sys);
+  virtual int Events (realtype t, N_Vector x, realtype *event, void *sys);
+  virtual void EventsConstraints (realtype t, N_Vector x, int *constraints, void *sys);
   
   virtual bool HasJacobian() const;
   virtual bool HasEvents() const;
@@ -96,24 +97,25 @@ class DynamicalSystem : public Object {
   
   virtual void Reset();
   virtual bool SpecialOptions(const void *opt);
-  virtual void ManageEvents(realtype t, N_Vector X, int * events, int * constraints = NULL);
+  virtual void ManageEvents(realtype t, N_Vector X, int *events, int *constraints = NULL);
   
   int GetNumberOfEvents() const;
   int GetDimension() const;
   int GetOriginalDimension() const;
   int GetNumberOfParameters() const;
   void SetParameters(const Parameters& bp) throw(Exception);
-  Parameters* GetParameters() const;
-  
+  const Parameters* GetParameters() const;
+  void operator<< (const Parameters& bp) throw (Exception);
+
   void Extend(bool extend);
   bool IsExtended() const;
   
- protected:
+protected:
   void SetDimension(int n_);
   void SetNumberOfParameters(int p_);
   void SetNumberOfEvents(int nev_);
   
- private:
+private:
   int n;
   int p;
   int nev;

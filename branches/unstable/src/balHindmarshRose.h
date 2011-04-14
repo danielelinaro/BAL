@@ -28,12 +28,11 @@
 #ifndef _BALHINDMARSHROSE_
 #define _BALHINDMARSHROSE_
 
+#include <string>
+#include <cvode/cvode.h>
 #include "balObject.h"
 #include "balParameters.h"
 #include "balDynamicalSystem.h"
-#include <cvode/cvode.h>
-
-#define XREST (-1.6)
 
 namespace bal {
 
@@ -45,37 +44,33 @@ namespace bal {
  * \sa DynamicalSystem
  */
 class HindmarshRose : public DynamicalSystem {
- public:
-  virtual const char * GetClassName () const;
-  static HindmarshRose * Create ();
-  static HindmarshRose * Copy (HindmarshRose *hr);
-  virtual DynamicalSystem * Clone() const;
-  virtual void Destroy ();
-  
-  int RHS (realtype t, N_Vector x, N_Vector xdot, void * data);
+public:
+  HindmarshRose();
+  HindmarshRose(const HindmarshRose& hr);
+  virtual ~HindmarshRose();
+
+  virtual std::string ToString() const;
+
+  int RHS (realtype t, N_Vector x, N_Vector xdot, void *sys);
 #ifdef CVODE25
   int Jacobian (long int N, DenseMat J, realtype t, N_Vector x, N_Vector fy, 
-		void *jac_data, N_Vector tmp1, N_Vector tmp2, N_Vector tmp3);
+		void *sys, N_Vector tmp1, N_Vector tmp2, N_Vector tmp3);
 #endif
 #ifdef CVODE26
   int Jacobian (int N, realtype t, N_Vector x, N_Vector fy, DlsMat J, 
-		void *jac_data, N_Vector tmp1, N_Vector tmp2, N_Vector tmp3);
+		void *sys, N_Vector tmp1, N_Vector tmp2, N_Vector tmp3);
 #endif
-  int Events (realtype t, N_Vector x, realtype * event, void * data);
-  void EventsConstraints (realtype t, N_Vector x, int * constraints, void * data);
+  int Events (realtype t, N_Vector x, realtype *event, void *sys);
+  void EventsConstraints (realtype t, N_Vector x, int *constraints, void *sys);
   
   bool HasJacobian() const;
   bool HasEvents() const;
   bool HasEventsConstraints() const;
   
-  //const double xrest;
+public:
+  static const double xrest;
 
- protected:
-  HindmarshRose();
-  HindmarshRose(const HindmarshRose& hr);
-  virtual ~HindmarshRose();
-  
- private:
+private:
   N_Vector xderiv;
 };
 

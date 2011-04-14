@@ -29,21 +29,20 @@ using namespace bal;
 
 // TEST balBifurcationParameters
 int main(int argc, char *argv[]) {
-
+  int np = 4;
   // parameters
-  Parameters pars;
-  pars.SetNumber(4);
+  Parameters pars(np);
   pars[0] = 3.0;
   pars[1] = 5.0;
   pars[2] = 0.01;
   pars[3] = 4.0;
-
-  BifurcationParameters bp;
+  // bifurcation parameters
+  BifurcationParameters bp(np);
   Parameters parupper = pars;
   parupper[0] = parupper[0] + 1;
   parupper[1] = parupper[1] + 1;
   bp.SetParameterBounds(pars, parupper);
-  int steps[4] = {6,6,1,1};
+  int steps[4] = {3,3,1,1};
   bp.SetNumberOfSteps(steps);
 
   std::cout << "par lower: " << pars << std::endl;

@@ -30,11 +30,12 @@
 
 namespace bal {
 
-Parameters::Parameters() : p(0), pars(NULL), dealloc_(false) {
+Parameters::Parameters(int np) : p(np), pars(NULL), dealloc_(false) {
+  SetNumber(p);
 }
 
-Parameters::Parameters(const Parameters& params) : p(0), pars(NULL), dealloc_(false) {
-  SetNumber(params.GetNumber());
+Parameters::Parameters(const Parameters& params) : p(params.p), pars(NULL), dealloc_(false) {
+  SetNumber(p);
   for(int i=0; i<p; i++)
     pars[i] = params.pars[i];
 }
@@ -64,16 +65,16 @@ double& Parameters::operator[] (int k) {
   return pars[k];
 }
 
-void Parameters::operator= (const Parameters& param) {
+void Parameters::operator= (const Parameters& params) {
   if(p == 0)
-    SetNumber(param.p);
-  if(p != param.p)
+    SetNumber(params.p);
+  if(p != params.p)
     throw Exception("Wrong number of parameters in DynamicalSystem::SetParameters");
   for(int i=0; i<p; i++)
-    pars[i] = param.pars[i];
+    pars[i] = params.pars[i];
 }
 
-double& Parameters::At (int k) {
+double Parameters::At (int k) const {
   return pars[k];
 }
 

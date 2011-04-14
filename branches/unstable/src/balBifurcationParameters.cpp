@@ -29,7 +29,8 @@
 
 namespace bal {
 
-BifurcationParameters::BifurcationParameters() {
+BifurcationParameters::BifurcationParameters(int np) : plower(np), pupper(np) {
+  Parameters::SetNumber(np);
   nsteps = NULL;
   isteps = NULL;
   steps = NULL;
@@ -152,7 +153,7 @@ void BifurcationParameters::Reset() {
 void BifurcationParameters::Setup() {
   total = 1;
   for(int i=0; i<plower.GetNumber(); i++) {
-    At(i) = plower[i];
+    pars[i] = plower[i];
     if(nsteps[i] == 1) {
       steps[i] = (pupper[i] - plower[i]);
     }
@@ -169,10 +170,10 @@ bool BifurcationParameters::Next() {
   count++;
   if(count <= total) {
     for(int i=0; i<plower.GetNumber(); i++) {
-      At(i) = At(i) + steps[i];
+      pars[i] += steps[i];
       isteps[i]++;
       if(isteps[i] > nsteps[i]) {
-	At(i) = plower[i];
+	pars[i] = plower[i];
 	isteps[i] = 1;
       }
       else {

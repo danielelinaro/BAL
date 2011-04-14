@@ -28,8 +28,7 @@ using namespace bal;
 // TEST Parameters
 int main(int argc, char *argv[]) {
 
-  Parameters pars;
-  pars.SetNumber(4);
+  Parameters pars(4);
   pars[0] = 3.0;
   pars[1] = 5.0;
   pars[2] = 0.01;

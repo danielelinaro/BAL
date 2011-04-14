@@ -57,7 +57,7 @@ namespace bal {
  */
 class BifurcationParameters : public Parameters {
  public:
-  BifurcationParameters();
+  BifurcationParameters(int np = 0);
   ~BifurcationParameters();
 
   virtual void SetNumber(int n);

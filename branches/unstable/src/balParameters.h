@@ -49,7 +49,7 @@ namespace bal {
  */
 class Parameters : public Object {
  public:
-  Parameters ();
+  Parameters (int numpars = 0);
   Parameters (const Parameters& param);
   virtual ~Parameters ();
 
@@ -57,7 +57,7 @@ class Parameters : public Object {
   int GetNumber () const;
   
   double * GetParameters() const;
-  double& At (int k);
+  double At (int k) const;
   double& operator[] (int k);
   void operator=(const Parameters& param);
 
@@ -65,10 +65,10 @@ class Parameters : public Object {
   friend std::ostream & operator<< (std::ostream & out, const Parameters & bp);
   
  protected:
-  
- private:
   int p;
   double * pars;
+  
+ private:
   bool dealloc_;
 };
 
