@@ -29,29 +29,30 @@
 
 namespace bal {
 
-Solution::Solution() {
-  rows = columns = 0;
-  buffer = NULL;
-  lyapunov_exponents = NULL;
-  spectrum_dimension = 0;
-  ID = 0;
-  lyapunov_mode = false;
+Solution::Solution(int r, int c, realtype *buf)
+  : rows(r), columns(c),
+    nturns(0), spectrum_dimension(c-2), ID(0),
+    lyapunov_mode(false),
+    buffer(new realtype[r*c]), lyapunov_exponents(new realtype[c-2]) {
+  memcpy(buffer.get(), buf, r*c*sizeof(realtype));
 }
 
-Solution::Solution(const Solution& solution) {
-  Solution();
-  solution.GetSize(&rows,&columns);
-  SetSize(rows,columns);
-  memcpy(buffer,solution.buffer,rows*columns*sizeof(realtype));
-  nturns = solution.nturns;
-  ID = solution.ID;
-  if (solution.lyapunov_mode)
-    SetLyapunovExponents(solution.spectrum_dimension,solution.lyapunov_exponents);
+Solution::Solution(const Solution& solution) 
+  : rows(solution.rows), columns(solution.columns),
+    nturns(solution.nturns), spectrum_dimension(solution.spectrum_dimension),
+    ID(solution.ID), lyapunov_mode(solution.lyapunov_mode),
+    buffer(new realtype[solution.rows*solution.columns]),
+    lyapunov_exponents(new realtype[solution.spectrum_dimension]),
+    parameters(dynamic_cast<Parameters*>(solution.parameters->Clone())) {
+  memcpy(buffer.get(), solution.buffer.get(), rows*columns*sizeof(realtype));
+  memcpy(lyapunov_exponents.get(), solution.lyapunov_exponents.get(), spectrum_dimension*sizeof(realtype));
 }
 
 Solution::~Solution() {
-  if(buffer != NULL) delete [] buffer;
-  if(lyapunov_exponents !=NULL) delete [] lyapunov_exponents;
+}
+
+Object* Solution::Clone() const {
+  return new Solution(*this);
 }
 
 std::string Solution::ToString() const {
@@ -66,34 +67,21 @@ int Solution::GetColumns() const {
   return columns;
 }
 
-void Solution::SetSize(int r, int c) {
-  if(buffer != NULL)
-    delete [] buffer;
-  rows = r;
-  columns = c;
-  buffer = new realtype[rows*columns];
-}
-
 void Solution::GetSize(int *r, int *c) const {
   *r = rows;
   *c = columns;
 }
 
-void Solution::SetData(int r, int c, const realtype *data) {
-  SetSize(r,c);
-  memcpy(buffer,data,rows*columns*sizeof(realtype));
-}
-
-const realtype* Solution::GetData() const {
-  return buffer;
+realtype* Solution::GetData() const {
+  return buffer.get();
 }	
 
-void Solution::SetParameters(const Parameters& p) {
-  parameters = p;
+void Solution::SetParameters(const Parameters *p) {
+  parameters = boost::shared_ptr<Parameters>(dynamic_cast<Parameters *>(p->Clone()));
 }
 
-const Parameters& Solution::GetParameters() const {
-  return parameters;
+Parameters* Solution::GetParameters() const {
+  return parameters.get();
 }
 
 void Solution::SetNumberOfTurns(int nturns_) {
@@ -104,21 +92,12 @@ int Solution::GetNumberOfTurns() const {
   return nturns;
 }
 
-void Solution::SetLyapunovExponents(int n, const realtype *lp) {
-  if (lyapunov_exponents == NULL)
-    lyapunov_exponents = new realtype[n];
-  else if (n != spectrum_dimension) {
-    delete lyapunov_exponents;
-    lyapunov_exponents = new realtype[n];
-  }
-  spectrum_dimension = n;
-  lyapunov_mode = true;
-  for (int i=0; i<spectrum_dimension ; i++)
-    lyapunov_exponents[i] = lp[i];
+void Solution::SetLyapunovExponents(const realtype *lp) {
+  memcpy(lyapunov_exponents.get(), lp, spectrum_dimension*sizeof(realtype));
 }
 
-const realtype* Solution::GetLyapunovExponents() const {
-  return lyapunov_exponents;
+realtype* Solution::GetLyapunovExponents() const {
+  return lyapunov_exponents.get();
 }
 
 void Solution::SetID(int id) {

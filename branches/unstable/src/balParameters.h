@@ -53,6 +53,7 @@ public:
   Parameters (int numpars);
   Parameters (const Parameters& param);
   virtual ~Parameters ();
+  virtual Object* Clone() const;
   virtual std::string ToString() const;
 
   int GetNumber () const;
@@ -61,8 +62,10 @@ public:
   double& operator[] (int k);
   void operator=(const Parameters& param);
 
-private:
+protected:
   int p;
+
+private:
   boost::shared_array<double> pars;  
 };
 

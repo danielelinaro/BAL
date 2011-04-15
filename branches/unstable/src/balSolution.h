@@ -29,6 +29,8 @@
 #define _BALSOLUTION_
 
 #include <string>
+#include <boost/shared_ptr.hpp>
+#include <boost/shared_array.hpp>
 #include "balObject.h"
 #include "balCommon.h"
 #include "balParameters.h"
@@ -43,10 +45,11 @@ namespace bal {
  */
 class Solution : public Object {
 public:
-  Solution();
-  Solution(const Solution & solution);
+  Solution(int r, int c, realtype *buf);
+  Solution(const Solution& solution);
   virtual ~Solution();
 
+  virtual Object* Clone() const;
   std::string ToString() const;
 
   int GetRows() const;
@@ -54,17 +57,16 @@ public:
   void GetSize(int *r, int *c) const;
   void SetSize(int r, int c);
   
-  const Parameters& GetParameters() const;
-  void SetParameters(const Parameters& p);
+  Parameters* GetParameters() const;
+  void SetParameters(const Parameters *p);
   
-  const realtype* GetData() const;
-  void SetData(int r, int c, const realtype *data);
+  realtype* GetData() const;
   
   int GetNumberOfTurns() const;
   void SetNumberOfTurns(int nturns);
 
-  const realtype* GetLyapunovExponents() const;
-  void SetLyapunovExponents(int n, const realtype *lp);
+  realtype* GetLyapunovExponents() const;
+  void SetLyapunovExponents(const realtype *lp);
   bool IsLyapunovMode() const;
 	
   int GetID() const;
@@ -73,9 +75,9 @@ public:
   bool operator< (const Solution& sol) const;
 
  private:
-  Parameters parameters;
-  realtype *buffer;
-  realtype *lyapunov_exponents;
+  boost::shared_ptr<Parameters> parameters;
+  boost::shared_array<realtype> buffer;
+  boost::shared_array<realtype> lyapunov_exponents;
   int spectrum_dimension;
   int rows, columns;
   int nturns;

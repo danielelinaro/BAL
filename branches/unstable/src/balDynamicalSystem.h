@@ -64,7 +64,10 @@ public:
   DynamicalSystem(const DynamicalSystem& system);
   virtual ~DynamicalSystem();
 
+  /*
+  virtual Object* Clone() const = 0;
   virtual std::string ToString() const = 0;
+  */
 
   virtual int RHS (realtype t, N_Vector x, N_Vector xdot, void *sys) = 0;
   static int RHSWrapper (realtype t, N_Vector x, N_Vector xdot, void *sys);
@@ -103,9 +106,9 @@ public:
   int GetDimension() const;
   int GetOriginalDimension() const;
   int GetNumberOfParameters() const;
-  void SetParameters(Parameters *p) throw(Exception);
+  void SetParameters(Parameters *p);
   Parameters* GetParameters() const;
-  void operator<< (Parameters *p) throw (Exception);
+  void operator<< (Parameters *p);
 
   void Extend(bool extend);
   bool IsExtended() const;

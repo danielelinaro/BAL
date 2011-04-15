@@ -53,6 +53,10 @@ HindmarshRose::~HindmarshRose() {
   N_VDestroy_Serial(xderiv);
 }
 
+Object* HindmarshRose::Clone() const {
+  return new HindmarshRose(*this);
+}
+
 std::string HindmarshRose::ToString() const {
   std::stringstream ss;
   ss << ">> HindmarshRose -- ";
@@ -63,7 +67,7 @@ std::string HindmarshRose::ToString() const {
 int HindmarshRose::RHS (realtype t, N_Vector x, N_Vector xdot, void *sys) {
   realtype x1, x2, x3;
   realtype b, I, u, s;
-  DynamicalSystem *ds = (DynamicalSystem *) sys;
+  DynamicalSystem *ds = static_cast<DynamicalSystem*>(sys);
   Parameters *parameters = ds->GetParameters();
   
   b = parameters->At(0);
@@ -92,7 +96,7 @@ int HindmarshRose::Jacobian (int N, realtype t, N_Vector x, N_Vector fy, DlsMat 
 #endif
   realtype b, I, u, s;
   realtype x1, x2, x3;
-  DynamicalSystem *ds = (DynamicalSystem *) sys;
+  DynamicalSystem *ds = static_cast<DynamicalSystem*>(sys);
   Parameters *parameters = ds->GetParameters();
   
   x1 = Ith (x, 0);
@@ -128,7 +132,7 @@ void HindmarshRose::EventsConstraints (realtype t, N_Vector x, int *constraints,
   realtype b, u, s;
   realtype x1, x2, x3;
   realtype ris[3], xdot[3];
-  DynamicalSystem *ds = (DynamicalSystem *) sys;
+  DynamicalSystem *ds = static_cast<DynamicalSystem*>(sys);
   Parameters *parameters = ds->GetParameters();
   
   x1 = Ith (x, 0);

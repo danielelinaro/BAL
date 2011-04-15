@@ -49,9 +49,11 @@ public:
   HindmarshRose(const HindmarshRose& hr);
   virtual ~HindmarshRose();
 
+  virtual Object* Clone() const;
   virtual std::string ToString() const;
 
   int RHS (realtype t, N_Vector x, N_Vector xdot, void *sys);
+
 #ifdef CVODE25
   int Jacobian (long int N, DenseMat J, realtype t, N_Vector x, N_Vector fy, 
 		void *sys, N_Vector tmp1, N_Vector tmp2, N_Vector tmp3);

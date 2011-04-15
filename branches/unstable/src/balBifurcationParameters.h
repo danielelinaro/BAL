@@ -58,7 +58,9 @@ namespace bal {
 class BifurcationParameters : public Parameters {
  public:
   BifurcationParameters(int np);
+  BifurcationParameters(const BifurcationParameters& bp);
   ~BifurcationParameters();
+  virtual Object* Clone() const;
 
   void SetIthParameterLowerBound(int i, double p);
   void SetIthParameter(int i, double p);

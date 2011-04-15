@@ -40,7 +40,24 @@ BifurcationParameters::BifurcationParameters(int np) : Parameters(np), plower(np
   }
 }
 
+BifurcationParameters::BifurcationParameters(const BifurcationParameters& bp) : Parameters(bp.p),
+										plower(bp.p),
+										pupper(bp.p),
+										steps(new double[bp.p]),
+										nsteps(new int[bp.p]),
+										isteps(new int[bp.p]) {
+  for(int i=0; i<p; i++) {
+    steps[i] = bp.steps[i];
+    nsteps[i] = bp.nsteps[i];
+    isteps[i] = bp.isteps[i];
+  }
+}
+
 BifurcationParameters::~BifurcationParameters() {
+}
+
+Object* BifurcationParameters::Clone() const {
+  return new BifurcationParameters(*this);
 }
 
 void BifurcationParameters::SetParameterBounds(const Parameters& lower, const Parameters& upper) {
@@ -79,7 +96,7 @@ double BifurcationParameters::GetIthParameterUpperBound(int i) {
 }
 
 bool BifurcationParameters::SetNumberOfSteps(int i, int s) {
-  if(i>=0 && i<plower.GetNumber() && s>0)
+  if(i>=0 && i<p && s>0)
     nsteps[i] = s;
   else
     return false;
@@ -88,13 +105,13 @@ bool BifurcationParameters::SetNumberOfSteps(int i, int s) {
 }
 
 void BifurcationParameters::SetNumberOfSteps(const int *s) {
-  for(int i=0; i<plower.GetNumber(); i++)
+  for(int i=0; i<p; i++)
     nsteps[i] = s[i];
   Setup();
 }
 
 int BifurcationParameters::GetNumberOfSteps(int i) const {
-  if(i>=0 && i<plower.GetNumber())
+  if(i>=0 && i<p)
     return nsteps[i];
   return -1;
 }
@@ -109,7 +126,7 @@ void BifurcationParameters::Reset() {
 
 void BifurcationParameters::Setup() {
   total = 1;
-  for(int i=0; i<plower.GetNumber(); i++) {
+  for(int i=0; i<p; i++) {
     (*this)[i] = plower[i];
     if(nsteps[i] == 1) {
       steps[i] = (pupper[i] - plower[i]);
@@ -126,7 +143,7 @@ void BifurcationParameters::Setup() {
 bool BifurcationParameters::Next() {
   count++;
   if(count <= total) {
-    for(int i=0; i<plower.GetNumber(); i++) {
+    for(int i=0; i<p; i++) {
       (*this)[i] += steps[i];
       isteps[i]++;
       if(isteps[i] > nsteps[i]) {

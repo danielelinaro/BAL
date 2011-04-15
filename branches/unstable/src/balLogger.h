@@ -46,9 +46,7 @@
 #include <sundials/sundials_types.h>
 
 #include <string>
-#include <sstream>
 #include <list>
-#include <algorithm>
 #include <boost/thread.hpp>
 #include <boost/thread/thread.hpp>
 #include <boost/thread/condition.hpp>
@@ -71,21 +69,15 @@ namespace bal {
 class Logger : public Object {
 public:
   Logger();
-  Logger(const std::string& fname, bool compress = false);
+  Logger(const Logger& logger);
   virtual ~Logger();
 
-  virtual void SetFilename(const std::string& fname, bool compress = false);
+  virtual void Open(const std::string& fname, bool compress = false) = 0;
+  virtual void Close() = 0;
+
   std::string GetFilename() const;
+  bool IsOpen() const;
 
-  void SetParameters(const Parameters& params);
-  const Parameters& GetParameters() const;
-
-  void SetNumberOfColumns(int c);
-  int GetNumberOfColumns() const;
-
-  bool IsFileOpen() const;
-  
-  virtual bool SaveBuffer(const realtype *buffer, int rows, int id) = 0;
   bool SaveSolution(Solution *solution);
   bool SaveSolutionThreaded(std::list<Solution *>& sol_list,
 			    boost::mutex& list_mutex,
@@ -93,17 +85,18 @@ public:
 			    boost::condition_variable& q_full);
   
  protected:
-  void SetFileIsOpen(bool open);
-  virtual bool OpenFile() = 0;
-  virtual bool CloseFile() = 0;
+  virtual bool SaveBuffer(const Parameters* params,
+			  const realtype *buffer, int rows, int columns,
+			  int id) = 0;
   virtual bool SortAndWriteSolutionList(std::list<Solution *>& sol_list);
   
- private:
-  /** Tells whether the logging file is open or not */
-  int cols;
-  bool opened;
+ protected:
+  /** The name of the file */
   std::string filename;
-  Parameters params;
+  /** Tells whether the logging file is open or not */
+  bool file_is_open;
+  /** Whether data compression should be enabled (default: no) */
+  bool compressed;
 };
 
 /**
@@ -115,15 +108,28 @@ public:
 class H5Logger : public Logger {
  public:
   H5Logger();
+  H5Logger(const std::string& fname, bool compress);
+  H5Logger(const H5Logger& logger);
   virtual ~H5Logger();
+  
+  // inherited from Object
+  Object* Clone() const;
   std::string ToString() const;
-  virtual void SetFilename(const std::string& fname, bool compress = false);
-  virtual bool SaveBuffer(const realtype *buffer, int rows, int id);
+
+  // inherited from Logger
+  virtual void Open(const std::string& fname, bool compress = false);
+  virtual void Close();
   
  protected:
-  virtual bool OpenFile();
-  virtual bool CloseFile();
-  
+  // inherited from Logger
+  virtual bool SaveBuffer(const Parameters* params,
+			  const realtype *buffer, int rows, int columns,
+			  int id);
+ 
+ private:
+  void EnableCompression();
+  void DisableCompression();
+
  private:
   // the handle of the file
   hid_t h5_fid;
@@ -131,11 +137,8 @@ class H5Logger : public Logger {
   hid_t dcpl;
   // chunk size
   hsize_t chunk[2];
-  // whether data compression should be enabled (default: no)
-  bool compressed;
 };
 
 } // namespace bal
 
 #endif
-

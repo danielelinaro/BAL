@@ -25,61 +25,45 @@
  * \brief Implementation of classes Logger and H5Logger
  */
 
+#include <iostream>
+#include <sstream>
 #include "balLogger.h"
 
 namespace bal {
 
 ///// BALLOGGER /////
 
-Logger::Logger() : opened(false), cols(-1), params(NULL) {}
+Logger::Logger() : file_is_open(false), compressed(false) {
+  std::cout << "Logger constructor.\n";
+}
 
-Logger::Logger(const std::string& fname, bool compress) : opened(false), cols(-1), params(NULL) {
-  SetFilename(fname,compress);
+Logger::Logger(const Logger& logger)
+  : file_is_open(logger.file_is_open), compressed(logger.compressed), filename(logger.filename) {
 }
 
 Logger::~Logger() {
-}
-
-void Logger::SetFileIsOpen(bool open) {
-  opened = open;
 }
 
 std::string Logger::GetFilename() const {
   return filename;
 }
 
-void Logger::SetParameters(const Parameters& p) {
-  params = p;
-}
-
-const Parameters& Logger::GetParameters() const {
-  return params;
-}
-
-void Logger::SetNumberOfColumns(int c) {
-  cols = c;
-}
-
-int Logger::GetNumberOfColumns() const {
-  return cols;
-}
-
-bool Logger::IsFileOpen() const {
-  return opened;
+bool Logger::IsOpen() const {
+  return file_is_open;
 }
 
 bool Logger::SaveSolution(Solution *solution) {
-  SetNumberOfColumns(solution->GetColumns());
-  SetParameters(solution->GetParameters());
-  return SaveBuffer(solution->GetData(), solution->GetRows(), solution->GetID()); 
+  return SaveBuffer(solution->GetParameters(),
+		    solution->GetData(), solution->GetRows(), solution->GetColumns(),
+		    solution->GetID()); 
 }
 
 bool Logger::SaveSolutionThreaded(std::list<Solution *>& sol_list,
 				  boost::mutex& list_mutex,
 				  boost::condition_variable& q_empty,
 				  boost::condition_variable& q_full) {
-  if(!IsFileOpen())
-    OpenFile();
+
+  if(!file_is_open) return false;
   
   /* data writing routine. */
   while (true) {
@@ -137,83 +121,94 @@ bool Logger::SortAndWriteSolutionList(std::list<Solution *>& sol_list) {
   return true;
 }
 
-void Logger::SetFilename(const std::string& fname, bool compress) {
-  if(IsFileOpen())
-    CloseFile();
-  filename = fname;
-}
-
 ///// BALH5LOGGER /////
 
 H5Logger::H5Logger() {
-  h5_fid = -1;
+  h5_fid = dcpl = -1;
   chunk[0] = chunk[1] = -1;
+  std::cout << "H5Logger constructor.\n";
+}
+
+H5Logger::H5Logger(const std::string& fname, bool compress) {
+  H5Logger();
+  Open(fname,compress);
+}
+
+H5Logger::H5Logger(const H5Logger& logger) : Logger(logger) {
+  h5_fid = logger.h5_fid;
+  dcpl = logger.dcpl;
+  chunk[0] = logger.chunk[0];
+  chunk[1] = logger.chunk[1];
 }
 
 H5Logger::~H5Logger() {
-  if(IsFileOpen())
-    CloseFile();
+}
+
+Object* H5Logger::Clone() const {
+  return new H5Logger(*this);
 }
 
 std::string H5Logger::ToString() const {
   return "H5Logger";
 }
 
-void H5Logger::SetFilename(const std::string& fname, bool compress) {
-  Logger::SetFilename(fname,compress);
-
+void H5Logger::DisableCompression() {
   compressed = false;
-  if(compress) {
-    htri_t avail;
-    herr_t status;
-    unsigned int filter_info;
-
-    printf("Checking whether GZIP compression is available...");
-    // check if gzip compression is available
-    avail = H5Zfilter_avail (H5Z_FILTER_DEFLATE);
-    if (!avail) {
-      printf("\nGZIP compression is not available on this system.\n");
-      return;
-    }
-    printf(" ok.\nGetting filter info...");
-    status = H5Zget_filter_info (H5Z_FILTER_DEFLATE, &filter_info);
-    if ( !(filter_info & H5Z_FILTER_CONFIG_ENCODE_ENABLED) ) {
-      printf("\nUnable to get filter info: disabling compression.\n");
-      return;
-    }
-    
-    printf(" ok.\nChecking whether the shuffle filter is available...");
-    // check for availability of the shuffle filter.
-    avail = H5Zfilter_avail(H5Z_FILTER_SHUFFLE);
-    if (!avail) {
-      printf("\nThe shuffle filter is not available on this system.\n");
-      return;
-    }
-    printf(" ok.\nGetting filter info...");
-    status = H5Zget_filter_info (H5Z_FILTER_SHUFFLE, &filter_info);
-    if ( !(filter_info & H5Z_FILTER_CONFIG_ENCODE_ENABLED) ) {
-      printf("Unable to get filter info: disabling compression.\n");
-      return;
-    }
-    printf(" ok.\nCompression is enabled.\n");
-    // enable gzip compression
-    compressed = true;
-  }
-  else {
-    printf("Compression is disabled.\n");
-  }
 }
 
-bool H5Logger::OpenFile() {
-  if(IsFileOpen())
-    CloseFile();
+void H5Logger::EnableCompression() {
+  // compression has already been enabled
+  if(compressed)
+    return;
 
-  h5_fid = H5Fcreate(GetFilename().c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
-  if(h5_fid == -1) {
-    SetFileIsOpen(false);
-    return false;
+  htri_t avail;
+  herr_t status;
+  unsigned int filter_info;
+
+  std::cerr << "Checking whether GZIP compression is available...";
+  // check if gzip compression is available
+  avail = H5Zfilter_avail (H5Z_FILTER_DEFLATE);
+  if (!avail) {
+    std::cerr << "\nGZIP compression is not available on this system.\n";
+    return;
   }
-  SetFileIsOpen(true);
+  std::cerr << " ok.\nGetting filter info...";
+  status = H5Zget_filter_info (H5Z_FILTER_DEFLATE, &filter_info);
+  if ( !(filter_info & H5Z_FILTER_CONFIG_ENCODE_ENABLED) ) {
+    std::cerr << "\nUnable to get filter info: disabling compression.\n";
+    return;
+  }
+    
+  std::cerr << " ok.\nChecking whether the shuffle filter is available...";
+  // check for availability of the shuffle filter.
+  avail = H5Zfilter_avail(H5Z_FILTER_SHUFFLE);
+  if (!avail) {
+    std::cerr << "\nThe shuffle filter is not available on this system.\n";
+    return;
+  }
+  std::cerr << " ok.\nGetting filter info...";
+  status = H5Zget_filter_info (H5Z_FILTER_SHUFFLE, &filter_info);
+  if ( !(filter_info & H5Z_FILTER_CONFIG_ENCODE_ENABLED) ) {
+    std::cerr << "Unable to get filter info: disabling compression.\n";
+    return;
+  }
+  std::cerr << " ok.\nCompression is enabled.\n";
+  // enable gzip compression
+  compressed = true;
+}
+
+void H5Logger::Open(const std::string& fname, bool compress) {
+  if(file_is_open)
+    Close();
+
+  if(compress)
+    EnableCompression();
+  else
+    DisableCompression();
+
+  h5_fid = H5Fcreate(fname.c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
+  if(h5_fid == -1)
+    return;
   if(compressed) {
     // Create the dataset creation property list and add the shuffle
     // filter and the gzip compression filter.
@@ -222,44 +217,44 @@ bool H5Logger::OpenFile() {
     // first.  The order in which the filters are added to the property
     // list is the order in which they will be invoked when writing
     // data.
-    herr_t status;
     dcpl = H5Pcreate (H5P_DATASET_CREATE);
-    status = H5Pset_shuffle (dcpl);
-    status = H5Pset_deflate (dcpl, 9);
+    if(dcpl == -1)
+      return;
+    if(H5Pset_shuffle(dcpl) < 0)
+      return;
+    if(H5Pset_deflate(dcpl, 9) < 0)
+      return;
   }
-  return true;
+  file_is_open = true;
+  filename = fname;
 }
 
-bool H5Logger::CloseFile() {
-  if(!IsFileOpen())
-    return true;
-  if(compressed)
-    H5Pclose (dcpl);
-  int flag = H5Fclose(h5_fid);
-  if(flag == 0)
-    SetFileIsOpen(false);
-  return flag == 0;
+void H5Logger::Close() {
+  if(file_is_open) {
+    if(compressed)
+      H5Pclose(dcpl);
+    H5Fclose(h5_fid);
+    file_is_open = false;
+    filename = "";
+  }
 }
 
-bool H5Logger::SaveBuffer(const realtype *buffer, int rows, int id) {
-  if(buffer == NULL || rows <= 0 || GetNumberOfColumns() <= 0) {
+bool H5Logger::SaveBuffer(const Parameters *params,
+			  const realtype *buffer, int rows, int columns,
+			  int id) {
+  if(!file_is_open || params == NULL || buffer == NULL || rows <= 0 || columns <= 0)
     return false;
-  }
-  
-  if(!IsFileOpen())
-    OpenFile();
   
   hsize_t dims[2];
   herr_t status;
 
   // describe the size of the dataset
   dims[0] = rows;
-  dims[1] = GetNumberOfColumns();
+  dims[1] = columns;
 
   // create the name of the dataset: the letter C in the name means that the H5 file has been saved in C++
-  std::stringstream ss;
-  ss << "C" << std::setfill('0') << std::setw(6) << id;
-  const char *datasetname = ss.str().c_str();
+  char datasetname[14];
+  sprintf(datasetname, "C%012d", id);
 
   if(compressed) { // do this if compression is enabled
     // set chunk size
@@ -293,15 +288,18 @@ bool H5Logger::SaveBuffer(const realtype *buffer, int rows, int id) {
     H5Dclose (dset);
     H5Sclose (space);
   }
-  else { // do this if compression is disabled
+  else // do this if compression is disabled
     status = H5LTmake_dataset_double(h5_fid, datasetname, 2, dims, buffer);
-  }
+
   if(status < 0)
     return false;
 
   // If there are no parameters the function is not called
-  if (GetParameters().GetNumber() > 0)
-    status = H5LTset_attribute_double(h5_fid, datasetname, "parameters", GetParameters().GetParameters(), GetParameters().GetNumber());
+  int np = params->GetNumber();
+  if(np > 0) {
+    double *p = params->GetParameters();
+    status = H5LTset_attribute_double(h5_fid, datasetname, "parameters", p, np);
+  }
 
   return status >= 0;
 }

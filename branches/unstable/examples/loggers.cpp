@@ -20,8 +20,10 @@
  *
  *=========================================================================*/
 
+#include <iostream>
 #include "balObject.h"
 #include "balParameters.h"
+#include "balSolution.h"
 #include "balLogger.h"
 using namespace bal;
 
@@ -29,23 +31,53 @@ using namespace bal;
 int main(int argc, char *argv[]) {
 
   // data
-  double buffer[10] = {0, 0, 0, 0, -2, 1, 1, 1, 1, -1}; 
+  const int rows = 2;
+  const int columns = 5;
+  double buffer[rows*columns] = {0, 0, 0, 0, -2, 1, 1, 1, 1, -1}; 
   
-  // parameters
+  // Parameters
   Parameters pars(4);
   pars[0] = 3.0;
   pars[1] = 5.0;
   pars[2] = 0.01;
   pars[3] = 4.0;
   
+  // Solution
+  Solution sol(rows, columns, buffer);
+  sol.SetParameters(&pars);
+
+  int copies = 25000;
   // H5Logger
+  std::string filename;
   H5Logger logger;
-  logger.SetFilename("test.1.h5");
-  logger.SetNumberOfColumns(5);
-  logger.SetParameters(pars);
-  logger.SaveBuffer(buffer, 2, 5683);
-  logger.SetFilename("test.2.h5");
-  logger.SaveBuffer(buffer, 2, 7583);
+  filename = "test.1.h5";
+  logger.Open(filename,true);
+  if(logger.IsOpen())
+    std::cout << "Opened " << filename << " with compression enabled.\n";
+  else {
+    std::cout << "Error opening " << filename << ". Aborting.\n";
+    return 1;
+  }
+  for(int i=1; i<=copies; i++) {
+    sol.SetID(i);
+    logger.SaveSolution(&sol);
+  }
+  std::cout << "Saved first file.\n";
+  logger.Close();
+  filename = "test.2.h5";
+  logger.Open(filename,false);
+  if(logger.IsOpen())
+    std::cout << "Opened " << filename << " with compression disabled.\n";
+  else {
+    std::cout << "Error opening " << filename << ". Aborting.\n";
+    return 1;
+  }
+  for(int i=1; i<=copies; i++) {
+    sol.SetID(i);
+    logger.SaveSolution(&sol);
+  }
+  std::cout << "Saved second file.\n";
+  logger.Close();
 
   return 0;
 }

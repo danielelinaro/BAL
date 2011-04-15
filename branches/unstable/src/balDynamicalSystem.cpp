@@ -67,10 +67,9 @@ DynamicalSystem::~DynamicalSystem() {
 }
 
 int DynamicalSystem::RHSWrapper (realtype t, N_Vector x, N_Vector xdot, void *sys) {
-  DynamicalSystem *ds = (DynamicalSystem *) sys;
+  DynamicalSystem *ds = static_cast<DynamicalSystem*>(sys);
 
   // the first n components of the vector field
-  //int flag = ds->RHS(t,x,xdot,(void *)ds->GetParameters());
   int flag = ds->RHS(t, x, xdot, sys);
 
   if(! ds->IsExtended() || flag != CV_SUCCESS) {
@@ -134,7 +133,7 @@ int DynamicalSystem::JacobianWrapper (long int N, DenseMat J, realtype t, N_Vect
 int DynamicalSystem::JacobianWrapper (int N, realtype t, N_Vector x, N_Vector fy, 
 					 DlsMat J, void *sys, N_Vector tmp1, N_Vector tmp2, N_Vector tmp3) {
 #endif
-  DynamicalSystem *ds = (DynamicalSystem *) sys;
+  DynamicalSystem *ds = static_cast<DynamicalSystem*>(sys);
 #ifdef CVODE25
   return ds->Jacobian(N, J, t, x, fy, sys, tmp1, tmp2, tmp3);
 #endif
@@ -149,7 +148,7 @@ int DynamicalSystem::JacobianFiniteDifferences (long int N, realtype t, N_Vector
 #ifdef CVODE26
 int DynamicalSystem::JacobianFiniteDifferences (long int N, realtype t, N_Vector x, DlsMat J, void *sys) {
 #endif
-  DynamicalSystem *ds = (DynamicalSystem *) sys;
+  DynamicalSystem *ds = static_cast<DynamicalSystem*>(sys);
   N_Vector ref, perturb;
   double eps = 1e-8;
   int i, j;
@@ -179,19 +178,21 @@ int DynamicalSystem::Events (realtype t, N_Vector x, realtype *event, void *sys)
 }
 
 int DynamicalSystem::EventsWrapper (realtype t, N_Vector x, realtype *event, void *sys) {
-  DynamicalSystem *ds = (DynamicalSystem *) sys;
+  DynamicalSystem *ds = static_cast<DynamicalSystem*>(sys);
   return ds->Events(t, x, event, sys);
 }
 
 void DynamicalSystem::EventsConstraints (realtype t, N_Vector x, int *constraints, void *sys) {
 }
 
-void DynamicalSystem::SetParameters (Parameters *p) throw (Exception) {
-  pars = p;
+void DynamicalSystem::SetParameters (Parameters *params) {
+  if(p != params->GetNumber())
+    throw Exception("Wrong number of parameters");
+  pars = params;
 }
 
-void DynamicalSystem::operator << (Parameters* p) throw (Exception) {
-  pars = p;
+void DynamicalSystem::operator << (Parameters* params) {
+  SetParameters(params);
 }
 
 Parameters* DynamicalSystem::GetParameters () const {

@@ -43,6 +43,10 @@ Parameters::Parameters(const Parameters& params) : p(params.p), pars(new double[
 Parameters::~Parameters () {
 }
 
+Object* Parameters::Clone() const {
+  return new Parameters(*this);
+}
+
 int Parameters::GetNumber () const {
   return p;
 }
