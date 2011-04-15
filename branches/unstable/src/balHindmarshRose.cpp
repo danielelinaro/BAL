@@ -37,6 +37,9 @@ namespace bal {
 const double HindmarshRose::xrest = -1.6;
 
 HindmarshRose::HindmarshRose() {
+#ifdef DEBUG
+  std::cout << "HindmarshRose constructor.\n";
+#endif
   SetDimension(3);
   SetNumberOfParameters(4);
   SetNumberOfEvents(GetDimension());
@@ -44,12 +47,18 @@ HindmarshRose::HindmarshRose() {
 }
 
 HindmarshRose::HindmarshRose(const HindmarshRose& hr) : DynamicalSystem(hr) {
+#ifdef DEBUG
+  std::cout << "HindmarshRose copy constructor.\n";
+#endif
   xderiv = N_VNew_Serial(hr.GetDimension());
   for(int i = 0; i < hr.GetDimension(); i++)
     Ith(xderiv,i) = Ith(hr.xderiv,i);
 }
 
 HindmarshRose::~HindmarshRose() {
+#ifdef DEBUG
+  std::cout << "HindmarshRose destructor.\n";
+#endif
   N_VDestroy_Serial(xderiv);
 }
 
@@ -68,7 +77,7 @@ int HindmarshRose::RHS (realtype t, N_Vector x, N_Vector xdot, void *sys) {
   realtype x1, x2, x3;
   realtype b, I, u, s;
   DynamicalSystem *ds = static_cast<DynamicalSystem*>(sys);
-  Parameters *parameters = ds->GetParameters();
+  boost::shared_ptr<Parameters> parameters = ds->GetParameters();
   
   b = parameters->At(0);
   I = parameters->At(1);
@@ -97,7 +106,7 @@ int HindmarshRose::Jacobian (int N, realtype t, N_Vector x, N_Vector fy, DlsMat 
   realtype b, I, u, s;
   realtype x1, x2, x3;
   DynamicalSystem *ds = static_cast<DynamicalSystem*>(sys);
-  Parameters *parameters = ds->GetParameters();
+  boost::shared_ptr<Parameters> parameters = ds->GetParameters();
   
   x1 = Ith (x, 0);
   x2 = Ith (x, 1);
@@ -133,7 +142,7 @@ void HindmarshRose::EventsConstraints (realtype t, N_Vector x, int *constraints,
   realtype x1, x2, x3;
   realtype ris[3], xdot[3];
   DynamicalSystem *ds = static_cast<DynamicalSystem*>(sys);
-  Parameters *parameters = ds->GetParameters();
+  boost::shared_ptr<Parameters> parameters = ds->GetParameters();
   
   x1 = Ith (x, 0);
   x2 = Ith (x, 1);

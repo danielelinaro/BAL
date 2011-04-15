@@ -25,44 +25,23 @@
  * \brief Implementation of the class ODESolver
  */
 
+#include <fstream>
 #include "balODESolver.h"
 
 namespace bal {
 
-const char * ODESolver::GetClassName() const {
-  return "ODESolver";
-}
-
-ODESolver * ODESolver::Create() {
-  return new ODESolver;
-}
-
-ODESolver * ODESolver::Copy (ODESolver * solver) {
-  return new ODESolver(*solver);
-}
-
-void ODESolver::Destroy() {
-  delete this;
-}
-
 ODESolver::ODESolver() {
+#ifdef DEBUG
+  std::cout << "ODESolver constructor.\n";
+#endif
   neq = npar = nev = 0;
-  buffer = NULL;
-  delete_buffer = false;
-  events = NULL;
-  delete_events = false;
-  events_constraints = NULL;
-  delete_events_constraints = false;
-  dynsys = NULL;
-  _dealloc = false;
-  params = NULL;
   reltol = RTOL;
   abstol = ATOL;
   mode = TRAJ;
   stiff = true;
   t0 = 0.0;
   t = t0;
-  tstep = REGUL;
+  tstep = STEP;
   ttran = T_TRAN;
   tfinal = T_END;
   lyap_tstep = 100*REGUL;
@@ -82,69 +61,51 @@ ODESolver::ODESolver() {
   xdot = NULL;
   x0 = NULL;
   x_inters = NULL;
-  lyapunov_exponents = NULL;
-  delete_lyapunov_exponents = false;
   nvectors_allocated = false;
   class_event = 1;
 }
 
 ODESolver::ODESolver(const ODESolver& solver) {
-  int i;
-  buffer = NULL;
-  delete_buffer = false;
+#ifdef DEBUG
+  std::cout << "ODESolver copy constructor.\n";
+#endif
   rows = 0;
   nvectors_allocated = false;
-  delete_events = delete_events_constraints = false;
-  if (solver.dynsys != NULL) {
-    SetDynamicalSystem((solver.GetDynamicalSystem())->Clone());
-    _dealloc = true;
-  }
-  else {
-    dynsys = NULL;
-    _dealloc = false;
-  }
-  for(i=0; i<dynsys->GetDimension(); i++)
+  SetDynamicalSystem(static_cast<DynamicalSystem*>(solver.dynsys->Clone()));
+  for(int i=0; i<dynsys->GetDimension(); i++)
     Ith(x0,i) = Ith(solver.x0,i);
-  reltol = solver.GetRelativeTolerance();
-  abstol = solver.GetAbsoluteTolerance();
-  mode = solver.GetIntegrationMode();
+  reltol = solver.reltol;
+  abstol = solver.abstol;
+  mode = solver.mode;
   stiff = solver.stiff;
   t0 = solver.t0;
   t = t0;
-  tstep = solver.GetTimeStep();
-  ttran = solver.GetTransientDuration();
-  tfinal = solver.GetFinalTime();
-  lyap_tstep = solver.GetLyapunovTimeStep();
-  delete_lyapunov_exponents = false;
-  if (solver.delete_lyapunov_exponents) {
-    lyapunov_exponents = new realtype[dynsys->GetOriginalDimension()];
-    delete_lyapunov_exponents = true;
-    for(i=0; i<dynsys->GetOriginalDimension(); i++)
-      lyapunov_exponents[i] = solver.GetLyapunovExponents()[i];
-  }
-  setup = false;
-  max_intersections = solver.GetMaxNumberOfIntersections();
+  tstep = solver.tstep;
+  ttran = solver.ttran;
+  tfinal = solver.tfinal;
+  lyap_tstep = solver.lyap_tstep;
+  lyapunov_exponents = boost::shared_array<realtype>(new realtype[dynsys->GetOriginalDimension()]);
+  for(int i=0; i<dynsys->GetOriginalDimension(); i++)
+    lyapunov_exponents[i] = solver.lyapunov_exponents[i];
+  max_intersections = solver.max_intersections;
   bufsize = 0;
+  errfp = fopen(ERROR_FILE, "a");
+  halt_at_equilibrium = solver.halt_at_equilibrium;
+  halt_at_cycle = solver.halt_at_cycle;
+  nturns = solver.nturns;
+  equilibrium_tolerance = solver.equilibrium_tolerance;
+  cycle_tolerance = solver.cycle_tolerance;
+  class_event = solver.class_event;
   cvode_mem = NULL;
-  errfp = fopen (ERROR_FILE, "a");
-  halt_at_equilibrium = solver.HaltsAtEquilibrium();
-  halt_at_cycle = solver.HaltsAtCycle();
-  nturns = solver.GetNumberOfTurns();
-  equilibrium_tolerance = solver.GetEquilibriumTolerance();
-  cycle_tolerance = solver.GetCycleTolerance();
-  class_event = solver.GetClassificationEvent();
+
+  // we force cvode_mem to be re-allocated.
+  setup = false;
 }
 
 ODESolver::~ODESolver() {
-  if(delete_buffer || buffer != NULL) {
-    delete [] buffer;
-  }
-  if(delete_events) {
-    delete events;
-  }
-  if(delete_events_constraints) {
-    delete events_constraints;
-  }
+#ifdef DEBUG
+  std::cout << "ODESolver destructor.\n";
+#endif
   if(nvectors_allocated) {
     N_VDestroy_Serial(x);
     N_VDestroy_Serial(xdot);
@@ -155,13 +116,17 @@ ODESolver::~ODESolver() {
     CVodeFree(&cvode_mem);
   }
   fclose(errfp);
-  if(delete_lyapunov_exponents)
-    delete lyapunov_exponents;
-  if (_dealloc)
-    dynsys->Destroy();
 }
 
-double * ODESolver::GetBuffer() const {
+std::string ODESolver::ToString() const {
+  return "ODESolver";
+}
+
+Object* ODESolver::Clone() const {
+  return new ODESolver(*this);
+}
+
+boost::shared_array<realtype> ODESolver::GetBuffer() const {
   return buffer;
 }
 
@@ -169,38 +134,30 @@ int ODESolver::GetBufferSize() const {
   return bufsize;
 }
 
-void ODESolver::GetBufferSize(int * r, int * c) const {
+void ODESolver::GetBufferSize(int *r, int *c) const {
   *r = rows;
   *c = cols;
 }
 
-void ODESolver::SetDynamicalSystem(DynamicalSystem * ds) {
-  if(ds != NULL) {
-    dynsys = ds;
-    neq	= dynsys->GetDimension();
-    if(delete_events) {
-      delete events;
-      delete_events = false;
-    }
-    if(delete_events_constraints) {
-      delete events_constraints;
-      delete_events_constraints = false;
-    }
-    if(dynsys->HasEvents()) {
-      nev = dynsys->GetNumberOfEvents();
-      events = new int[nev];
-      delete_events = true;
-      if(dynsys->HasEventsConstraints()) {
+void ODESolver::SetDynamicalSystem(DynamicalSystem *ds) {
+  dynsys = boost::shared_ptr<DynamicalSystem>(static_cast<DynamicalSystem*>(ds->Clone()));
+  neq = dynsys->GetDimension();
+  if(dynsys->HasEvents()) {
+    nev = dynsys->GetNumberOfEvents();
+    events = boost::shared_array<int>(new int[nev]);
+    if(dynsys->HasEventsConstraints()) {
 	// if constraints are presents, their number must be equal to the
 	// number of events. if, for some reason, the i-th constraint makes
 	// no sense, then it is sufficient that the dynamical system class
 	// always return events_constraints[i] = 1.
-	events_constraints = new int[nev];
-	delete_events_constraints = true;
-      }
+      events_constraints = boost::shared_array<int>(new int[nev]);
     }
-    params = dynsys->GetParameters();
-    npar = params->GetNumber();
+
+    //~~
+    //params = dynsys->GetParameters();
+    //npar = params->GetNumber();
+    //~~
+
     // the number of columns of the buffer is equal to the number of dimensions of the system
     // plus 2, i.e. the time instant and a label that describes the type of
     // record
@@ -222,23 +179,26 @@ void ODESolver::SetDynamicalSystem(DynamicalSystem * ds) {
   }
 }
 
-DynamicalSystem * ODESolver::GetDynamicalSystem() const {
+boost::shared_ptr<DynamicalSystem> ODESolver::GetDynamicalSystem() const {
   return dynsys;
 }
 
+//~~
+/*
 void ODESolver::SetDynamicalSystemParameters(Parameters * par){
   dynsys->SetParameters(par);
   params = par;
 }
+*/
+//~~
 
-Solution * ODESolver::GetSolution() const {
+Solution* ODESolver::GetSolution() const {
   if(rows == 0)
     return NULL;
-  Solution * solution = Solution::Create();
-  solution->SetData(rows,cols,buffer);
-  solution->SetParameters(params);
+  Solution *solution = new Solution(rows,cols,buffer.get());
+  solution->SetParameters(dynsys->GetParameters().get());
   if (mode == LYAP)
-    solution->SetLyapunovExponents(dynsys->GetOriginalDimension(),lyapunov_exponents);
+    solution->SetLyapunovExponents(lyapunov_exponents.get());
   else 
     solution->SetNumberOfTurns(nturns);
   return solution;
@@ -258,12 +218,8 @@ realtype ODESolver::GetTransientDuration () const {
 }
 
 void ODESolver::SetTransientDuration (realtype tran) {
-  if (tran >= 0) {
+  if (tran >= 0)
     ttran = tran;
-    if(buffer != NULL) {
-      delete_buffer = true;
-    }
-  }
 }
 
 realtype ODESolver::GetFinalTime () const {
@@ -271,12 +227,8 @@ realtype ODESolver::GetFinalTime () const {
 }
 
 void ODESolver::SetFinalTime (realtype final) {
-  if (final >= 0) {
+  if (final >= 0)
     tfinal = final;
-    if(buffer != NULL) {
-      delete_buffer = true;
-    }
-  }
 }
 
 realtype ODESolver::GetTimeStep () const {
@@ -284,12 +236,8 @@ realtype ODESolver::GetTimeStep () const {
 }
 
 void ODESolver::SetTimeStep (realtype step) {
-  if (step > 0) {
+  if (step > 0)
     tstep = step;
-    if(buffer != NULL) {
-      delete_buffer = true;
-    }
-  }
 }
 
 realtype ODESolver::GetLyapunovTimeStep () const {
@@ -325,9 +273,6 @@ integration_mode ODESolver::GetIntegrationMode () const {
 
 void ODESolver::SetIntegrationMode (integration_mode m) {
   mode = m;
-  if(buffer != NULL) {
-    delete_buffer = true;
-  }
 }
 
 void ODESolver::IsStiff(bool stiffness) {
@@ -339,47 +284,46 @@ int ODESolver::GetMaxNumberOfIntersections() const {
 }
 
 void ODESolver::SetMaxNumberOfIntersections(int intersections) {
-  if(intersections > 0) {
+  if(intersections > 0)
     max_intersections = intersections;
-    if(buffer != NULL) {
-      delete_buffer = true;
-    }
-  }
 }
 
 bool ODESolver::SaveOrbit(const char *filename) const {
-  int i, cnt, start, stop;
-  FILE *fp;
-
-  if(mode != EVENTS && mode != BOTH)
+  if(mode != BOTH)
     return false;
 
-  fp = fopen(filename,"w");
-  if(fp == NULL)
+  std::ofstream ofs(filename);
+  if(ofs.fail())
     return false;
 
-  cnt = nturns;
-  i = rows*cols-1;
-  while(cnt >= 0 && i >= 0) {
-    i--;
-    if(buffer[i] == class_event) {
-      if(cnt == nturns)
-	stop = i;
-      cnt--;
+  if(nturns == max_intersections) {
+    DUMPBUFFER(ofs);
+  }
+  else {
+    int i, cnt, start, stop;
+    cnt = nturns;
+    i = rows*cols-1;
+    while(cnt >= 0 && i >= 0) {
+      i--;
+      if(buffer[i] == class_event) {
+	if(cnt == nturns)
+	  stop = i;
+	cnt--;
+      }
+    }
+    start = i+1;
+    
+    for(i=start; i<=stop; i++) {
+      if(((i+1) % (neq+2)) == 0)
+	ofs << "\n";
+      else if((i % (neq+2)) == 0)
+	ofs << std::scientific << (buffer[i] - buffer[start]) << " ";
+      else
+	ofs << std::scientific << buffer[i] << " ";
     }
   }
-  start = i+1;
 
-  for(i=start; i<stop; i++) {
-    if(((i+1) % (neq+2)) == 0)
-      fprintf(fp, "\n");
-    else if((i % (neq+2)) == 0)
-      fprintf(fp, "%e ", buffer[i]-buffer[start]);
-    else
-      fprintf(fp, "%e ", buffer[i]);
-  }
-    
-  fclose(fp);
+  ofs.close();
   return true;
 }
 
@@ -442,10 +386,10 @@ N_Vector ODESolver::GetX0() const {
   return x0;
 }
 
-realtype * ODESolver::GetXEnd() const {
+realtype* ODESolver::GetXEnd() const {
   if(rows == 0)
     return NULL;
-  return buffer + (rows-1)*cols + 1;
+  return buffer.get() + (rows-1)*cols + 1;
 }
 
 void ODESolver::SetX0(N_Vector X0, int n) {
@@ -480,7 +424,7 @@ inline void ODESolver::SetOrthonormalBaseIC() {
   }
 }
 
-realtype * ODESolver::GetLyapunovExponents() const {
+boost::shared_array<realtype> ODESolver::GetLyapunovExponents() const {
   return lyapunov_exponents;
 }
 
@@ -535,7 +479,7 @@ bool ODESolver::Setup() {
   }
 #endif
 #ifdef CVODE26
-  flag = CVodeSetUserData (cvode_mem, dynsys);
+  flag = CVodeSetUserData (cvode_mem, static_cast<void *>(dynsys.get()));
   if (flag != CV_SUCCESS) {
     fprintf (stderr, "Error on CVodeSetUserData.\n");
     return false;
@@ -579,43 +523,39 @@ bool ODESolver::Setup() {
 }
 
 bool ODESolver::AllocateSolutionBuffer() {
-  if(delete_buffer || buffer == NULL) {
-    int lrows;
-    if(delete_buffer) {
-      delete [] buffer; 
-      delete_buffer = false;
-    }
-    switch(mode) {
-    case LYAP:
-      lrows = (int) ceil ((tfinal - ttran) / lyap_tstep);
-      if(lrows < 0) lrows = 0;
-      lrows += 2;
-      break;
-    case TRAJ:
-      lrows = (int) ceil ((tfinal - ttran) / tstep);
-      if(lrows < 0) lrows = 0;
-      lrows += 2;
-      break;
-    case EVENTS:
-      lrows = max_intersections + 2;
-      break;
-    case BOTH:
-      lrows = (int) ceil ((tfinal - ttran) / tstep);
-      // the number of detected intersections is increased only after
-      // transient evolution.
-      if(lrows < 0)
-	lrows = 2;
-      else
-	lrows += max_intersections + 2;
-    }
-    bufsize = lrows * cols;
-    try {
-      buffer = new realtype[bufsize];
-    } catch (std::bad_alloc&) {
-      fprintf (stderr, "Not enough memory to allocate for the solution buffer...\n");
-      return false;
-    }
+  int lrows;
+
+  switch(mode) {
+  case LYAP:
+    lrows = (int) ceil ((tfinal - ttran) / lyap_tstep);
+    if(lrows < 0) lrows = 0;
+    lrows += 2;
+    break;
+  case TRAJ:
+    lrows = (int) ceil ((tfinal - ttran) / tstep);
+    if(lrows < 0) lrows = 0;
+    lrows += 2;
+    break;
+  case EVENTS:
+    lrows = max_intersections + 2;
+    break;
+  case BOTH:
+    lrows = (int) ceil ((tfinal - ttran) / tstep);
+    // the number of detected intersections is increased only after
+    // transient evolution.
+    if(lrows < 0)
+      lrows = 2;
+    else
+      lrows += max_intersections + 2;
   }
+  bufsize = lrows * cols;
+  try {
+    buffer = boost::shared_array<realtype>(new realtype[bufsize]);
+  } catch (std::bad_alloc&) {
+    fprintf (stderr, "Not enough memory to allocate for the solution buffer...\n");
+    return false;
+  }
+
   return true;
 }
 
@@ -664,18 +604,18 @@ void ODESolver::SkipTransient(bool *equilibrium, bool *error) {
      * change its internal structure also during the transient evolution.
      */
     if ((mode == EVENTS || mode == BOTH) && flag == CV_ROOT_RETURN) {
-      CVodeGetRootInfo (cvode_mem, events);
+      CVodeGetRootInfo (cvode_mem, events.get());
       if(dynsys->HasEventsConstraints()) {
-	dynsys->EventsConstraints(t,x,events_constraints,params);
+	dynsys->EventsConstraints(t,x,events_constraints.get(),static_cast<void *>(dynsys.get()));
 	/* 
 	 * call ManageEvents so that the dynamical system can (optionally)
 	 * change something in its internal structure. See for example
 	 * PLL, a switch system.
 	 */
-	dynsys->ManageEvents(t,x,events,events_constraints);
+	dynsys->ManageEvents(t,x,events.get(),events_constraints.get());
       }
       else {
-	dynsys->ManageEvents(t,x,events);
+	dynsys->ManageEvents(t,x,events.get());
       }
     }
 
@@ -690,7 +630,7 @@ void ODESolver::SkipTransient(bool *equilibrium, bool *error) {
 }
 
 int ODESolver::CheckEquilibrium() {
-  dynsys->RHS (t, x, xdot, params);
+  dynsys->RHS (t, x, xdot, static_cast<void *>(dynsys.get()));
   if(EuclideanDistance(neq,xdot) < equilibrium_tolerance) {
     nturns = 0;
     if(halt_at_equilibrium) {
@@ -844,7 +784,7 @@ bool ODESolver::Solve() {
       realtype *x0_tmp = new realtype[n];
       for(i=0; i<n; i++)
 	x0_tmp[i] = Ith(x0,i);
-      SetDynamicalSystem(dynsys);
+      SetDynamicalSystem(dynsys.get());
       for(i=0; i<n; i++)
 	Ith(x0,i) = x0_tmp[i];
       delete [] x0_tmp;
@@ -887,10 +827,7 @@ bool ODESolver::SolveWithoutEventsLyapunov() {
   for (i=0; i<n; i++)
     cum[i] = 0.0;
 
-  if (!delete_lyapunov_exponents) {
-    lyapunov_exponents = new realtype[n];
-    delete_lyapunov_exponents = true;
-  }
+  lyapunov_exponents = boost::shared_array<realtype>(new realtype[n]);
 
   // set the initial condition
   for(i=n; i<N; i++)
@@ -995,7 +932,6 @@ bool ODESolver::SolveLyapunov() {
   realtype tend = tfinal;
   realtype t_ = 0.0;
   tfinal = ttran;
-  delete_buffer = true;
   SolveWithoutEvents();
   
   realtype * new_x0 = new realtype [dynsys->GetDimension()];
@@ -1003,7 +939,7 @@ bool ODESolver::SolveLyapunov() {
     new_x0[i] = Ith(x,i);
   
   dynsys->Extend(true);
-  SetDynamicalSystem(dynsys);
+  SetDynamicalSystem(dynsys.get());
   
   int N = dynsys->GetDimension();
   int n = dynsys->GetOriginalDimension();
@@ -1011,10 +947,7 @@ bool ODESolver::SolveLyapunov() {
   realtype * xnorm = new realtype[n*n];
   realtype * znorm = new realtype[n];
   realtype * cum = new realtype[n];
-  if (!delete_lyapunov_exponents){
-    lyapunov_exponents = new realtype[n];
-    delete_lyapunov_exponents = true;
-  }
+  lyapunov_exponents = boost::shared_array<realtype>(new realtype[n]);
   for (i=0; i<n; i++)
     cum[i] = 0.0;
   
@@ -1025,7 +958,6 @@ bool ODESolver::SolveLyapunov() {
   tfinal = lyap_tstep;
   ttran = 0.0;
   
-  delete_buffer = true;
   Setup();
   dynsys->Reset();
   while(t_ < tend){
@@ -1047,8 +979,7 @@ bool ODESolver::SolveLyapunov() {
   ttran = temp_ttran;
   tfinal = tend;
   dynsys->Extend(false);
-  SetDynamicalSystem(dynsys);
-  delete_buffer = true;
+  SetDynamicalSystem(dynsys.get());
   Setup();
   SetX0(temp_x0);
   
@@ -1189,18 +1120,18 @@ bool ODESolver::SolveWithEvents() {
 	tout += tstep;
       }
       else if (flag == CV_ROOT_RETURN && !eq) {
-	CVodeGetRootInfo (cvode_mem, events);
+	CVodeGetRootInfo (cvode_mem, events.get());
 	if(dynsys->HasEventsConstraints()) {
-	  dynsys->EventsConstraints(t,x,events_constraints,params);
+	  dynsys->EventsConstraints(t,x,events_constraints.get(),static_cast<void *>(dynsys.get()));
 	  /* 
 	   * call ManageEvents so that the dynamical system can (optionally)
 	   * change something in its internal structure. See for example
 	   * PLL, a switch system.
 	   */
-	  dynsys->ManageEvents(t,x,events,events_constraints);
+	  dynsys->ManageEvents(t,x,events.get(),events_constraints.get());
 	}
 	else {
-	  dynsys->ManageEvents(t,x,events);
+	  dynsys->ManageEvents(t,x,events.get());
 	}
 	
 	for (i = 0; i < nev; i++) {

@@ -34,6 +34,9 @@ Solution::Solution(int r, int c, realtype *buf)
     nturns(0), spectrum_dimension(c-2), ID(0),
     lyapunov_mode(false),
     buffer(new realtype[r*c]), lyapunov_exponents(new realtype[c-2]) {
+#ifdef DEBUG
+  std::cout << "Solution constructor.\n";
+#endif
   memcpy(buffer.get(), buf, r*c*sizeof(realtype));
 }
 
@@ -44,11 +47,17 @@ Solution::Solution(const Solution& solution)
     buffer(new realtype[solution.rows*solution.columns]),
     lyapunov_exponents(new realtype[solution.spectrum_dimension]),
     parameters(dynamic_cast<Parameters*>(solution.parameters->Clone())) {
+#ifdef DEBUG
+  std::cout << "Solution copy constructor.\n";
+#endif
   memcpy(buffer.get(), solution.buffer.get(), rows*columns*sizeof(realtype));
   memcpy(lyapunov_exponents.get(), solution.lyapunov_exponents.get(), spectrum_dimension*sizeof(realtype));
 }
 
 Solution::~Solution() {
+#ifdef DEBUG
+  std::cout << "Solution destructor.\n";
+#endif
 }
 
 Object* Solution::Clone() const {

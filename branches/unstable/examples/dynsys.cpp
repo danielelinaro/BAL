@@ -59,12 +59,10 @@ int main(int argc, char *argv[]) {
   // HindmarshRose
   int i, n;
   HindmarshRose hr;
+  hr.SetParameters(&pars);
   n = hr.GetDimension();
   N_Vector x = N_VNew_Serial(n);
   N_Vector xdot = N_VNew_Serial(n);
-
-  HindmarshRose hrcopy(hr);
-  std::cout << "hrcopy.xrest = " << hrcopy.xrest << std::endl;
 
   if(argc == n+1) {
     for(i=0; i<n; i++)
@@ -74,7 +72,6 @@ int main(int argc, char *argv[]) {
     for(i=0; i<n; i++)
       NV_Ith_S(x,i) = 0.0;
   }
-  hr << &pars;
   std::cout << hr.ToString() << std::endl;
   DynamicalSystem::RHSWrapper(0, x, xdot, (void *) &hr);
 
@@ -107,6 +104,10 @@ int main(int argc, char *argv[]) {
 
   N_VDestroy_Serial(x);
   N_VDestroy_Serial(xdot);
+
+  HindmarshRose hrcopy(hr);
+  std::cout << "hrcopy.n = " << hrcopy.GetDimension() << std::endl;
+  std::cout << "hrcopy.xrest = " << hrcopy.xrest << std::endl;
 
   return 0;
 }

@@ -31,16 +31,25 @@
 namespace bal {
 
 Parameters::Parameters(int np) : p(np), pars(new double[np]) {
+#ifdef DEBUG
+  std::cout << "Parameters constructor.\n";
+#endif
   for(int i=0; i<p; i++)
     pars[i] = 0.0;
 }
 
 Parameters::Parameters(const Parameters& params) : p(params.p), pars(new double[params.p]) {
+#ifdef DEBUG
+  std::cout << "Parameters copy constructor.\n";
+#endif
   for(int i=0; i<p; i++)
     pars[i] = params.pars[i];
 }
 
 Parameters::~Parameters () {
+#ifdef DEBUG
+  std::cout << "Parameters destructor.\n";
+#endif
 }
 
 Object* Parameters::Clone() const {

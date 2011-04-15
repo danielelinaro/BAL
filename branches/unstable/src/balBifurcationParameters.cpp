@@ -38,6 +38,7 @@ BifurcationParameters::BifurcationParameters(int np) : Parameters(np), plower(np
     nsteps[i] = 1;
     isteps[i] = 0;
   }
+  std::cout << "BifurcationParameters constructor.\n";
 }
 
 BifurcationParameters::BifurcationParameters(const BifurcationParameters& bp) : Parameters(bp.p),
@@ -51,9 +52,11 @@ BifurcationParameters::BifurcationParameters(const BifurcationParameters& bp) : 
     nsteps[i] = bp.nsteps[i];
     isteps[i] = bp.isteps[i];
   }
+  std::cout << "BifurcationParameters copy constructor.\n";
 }
 
 BifurcationParameters::~BifurcationParameters() {
+  std::cout << "BifurcationParameters destructor.\n";
 }
 
 Object* BifurcationParameters::Clone() const {

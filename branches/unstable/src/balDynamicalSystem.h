@@ -29,6 +29,7 @@
 #define _BALDYNAMICALSYSTEM_
 
 #include <string>
+#include <boost/shared_ptr.hpp>
 
 #include <sundials/sundials_types.h>
 #include <nvector/nvector_serial.h>
@@ -107,8 +108,7 @@ public:
   int GetOriginalDimension() const;
   int GetNumberOfParameters() const;
   void SetParameters(Parameters *p);
-  Parameters* GetParameters() const;
-  void operator<< (Parameters *p);
+  boost::shared_ptr<Parameters> GetParameters() const;
 
   void Extend(bool extend);
   bool IsExtended() const;
@@ -134,7 +134,7 @@ private:
   DlsMat jac;
 #endif
 
-  Parameters *pars;
+  boost::shared_ptr<Parameters> pars;
 };
 
 } // namespace bal

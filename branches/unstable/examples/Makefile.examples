@@ -3,8 +3,15 @@ CXX = g++
 CFLAGS = -I../src -I/Users/daniele/local/include -DCVODE26
 LDFLAGS = -L/Users/daniele/local/lib
 LIBS = -lsundials_cvode -lsundials_nvecserial -lhdf5 -lhdf5_hl -lboost_thread
+PROGS = params bifparams dynsys loggers solver
 
-all: params bifparams dynsys loggers
+all: $(PROGS)
+
+solver: solver.o
+	$(CXX) -o solver solver.o ../src/balODESolver.o ../src/balSolution.o ../src/balHindmarshRose.o ../src/balDynamicalSystem.o ../src/balBifurcationParameters.o ../src/balParameters.o ../src/balObject.o $(LDFLAGS) $(LIBS) 
+
+solver.o: solver.cpp
+	$(CXX) -c solver.cpp $(CFLAGS)
 
 params: params.o
 	$(CXX) -o params params.o ../src/balParameters.o ../src/balObject.o $(LDFLAGS) $(LIBS) 
@@ -30,3 +37,7 @@ dynsys: dynsys.o
 dynsys.o: dynsys.cpp
 	$(CXX) -c dynsys.cpp $(CFLAGS)
 
+clean:
+	rm -f *.o
+	rm -f *~
+	rm -f $(PROGS)

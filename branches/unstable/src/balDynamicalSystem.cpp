@@ -30,23 +30,28 @@
 namespace bal {
 
 DynamicalSystem::DynamicalSystem() {
+#ifdef DEBUG
+  std::cout << "DynamicalSystem constructor.\n";
+#endif
   n = 0;
   p = 0;
   nev = 0;
   ext = false;
   nExt = 0;
-  pars = NULL;
   jac = NULL;
   dealloc_ = false;
 }
 
-DynamicalSystem::DynamicalSystem(const DynamicalSystem& system) {
+DynamicalSystem::DynamicalSystem(const DynamicalSystem& system)
+  : pars(static_cast<Parameters*>(system.pars->Clone())) {
+#ifdef DEBUG
+  std::cout << "DynamicalSystem copy constructor.\n";
+#endif
   n = system.n;
+  p = system.p;
   nev = system.nev;
-  p = pars->GetNumber();
   nExt = system.nExt;
   ext = system.ext;
-  pars = system.pars;
 #ifdef CVODE25
   jac = newDenseMat(n,n);
 #endif
@@ -57,6 +62,9 @@ DynamicalSystem::DynamicalSystem(const DynamicalSystem& system) {
 }
 
 DynamicalSystem::~DynamicalSystem() {
+#ifdef DEBUG
+  std::cout << "DynamicalSystem destructor.\n";
+#endif
   if(dealloc_)
 #ifdef CVODE25
     destroyMat(jac);
@@ -188,14 +196,10 @@ void DynamicalSystem::EventsConstraints (realtype t, N_Vector x, int *constraint
 void DynamicalSystem::SetParameters (Parameters *params) {
   if(p != params->GetNumber())
     throw Exception("Wrong number of parameters");
-  pars = params;
+  pars = boost::shared_ptr<Parameters>(static_cast<Parameters*>(params->Clone()));
 }
 
-void DynamicalSystem::operator << (Parameters* params) {
-  SetParameters(params);
-}
-
-Parameters* DynamicalSystem::GetParameters () const {
+boost::shared_ptr<Parameters> DynamicalSystem::GetParameters () const {
   return pars;
 }
 

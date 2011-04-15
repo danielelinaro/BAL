@@ -34,14 +34,22 @@ namespace bal {
 ///// BALLOGGER /////
 
 Logger::Logger() : file_is_open(false), compressed(false) {
+#ifdef DEBUG
   std::cout << "Logger constructor.\n";
+#endif
 }
 
 Logger::Logger(const Logger& logger)
   : file_is_open(logger.file_is_open), compressed(logger.compressed), filename(logger.filename) {
+#ifdef DEBUG
+  std::cout << "Logger copy constructor.\n";
+#endif
 }
 
 Logger::~Logger() {
+#ifdef DEBUG
+  std::cout << "Logger destructor.\n";
+#endif
 }
 
 std::string Logger::GetFilename() const {
@@ -124,13 +132,17 @@ bool Logger::SortAndWriteSolutionList(std::list<Solution *>& sol_list) {
 ///// BALH5LOGGER /////
 
 H5Logger::H5Logger() {
+#ifdef DEBUG
+  std::cout << "H5Logger constructor.\n";
+#endif
   h5_fid = dcpl = -1;
   chunk[0] = chunk[1] = -1;
-  std::cout << "H5Logger constructor.\n";
 }
 
-H5Logger::H5Logger(const std::string& fname, bool compress) {
-  H5Logger();
+H5Logger::H5Logger(const std::string& fname, bool compress) : Logger(){
+#ifdef DEBUG
+  std::cout << "H5Logger copy constructor.\n";
+#endif
   Open(fname,compress);
 }
 
@@ -142,6 +154,9 @@ H5Logger::H5Logger(const H5Logger& logger) : Logger(logger) {
 }
 
 H5Logger::~H5Logger() {
+#ifdef DEBUG
+  std::cout << "H5Logger destructor.\n";
+#endif
 }
 
 Object* H5Logger::Clone() const {
