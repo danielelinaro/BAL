@@ -38,15 +38,15 @@
 #include "balObject.h"
 #include "balCommon.h"
 
-#include <cstdlib>
-#include <cstdio>
+#include <boost/shared_ptr.hpp>
+#include <boost/shared_array.hpp>
 #include <list>
 #include <boost/thread.hpp>
 #include <boost/thread/thread.hpp>
 #include <boost/thread/condition.hpp>
 #include <boost/ref.hpp>
 
-#define DEBUG
+//#define DEBUG
 
 namespace bal {
 
@@ -74,7 +74,7 @@ class SummaryEntry : public Object {
   int id;
 };
 
-bool CompareBalSummaryEntry(SummaryEntry *entry1, SummaryEntry *entry2);
+bool CompareSummaryEntry(SummaryEntry *entry1, SummaryEntry *entry2);
 
 /**
  * \class BifurcationDiagram
@@ -91,12 +91,12 @@ bool CompareBalSummaryEntry(SummaryEntry *entry1, SummaryEntry *entry2);
  */
 class BifurcationDiagram : public Object {
  public:
-  /** Returns the name of the class. */
-  virtual const char * GetClassName() const;
-  /** Creates a new BifurcationDiagram. */
-  static BifurcationDiagram * Create();
-  /** Destroys a BifurcationDiagram. */
-  virtual void Destroy();
+  BifurcationDiagram();
+  BifurcationDiagram(const BifurcationDiagram& bifd);
+  virtual ~BifurcationDiagram();
+
+  std::string ToString() const;
+  Object* Clone() const;
 
   /**
    * Sets the dynamical system to integrate. BifurcationDiagram
@@ -105,14 +105,14 @@ class BifurcationDiagram : public Object {
    * @param sys A dynamical system: any instance of a class inherited
    * from DynamicalSystem.
    */
-  void SetDynamicalSystem(DynamicalSystem * sys);
+  void SetDynamicalSystem(DynamicalSystem *sys);
 
   /**
    * Gets the dynamical system to integrate.
    * @return The dynamical system used in the computation of the
    * bifurcation diagram.
    */
-  DynamicalSystem * GetDynamicalSystem() const;
+  DynamicalSystem* GetDynamicalSystem() const;
 
   /**
    * Sets the logger used for saving integration data to file. A logger
@@ -122,12 +122,12 @@ class BifurcationDiagram : public Object {
    * in a particular format). The default logger uses H5 files.
    * @param log An instance of one of the classes inherited by Logger.
    */
-  void SetLogger(Logger * log);
+  void SetLogger(Logger *log);
 
   /**
    * @return The logger used for saving data to file.
    */
-  Logger * GetLogger() const;
+  Logger* GetLogger() const;
 
   /**
    * Sets the ODESolver used to integrate the dynamical system. An ODE
@@ -136,26 +136,26 @@ class BifurcationDiagram : public Object {
    * their own ODE solver.
    * \param sol An instance of an ODE solver.
    */
-  void SetODESolver(ODESolver * sol);
+  void SetODESolver(ODESolver *sol);
 
   /**
    * This method returns a pointer to the ODE solver used to integrate
    * the system. It is useful to set parameters of the ODE solver.
    * @return The ODE solver used to integrate the system.
    */
-  ODESolver * GetODESolver() const;
+  ODESolver* GetODESolver() const;
 
   /**
    * Sets the name of the file where data will be saved.
    * @param filename File where the bifurcation diagram will be saved.
    * @param compress Flag that tells wheter the file should be compressed.
    */
-  void SetFilename(const char * filename, bool compress = false);
+  void SetFilename(const char *filename, bool compress = false);
 
   /**
    * @return The name of the file where data is saved.
    */
-  const char * GetFilename();
+  const char* GetFilename();
 
   /**
    * Performs the actual computation of the brute-force bifurcation
@@ -196,34 +196,28 @@ class BifurcationDiagram : public Object {
   int GetMode() const;
   void SetInitialConditions(int nx0, double **x0);
 
- protected:
-  BifurcationDiagram();
-  virtual ~BifurcationDiagram();
-
  private:
 
-  //void ComputeDiagramSingleThread();
   void ComputeDiagramMultiThread();
   void IntegrateAndEnqueue(ODESolver *sol, int solutionId);
   double* BuildSummaryEntry(Solution *sol);
 
+ private:
+
   /** The ODE solver used to integrate the system */
-  ODESolver * solver;
+  boost::shared_ptr<ODESolver> solver;
   /** The dynamical system to integrate */
-  DynamicalSystem * system;
+  boost::shared_ptr<DynamicalSystem> system;
   /** The parameters of the dynamical system */
   Parameters * parameters;
+
   /**
    * The object used to save data to a file: by default H5 file logging
    * is used, i.e., logger is an instance of the H5Logger class:
    * if the user wants to use another logger, they should provide it
    * by using the SetLogger member.
    */
-  Logger * logger;
-  /** Tells whether the logger should be deleted when a new one is set. */
-  bool destroy_logger;
-  /** Tells whether the solver should be deleted when a new one is set. */
-  bool destroy_solver;
+  boost::shared_ptr<Logger> logger;
 
   /** The number of dimensions of the system. */
   int ndim;
@@ -247,7 +241,7 @@ class BifurcationDiagram : public Object {
    * A list containing the results of the numerical integrations: when the list
    * is full, the threads that integrate stop and another thread saves data to file
    */
-  std::list<Solution *> *solutions;
+  std::list<Solution *> solutions;
   /**
    * A list containing the summary of the bifurcation diagram in
    * terms of number of turns of the solution. Each entry contains
@@ -256,11 +250,9 @@ class BifurcationDiagram : public Object {
    * is the number of turns of the limit cycle. The value '0' corresponds
    * to an equilibrium solution.
    */
-  std::list<SummaryEntry *> *summary;
-  /** tells whether solutions and summary have been allocated */
-  bool destroy_lists;
+  std::list<SummaryEntry *> summary;
 
-  boost::thread * logger_thread;
+  boost::thread logger_thread;
   boost::mutex list_mutex;
   boost::condition_variable q_empty;
   boost::condition_variable q_full;

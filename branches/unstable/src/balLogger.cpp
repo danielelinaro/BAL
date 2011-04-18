@@ -31,6 +31,45 @@
 
 namespace bal {
 
+///// THREAD /////
+void LoggerThread(Logger *logger, std::list<Solution*>& solutions,
+		  boost::mutex& list_mutex,
+		  boost::condition_variable& q_empty, boost::condition_variable& q_full) {
+  if(!logger->IsOpen())
+    return;
+  
+  Solution *s;
+  while (true) {
+    try {
+      {
+	boost::mutex::scoped_lock lock(list_mutex);
+	while (solutions.size() < LIST_MAX_SIZE) {
+	  q_full.wait(lock);  // INTERRUPTION POINT
+	}
+	solutions.sort(CompareSolutions);
+	while (! solutions.empty()) {
+	  s = solutions.front();
+	  solutions.pop_front();
+	  logger->SaveSolution(s);
+	  delete s;
+	}
+      }
+      /* notifies all threaded solvers the queue is now empty, giving them the control */
+      q_empty.notify_all();
+    }
+    catch (boost::thread_interrupted&) {
+      solutions.sort(CompareSolutions);
+      while (! solutions.empty()) {
+	s = solutions.front();
+	solutions.pop_front();
+	logger->SaveSolution(s);
+	delete s;
+      }
+      break;
+    }
+  }
+}
+
 ///// BALLOGGER /////
 
 Logger::Logger() : file_is_open(false), compressed(false) {
@@ -64,69 +103,6 @@ bool Logger::SaveSolution(Solution *solution) {
   return SaveBuffer(solution->GetParameters(),
 		    solution->GetData(), solution->GetRows(), solution->GetColumns(),
 		    solution->GetID()); 
-}
-
-bool Logger::SaveSolutionThreaded(std::list<Solution *>& sol_list,
-				  boost::mutex& list_mutex,
-				  boost::condition_variable& q_empty,
-				  boost::condition_variable& q_full) {
-
-  if(!file_is_open) return false;
-  
-  /* data writing routine. */
-  while (true) {
-    try {
-      {
-	boost::mutex::scoped_lock lock(list_mutex);
-	/* 
-	 * if the data queue is empty the thread is set on wait 
-	 * on condition variable q_full waiting queue and released
-	 * when ComputeDiagramMultiThread() calls notify_one()
-	 * on q_full when new solution is available 
-	 */
-	while (sol_list.size() < LIST_MAX_SIZE) {
-	  
-	  q_full.wait(lock);  // INTERRUPTION POINT
-	  /* 
-	   * Atomically call lock.unlock() and blocks the current thread.
-	   * The thread will unblock when notified by a call
-	   * to this->notify_one() or this->notify_all(). 
-	   * When the thread is unblocked (for whatever reason),
-	   * the lock is reacquired by invoking lock.lock() before the call to 
-	   * wait returns. The lock is also reacquired by
-	   * invoking lock.lock() if the function exits with an exception.
-	   */
-	}
-	
-	SortAndWriteSolutionList(sol_list);
-	
-      }
-      /* 
-       * this scope has been introduced due to scoped_lock class implementation: 
-       * mutex list_mutex is locked in lock initialization and unlocked while exiting the scope 
-       */
-      /* notifies all threaded solvers the queue is now empty, giving them the control */
-      q_empty.notify_all();
-      
-    }
-    catch (boost::thread_interrupted&) {
-      SortAndWriteSolutionList(sol_list);
-      break;
-    }
-  }
-  return true;
-}
-
-bool Logger::SortAndWriteSolutionList(std::list<Solution *>& sol_list) {
-  Solution *solution;
-  sol_list.sort(CompareSolutions);
-  while (! sol_list.empty()) {
-    solution = sol_list.front();
-    sol_list.pop_front();
-    SaveSolution(solution);
-    delete solution;
-  }
-  return true;
 }
 
 ///// BALH5LOGGER /////

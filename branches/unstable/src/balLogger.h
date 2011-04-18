@@ -79,16 +79,11 @@ public:
   bool IsOpen() const;
 
   bool SaveSolution(Solution *solution);
-  bool SaveSolutionThreaded(std::list<Solution *>& sol_list,
-			    boost::mutex& list_mutex,
-			    boost::condition_variable& q_empty,
-			    boost::condition_variable& q_full);
   
  protected:
   virtual bool SaveBuffer(const Parameters* params,
 			  const realtype *buffer, int rows, int columns,
 			  int id) = 0;
-  virtual bool SortAndWriteSolutionList(std::list<Solution *>& sol_list);
   
  protected:
   /** The name of the file */
@@ -98,6 +93,10 @@ public:
   /** Whether data compression should be enabled (default: no) */
   bool compressed;
 };
+
+void LoggerThread(Logger *logger, std::list<Solution*>& solutions,
+		  boost::mutex& list_mutex,
+		  boost::condition_variable& q_empty, boost::condition_variable& q_full);
 
 /**
  * \class H5Logger 
