@@ -1,0 +1,126 @@
+SHELL = /bin/sh
+
+AR			 = ar
+AR_OPT	 = crs
+CC       = g++
+# opzioni di compilazione con ottimizzazione
+CFLAGS   = -DCVODE26 -O3 -ffloat-store -Wall -fPIC
+# opzioni di compilazione per il debug
+#CFLAGS   = -g -O0 -ffloat-store -Wall -fPIC
+LIBS     = -lm
+SRC      = src
+HEADER_FILES = $(SRC)/balObject.h $(SRC)/balDynamicalSystem.h $(SRC)/balParameters.h $(SRC)/balHindmarshRose.h $(SRC)/balLogger.h $(SRC)/balODESolver.h $(SRC)/balBifurcationDiagram.h $(SRC)/balBifurcationParameters.h $(SRC)/balHeartNeuron.h $(SRC)/balPLL.h $(SRC)/balInterp1D.h $(SRC)/balInterp2D.h $(SRC)/balSolution.h
+OBJECT_FILES = balDynamicalSystem.o balParameters.o balHindmarshRose.o balLogger.o balODESolver.o balBifurcationDiagram.o balBifurcationParameters.o balHeartNeuron.o balPLL.o balInterp1D.o balInterp2D.o balSolution.o
+
+# se le librerie sono installate in $(HOME)/libs
+#INCLUDE_DIR = $(HOME)/libs/include
+#LIBRARY_DIR = $(HOME)/libs/lib
+# se le librerie sono installate in $(HOME)/local
+INCLUDE_DIR = $(HOME)/local/include
+LIBRARY_DIR = $(HOME)/local/lib
+# se le librerie sono installate in /usr/local
+#INCLUDE_DIR = /usr/local/include
+#LIBRARY_DIR = /usr/local/lib
+# se le librerie sono installate in /usr
+#INCLUDE_DIR = /usr/include
+#LIBRARY_DIR = /usr/lib
+
+#SUNDIALS_LIBS = -lsundials_cvode -lsundials_nvecserial -lsundials_kinsol
+SUNDIALS_LIBS = -lsundials_cvode -lsundials_nvecserial
+HDF5_LIBS = -lhdf5 -lhdf5_hl
+BOOST_LIBS = -lboost_thread
+
+PROFILER = valgrind
+PROFILER_OPTIONS = --tool=memcheck --leak-check=full --show-reachable=yes --num-callers=20 --track-fds=yes 
+
+LIB_SOLVER = libbal
+EXEC_FILES = bal
+DIST_INCLUDE = ./include
+
+all : build
+
+build : $(EXEC_FILES)
+
+rebuild : clean $(EXEC_FILES)
+
+libs : $(OBJECT_FILES)
+	$(AR) $(AR_OPT) $(LIB_SOLVER).a $(OBJECT_FILES)
+	$(CC) -shared -o libbalext.so balHindmarshRose.o -L. -L$(LIBRARY_DIR) $(LIBS) $(SUNDIALS_LIBS) $(HDF5_LIBS) $(BOOST_LIBS) -lbal
+	$(CC) -shared -o balHeartNeuron.so balHeartNeuron.o -L. -L$(LIBRARY_DIR) $(LIBS) $(SUNDIALS_LIBS) $(HDF5_LIBS) $(BOOST_LIBS) -lbal
+	$(RM) balHindmarshRose.o
+	$(RM) balHeartNeuron.o
+	$(RM) main.o
+	#$(CC) -shared -o $(LIB_SOLVER).so $(OBJECT_FILES) -L$(LIBRARY_DIR) $(LIBS) $(SUNDIALS_LIBS) $(HDF5_LIBS) $(BOOST_LIBS) 
+	$(CC) -shared -o $(LIB_SOLVER).so *.o -L$(LIBRARY_DIR) $(LIBS) $(SUNDIALS_LIBS) $(HDF5_LIBS) $(BOOST_LIBS) 
+
+#lib : solver.o logger.o
+#	if [ ! -d $(DIST_INCLUDE) ] ; then mkdir -p $(DIST_INCLUDE) ; fi
+#	cp $(SRC)/*.h $(DIST_INCLUDE)
+#	$(AR) $(AR_OPT) $(LIB_SOLVER) solver.o logger.o
+#
+#test_a : lib main.o hr.o
+#	$(CC) -o test_a main.o hr.o libsolver.a -L$(LIBRARY_DIR) $(SUNDIALS_LIBS) $(LIBS) $(HDF5_LIBS) 
+#
+#test_b : lib main.o hr.o
+#	$(CC) -o test_b main.o hr.o -L$(LIBRARY_DIR) -L. $(SUNDIALS_LIBS) $(LIBS) $(HDF5_LIBS) -lsolver
+
+main.o : $(SRC)/main.cpp $(HEADER_FILES)
+	$(CC) -I$(INCLUDE_DIR) $(CFLAGS) -c $(SRC)/main.cpp 
+
+balBifurcationDiagram.o : $(SRC)/balBifurcationDiagram.cpp $(SRC)/balBifurcationDiagram.h $(SRC)/balParameters.h
+	$(CC) -I$(INCLUDE_DIR) $(CFLAGS) -c $(SRC)/balBifurcationDiagram.cpp 
+
+balDynamicalSystem.o : $(SRC)/balDynamicalSystem.cpp $(SRC)/balDynamicalSystem.h $(SRC)/balParameters.h
+	$(CC) -I$(INCLUDE_DIR) $(CFLAGS) -c $(SRC)/balDynamicalSystem.cpp 
+
+balParameters.o : $(SRC)/balParameters.cpp $(SRC)/balParameters.h
+	$(CC) -I$(INCLUDE_DIR) $(CFLAGS) -c $(SRC)/balParameters.cpp 
+
+balBifurcationParameters.o : $(SRC)/balBifurcationParameters.cpp $(SRC)/balBifurcationParameters.h
+	$(CC) -I$(INCLUDE_DIR) $(CFLAGS) -c $(SRC)/balBifurcationParameters.cpp 
+
+balHindmarshRose.o : $(SRC)/balHindmarshRose.cpp $(SRC)/balHindmarshRose.h $(SRC)/balDynamicalSystem.h $(SRC)/balParameters.h
+	$(CC) -I$(INCLUDE_DIR) $(CFLAGS) -c $(SRC)/balHindmarshRose.cpp 
+
+balHeartNeuron.o : $(SRC)/balHeartNeuron.cpp $(SRC)/balHeartNeuron.h $(SRC)/balDynamicalSystem.h $(SRC)/balParameters.h
+	$(CC) -I$(INCLUDE_DIR) $(CFLAGS) -c $(SRC)/balHeartNeuron.cpp 
+
+balPLL.o : $(SRC)/balPLL.cpp $(SRC)/balPLL.h $(SRC)/balDynamicalSystem.h $(SRC)/balParameters.h
+	$(CC) -I$(INCLUDE_DIR) $(CFLAGS) -c $(SRC)/balPLL.cpp 
+
+balSolution.o : $(SRC)/balSolution.cpp $(SRC)/balSolution.h
+	$(CC) -I$(INCLUDE_DIR) $(CFLAGS) -c $(SRC)/balSolution.cpp 
+
+balLogger.o : $(SRC)/balLogger.cpp $(SRC)/balLogger.h
+	$(CC) -I$(INCLUDE_DIR) $(CFLAGS) -c $(SRC)/balLogger.cpp 
+
+balODESolver.o : $(SRC)/balODESolver.cpp $(SRC)/balODESolver.h
+	$(CC) -I$(INCLUDE_DIR) $(CFLAGS) -c $(SRC)/balODESolver.cpp 
+
+balInterp1D.o : $(SRC)/balInterp1D.cpp $(SRC)/balInterp1D.h
+	$(CC) -I$(INCLUDE_DIR) $(CFLAGS) -c $(SRC)/balInterp1D.cpp 
+
+balInterp2D.o : $(SRC)/balInterp2D.cpp $(SRC)/balInterp2D.h
+	$(CC) -I$(INCLUDE_DIR) $(CFLAGS) -c $(SRC)/balInterp2D.cpp 
+
+$(EXEC_FILES) : $(OBJECT_FILES) main.o
+	$(CC) -o $(EXEC_FILES) $(OBJECT_FILES) main.o -L$(LIBRARY_DIR) $(LIBS) $(SUNDIALS_LIBS) $(HDF5_LIBS) $(BOOST_LIBS)
+
+check : build
+	$(PROFILER) $(PROFILER_OPTIONS) ./$(EXEC_FILES)
+
+doc : $(SRC)/*.cpp $(SRC)/*.h
+	doxygen
+
+clean:
+	rm -f $(SRC)/*~
+	rm -f *~
+	rm -f *.o
+
+superclean: clean
+	rm -f $(EXEC_FILES)
+	rm -f *.so
+	rm -f *.lo
+	rm -f *.a
+	rm -rf $(DIST_INCLUDE)
+
