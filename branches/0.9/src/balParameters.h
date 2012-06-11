@@ -44,6 +44,8 @@ namespace bal {
  * This class can be inherited to contain more sophisticated definition of
  * parameters.
  *
+ * \example params.cpp
+ *
  * \sa DynamicalSystem
  */
 class Parameters : public Object {
@@ -52,10 +54,13 @@ class Parameters : public Object {
   static Parameters * Create ();
   static Parameters * Copy (Parameters * params);
   virtual void Destroy ();
+	/** Sets the number of parameters. */
   virtual void SetNumber (int);
   int GetNumber () const;
   
+	/** Allows to access to a parameter as a vector element. */
   double & At (int k);
+	/** Returns a pointer to parameters vector. */
   double * GetParameters() const;
   
   void CopyValues(Parameters* _par);

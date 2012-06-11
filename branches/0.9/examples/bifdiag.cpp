@@ -47,7 +47,7 @@ int main(int argc, char *argv[]) {
   BifurcationDiagram * bifd = BifurcationDiagram::Create();
   bifd->SetDynamicalSystem(hr);
   bifd->RestartFromX0(true);
-  bifd->GetODESolver()->SetIntegrationMode(BOTH);
+  bifd->GetODESolver()->SetIntegrationMode(TRAJ);
   bifd->GetODESolver()->HaltAtEquilibrium(true);
   bifd->GetODESolver()->HaltAtCycle(true);
   bifd->GetODESolver()->SetInitialTime(10.);
@@ -58,7 +58,6 @@ int main(int argc, char *argv[]) {
   bifd->SetFilename("hr_comp.h5",true);
   bifd->SetNumberOfThreads(argc > 1 ? atoi(argv[1]) : 2);
   bifd->SetNumberOfThreads(1);
-
   bifd->ComputeDiagram();
   bifd->SaveSummaryData("hr_comp.classified");
 

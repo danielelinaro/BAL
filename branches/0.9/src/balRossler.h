@@ -22,7 +22,7 @@
 
 /** 
  * \file balRossler.h
- * \brief Definition of the class Rossler
+ * \brief Definition of the example class Rossler 
  */
 
 #ifndef _BALROSSLER_
@@ -37,18 +37,22 @@ namespace bal {
 
 /**
  * \class Rossler
- * \brief Implementation of the Rossler system
- *
+ * \brief This class defines the methods needed to characterize and use Rossler dynamical system with BAL.
  * \sa DynamicalSystem
  */
 class Rossler : public DynamicalSystem {
  public:
+	/** Returns the name of the class. */
   virtual const char * GetClassName () const;
+	/** Creates a new Rossler dynamical system. */
   static Rossler * Create ();
+	/** Copies Rossler dynamical system. */
   static Rossler * Copy (Rossler *ros);
+	/** Overrides bal::DynamicalSystem::Clone method. */
   virtual DynamicalSystem * Clone() const;
-  virtual void Destroy ();
-  
+	/** Destroys Rossler dynamical system. */
+  virtual void Destroy();
+
   int RHS (realtype t, N_Vector x, N_Vector xdot, void * data);
 #ifdef CVODE25
   int Jacobian (long int N, DenseMat J, realtype t, N_Vector x, N_Vector fy, 
@@ -58,7 +62,9 @@ class Rossler : public DynamicalSystem {
   int Jacobian (int N, realtype t, N_Vector x, N_Vector fy, DlsMat J, 
 		void *jac_data, N_Vector tmp1, N_Vector tmp2, N_Vector tmp3);
 #endif
+/** Events functions are system equations themselves.*/
   int Events (realtype t, N_Vector x, realtype * event, void * data);
+/** Allows to locate a maximum of the \f$i_{th}\f$ component. */
   void EventsConstraints (realtype t, N_Vector x, int * constraints, void * data);
 
   bool HasJacobian() const;

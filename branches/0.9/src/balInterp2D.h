@@ -21,8 +21,8 @@
  *=========================================================================*/
 
 /**
- *  \file Interp2D.h
- *  \brief Definition of classes BaseInterp2D LinearInterp2D 
+ *  \file balInterp2D.h
+ *  \brief Definition of classes BaseInterp2D and derivates.
  */
 
 #ifndef _BALINTERP2D_
@@ -37,7 +37,7 @@ namespace bal {
 
 /**
  * \class BaseInterp2D 
- * \brief Base class for two dimensional interpolation.
+ * \brief Base class for two dimensional interpolation of vector functions \f$f: R^{2} \rightarrow R^{m}\f$.
  * \sa Interpolator
  */
 class BaseInterp2D : public Interpolator {
@@ -49,14 +49,15 @@ class BaseInterp2D : public Interpolator {
   /** Destroys a BaseInterp2D. */
   virtual void Destroy();
  
-    /** Sets the interpolation points.
-   *  xi1 is a vector containing the first components of the interpolation points
-   *  xi2 is a vector containing the second components of the interpolation points
-   *  yi is a matrix containing the different values of the funcion in correspondence to each input point. 
-   *  yi must have dimensions nf x (nx1 x nx2) such as yi[k][i+nx1*j] = fk(xi1[i],xi2[j]).
-   *  xi1 is the number of interpolation points along the first dimension (number of element of array xi1).
-   *  xi2 is the number of interpolation points along the second dimension (number of element of array xi2).
-   *  nf is the number of function values corresponding to each input point (dimension of the function codomain) */
+	/** Sets the interpolation points.
+	 * \param xi1 First components of the interpolation points.
+	 * \param xi2 Second components of the interpolation points.
+	 * \param yi  Matrix containing the different values of the function in correspondence to each input point.
+	 *			  It must have dimensions \f$ m \times (n_{x1} \times n_{x2})\f$ such as \f$y_i[k][i+n_{x1}*j] = f_k(x_i^1[i],x_i^2[j])\f$.
+	 * \param nx1 Number of interpolation points along the first dimension (dimension of array xi1).
+	 * \param nx2 Number of interpolation points along the second dimension (dimension of array xi2).
+	 * \param nf Number of function values corresponding to each input point (dimension \f$m\f$ of the function codomain).
+	 */
   virtual void SetInterpolationPoints(double * xi1, double * xi2, double **yi, int nx1, int nx2, int nf);
   
  protected:
@@ -76,7 +77,7 @@ class BaseInterp2D : public Interpolator {
 
 /**
  * \class LinearInterp2D 
- * \brief Class for two dimensional linear interpolation.
+ * \brief Class for two dimensional linear interpolation of vector functions \f$f: R^2 \rightarrow R^{m}\f$.
  * \sa BaseInterp2D
  */
 class LinearInterp2D : public BaseInterp2D {
@@ -95,21 +96,13 @@ class LinearInterp2D : public BaseInterp2D {
  
   /** Copies a LinearInterp2D */
   static LinearInterp2D * Copy(LinearInterp2D *interp);
+
+	virtual int Evaluate(double *x, double *y);
   
-  /** Evaluates the function in point x. The result is stored in array y. 
-   *  If an error has occurred the return value is -1, otherwise it is 0. */
-  virtual int Evaluate(double *x, double *y);
-  
-  /** Evaluates the Jacobian matrix function in point x. The result is stored in matrix y (of dimensions nf x 2). 
-   *  If an error has occurred the return value is -1, otherwise it is 0. */
   virtual int EvaluateJacobian(double *x, double **y);  
-  
-  /** Evaluates (if nd = nf) the divergence of the vector field in point x. The result is stored in y (scalar). 
-   *  If an error has occurred the return value is -1, otherwise it is 0. */
+
   virtual int EvaluateDivergence(double *x, double *y);  
-  
-  /** Initializes the LinearInterp2D. You have to perform this operation before evaluating the function. 
-   *  If an error has occurred the return value is -1, otherwise it is 0. */
+
   int Init();
 
  protected:
@@ -129,7 +122,7 @@ class LinearInterp2D : public BaseInterp2D {
 
 /**
  * \class PolyInterp2D 
- * \brief Class for two dimensional polinomial interpolation.
+ * \brief Class for two dimensional polinomial interpolation of vector functions \f$f: R^2 \rightarrow R^{m}\f$.
  * \sa BaseInterp2D
  */
 class PolyInterp2D : public BaseInterp2D {
@@ -149,23 +142,16 @@ class PolyInterp2D : public BaseInterp2D {
   
   PolyInterp2D * Clone() const;
   
-  /** Evaluates the function in point x. The result is stored in array y. 
-   *  If an error has occurred the return value is -1, otherwise it is 0. */
+	
   virtual int Evaluate(double *x, double *y);
   
-  /** Evaluates the Jacobian matrix of the function in point x. The result is stored in matrix y (of dimensions nf x 2). 
-   *  If an error has occurred the return value is -1, otherwise it is 0. */
   virtual int EvaluateJacobian(double *x, double **y);  
   
-  /** Evaluates (if nd = nf) the divergence of the vector field in point x. The result is stored in y (scalar). 
-   *  If an error has occurred the return value is -1, otherwise it is 0. */
   virtual int EvaluateDivergence(double *x, double *y);  
  
-  /** Sets the interpolation order for each dimension, i.e. the order of the polinomials used to interpolate. Default: m1 = m2 = 2 (linear interpolation) */
+  /** Sets the interpolation order for each dimension, i.e.\ the order of the polinomials used to interpolate. Default: m1 = m2 = 2 (linear interpolation) */
   void SetInterpolationOrder(int m1, int m2);
-  
-  /** Initializes the PolyInterp2D. You have to perform this operation before evaluating the function. 
-   *  If an error has occurred the return value is -1, otherwise it is 0. */
+
   int Init();
 
  protected:
@@ -188,7 +174,7 @@ class PolyInterp2D : public BaseInterp2D {
 
 /**
  * \class SplineInterp2D 
- * \brief Class for two dimensional spline interpolation.
+ * \brief Class for two dimensional interpolation of vector functions \f$f: R^2 \rightarrow R^{m}\f$ using splines.
  * \sa BaseInterp2D
  */
 class SplineInterp2D : public BaseInterp2D {
@@ -208,20 +194,12 @@ class SplineInterp2D : public BaseInterp2D {
   
   SplineInterp2D * Clone() const;
   
-  /** Evaluates the function in point x. The result is stored in array y. 
-   *  If an error has occurred the return value is -1, otherwise it is 0. */
   virtual int Evaluate(double *x, double *y);
-  
-  /** Evaluates the Jacobian matrix of the function in point x. The result is stored in matrix y (of dimensions nf x 2). 
-   *  If an error has occurred the return value is -1, otherwise it is 0. */
+
   virtual int EvaluateJacobian(double *x, double **y);  
-  
-  /** Evaluates (if nd = nf) the divergence of the vector field in point x. The result is stored in y (scalar). 
-   *  If an error has occurred the return value is -1, otherwise it is 0. */
+
   virtual int EvaluateDivergence(double *x, double *y);  
  
-  /** Initializes the SplineInterp2D. You have to perform this operation before evaluating the function. 
-   *  If an error has occurred the return value is -1, otherwise it is 0. */
   int Init();
 
  protected:
@@ -242,7 +220,7 @@ class SplineInterp2D : public BaseInterp2D {
 
 /**
  * \class SmoothingSplineInterp2D 
- * \brief Class for two dimensional approximation with smoothing splines.
+ * \brief Class for two dimensional approximation of vector functions \f$f: R^2 \rightarrow R^{m}\f$ using smoothing splines.
  * \sa BaseInterp2D
  */
 class SmoothingSplineInterp2D : public BaseInterp2D {
@@ -262,16 +240,10 @@ class SmoothingSplineInterp2D : public BaseInterp2D {
   
   SmoothingSplineInterp2D * Clone() const;
   
-  /** Evaluates the function in point x. The result is stored in array y. 
-   *  If an error has occurred the return value is -1, otherwise it is 0. */
   virtual int Evaluate(double *x, double *y);
   
-  /** Evaluates the Jacobian matrix of the function in point x. The result is stored in matrix y (of dimensions nf x 2). 
-   *  If an error has occurred the return value is -1, otherwise it is 0. */
   virtual int EvaluateJacobian(double *x, double **y);  
-  
-  /** Evaluates (if nd = nf) the divergence of the vector field in point x. The result is stored in y (scalar). 
-   *  If an error has occurred the return value is -1, otherwise it is 0. */
+
   virtual int EvaluateDivergence(double *x, double *y);  
   
   /** Sets the smoothing factor. If S = 0 an interpolation is performed.
@@ -280,11 +252,10 @@ class SmoothingSplineInterp2D : public BaseInterp2D {
   */
   void SetSmoothingParameter(double S);
 
-  /** Sets the dimension of the interpolation window (how many points you want to use to perform the interpolation) */
+  /** Sets the dimension of the interpolation window.
+   * \param w Number of points the user wants to use to perform the interpolation. */
   void SetWindow(int w);
   
-  /** Initializes the SmoothingSplineInterp2D. You have to perform this operation before evaluating the function. 
-   *  If an error has occurred the return value is -1, otherwise it is 0. */
   int Init();
 
  protected:

@@ -46,7 +46,7 @@ namespace bal {
 
 /**
  * \class InterpSystem
- * \brief Implementation of a dynamical system whos vector vield is known only n a regular grid
+ * \brief Implementation of a dynamical system whos vector field is known only on a regular grid.
  * 
  * \sa DynamicalSystem
  */

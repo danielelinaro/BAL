@@ -40,9 +40,14 @@ namespace bal {
 /**
  * \class HindmarshRose
  * \brief Implementation of a dynamical system that describes a the
- * Hindmarsh-Rose neuron model
+ * Hindmarsh-Rose neuron model.
+ * 
  * 
  * \sa DynamicalSystem
+ *
+ * \example bifdiag.cpp
+ * \example hrLyap.cpp
+ * \example bifdiagLyap.cpp
  */
 class HindmarshRose : public DynamicalSystem {
  public:

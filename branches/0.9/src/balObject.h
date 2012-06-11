@@ -34,7 +34,7 @@
 namespace bal {
 
 /**
- *  \class balObject
+ *  \class Object
  *  \brief Base class for all BAL objects.
  *  
  *  balObject is the base class for all objects in the Bifurcation Analysis
@@ -46,6 +46,8 @@ namespace bal {
  *  created with the Create() method and deleted with the Destroy()
  *  method. They cannot be allocated off the stack (i.e., automatic
  *  objects) because the constructor is a protected method.
+ *
+ * \example obj.cpp
  */
 class Object {
 
