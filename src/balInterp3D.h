@@ -37,7 +37,8 @@ namespace bal {
 
 /**
  * \class BaseInterp3D 
- * \brief Base class for three dimensional interpolation.
+ * \brief Base class for three dimensional interpolation of vector functions \f$f: R^{3} \rightarrow R^{m}\f$.
+ *
  * \sa Interpolator
  */
 class BaseInterp3D : public Interpolator {
@@ -79,7 +80,7 @@ class BaseInterp3D : public Interpolator {
 
 /**
  * \class LinearInterp3D 
- * \brief Class for three dimensional linear interpolation.
+ * \brief Class for three dimensional linear interpolation of vector functions \f$f: R^3 \rightarrow R^{m}\f$.
  * \sa BaseInterp3D
  */
 class LinearInterp3D : public BaseInterp3D {
@@ -135,7 +136,7 @@ class LinearInterp3D : public BaseInterp3D {
 
 /**
  * \class PolyInterp3D 
- * \brief Class for three dimensional polinomial interpolation.
+ * \brief Class for three dimensional polynomial interpolation of vector functions \f$f: R^3 \rightarrow R^{m}\f$.
  * \sa BaseInterp3D
  */
 class PolyInterp3D : public BaseInterp3D {
@@ -195,7 +196,7 @@ class PolyInterp3D : public BaseInterp3D {
 
 /**
  * \class SplineInterp3D 
- * \brief Class for three dimensional spline interpolation.
+ * \brief Class for one dimensional interpolation of vector functions \f$f: R^3 \rightarrow R^{m}\f$ using splines.
  * \sa BaseInterp3D
  */
 class SplineInterp3D : public BaseInterp3D {
@@ -254,7 +255,7 @@ class SplineInterp3D : public BaseInterp3D {
 
 /**
  * \class SmoothingSplineInterp3D 
- * \brief Class for three dimensional approximation with smoothing splines.
+ * \brief Class for three dimensional approximation of vector functions \f$f: R^3 \rightarrow R^{m}\f$ using smoothing splines.
  * \sa BaseInterp3D
  */
 class SmoothingSplineInterp3D : public BaseInterp3D {

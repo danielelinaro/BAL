@@ -1,3 +1,8 @@
+/**
+ *  \file balInterpolator.cpp
+ *  \brief Implementation of abstract class Interpolator. 
+ */
+
 #include "balInterpolator.h"
 
 namespace bal {

@@ -52,13 +52,33 @@ namespace bal {
 
 void ResetColours(int d);
 
+/** The type of dynamical system analysis. */
 typedef enum {
-        PARAMS, IC
+	/** Bifurcation analysis in parameter domain specified by BifurcationParameters object. */		
+	PARAMS,
+	/** Analysis of dynamical system behaviour (parameters fixed) by varying initial conditions. */
+	IC
 } diagram_mode;
 
 /**
  * \class SummaryEntry
- * \brief Object used to store an entry of the summary list.
+ * \brief Class used to store only the essential results of an integration (depending on choosen \ref diagram_mode and \ref integration_mode).
+ * \ref data vector is organized as follows:
+ * \f[
+ * \begin{tabular}{|c|cccccccccc|}
+ * \hline
+ * diagram\_mode & & &	&	&	&	& & & &\\
+ * \hline
+ *	$IC$ & $p_0$ & $\dots$ & $p_m$ & $x_0^0$ & $\dots$ & $x_0^n$ & $x_{final}^0$ & $\dots$ & $x_{final}^n$ & $\#turns$ \\
+ * \hline
+ *  $PARAM$ & $p_0$	&	$\dots$	&	$p_m$	& $\#turns$ & & & & & & \\
+ * \hline
+ * $PARAM_{Lyap}$ & $p_0$	&	$\dots$	&	$p_m$	& $MLE$ & & & & & & \\
+ * \hline
+ * \end{tabular}
+ * \f]
+ *
+ * \sa bal::BifurcationDiagram::SaveSummaryData bal::BifurcationDiagram::GetSummaryData
  */
 class SummaryEntry : public Object {
  public:
@@ -74,6 +94,10 @@ class SummaryEntry : public Object {
   int id;
 };
 
+/** 
+ * Compare function (based on solution ID number) that allows to
+ * sort list of SummaryEntry with std::list::sort method.
+ */	
 bool CompareBalSummaryEntry(SummaryEntry *entry1, SummaryEntry *entry2);
 
 /**
@@ -85,10 +109,19 @@ bool CompareBalSummaryEntry(SummaryEntry *entry1, SummaryEntry *entry2);
  * the RHS function of the system to integrate, a ODESolver that
  * performs the actual integration, a Logger to store data to file and a
  * BifurcationParameters that is mainly used to iterate over all the
- * combinations of parameters that the user is interested to simulate.
+ * combinations of parameters that the user is interested to simulate
+ * (\link bifdiag.cpp \endlink).
+ *
+ * Otherwise the user can perform a basin of attraction analysis
+ * utilising \ref SetInitialConditions method to define a set
+ * of initial conditions over which the integrations will be performed (\link basin.cpp \endlink).
+ *
+ * \example basin.cpp
+ * \example bifdiag.cpp 
  *
  * \sa DynamicalSystem BifurcationParameters ODESolver
  */
+
 class BifurcationDiagram : public Object {
  public:
   /** Returns the name of the class. */
@@ -100,16 +133,17 @@ class BifurcationDiagram : public Object {
 
   /**
    * Sets the dynamical system to integrate. BifurcationDiagram
-   * assumes that the dynamical contain an instance of BifurcationParameters,
+   * assumes that the dynamical system contains an instance of BifurcationParameters,
    * instead of the simpler Parameters.
-   * @param sys A dynamical system: any instance of a class inherited
+   * \param sys A dynamical system: any instance of a class inherited
    * from DynamicalSystem.
+   * \sa bal::DynamicalSystem
    */
   void SetDynamicalSystem(DynamicalSystem * sys);
 
   /**
    * Gets the dynamical system to integrate.
-   * @return The dynamical system used in the computation of the
+   * \return The dynamical system used in the computation of the
    * bifurcation diagram.
    */
   DynamicalSystem * GetDynamicalSystem() const;
@@ -120,12 +154,13 @@ class BifurcationDiagram : public Object {
    * created. This method should be used only if the user wants to use a
    * different kind of logger (such as one, for example, that saves data
    * in a particular format). The default logger uses H5 files.
-   * @param log An instance of one of the classes inherited by Logger.
+   * \param log An instance of one of the classes inherited by Logger.
+   * \sa bal::Logger
    */
   void SetLogger(Logger * log);
 
   /**
-   * @return The logger used for saving data to file.
+   * \return The logger used for saving data to file.
    */
   Logger * GetLogger() const;
 
@@ -135,25 +170,26 @@ class BifurcationDiagram : public Object {
    * created. This method should be called only if the user has developed
    * their own ODE solver.
    * \param sol An instance of an ODE solver.
+   * \sa bal::ODESolver
    */
   void SetODESolver(ODESolver * sol);
 
   /**
    * This method returns a pointer to the ODE solver used to integrate
    * the system. It is useful to set parameters of the ODE solver.
-   * @return The ODE solver used to integrate the system.
+   * \return The ODE solver used to integrate the system.
    */
   ODESolver * GetODESolver() const;
 
   /**
    * Sets the name of the file where data will be saved.
-   * @param filename File where the bifurcation diagram will be saved.
-   * @param compress Flag that tells wheter the file should be compressed.
+   * \param filename File where the bifurcation diagram will be saved.
+   * \param compress Flag that tells wheter the file should be compressed.
    */
   void SetFilename(const char * filename, bool compress = false);
 
   /**
-   * @return The name of the file where data is saved.
+   * \return The name of the file where data is saved.
    */
   const char * GetFilename();
 
@@ -172,6 +208,9 @@ class BifurcationDiagram : public Object {
   /**
    * Sets whether each new integration should restart or not from the
    * original initial conditions.
+	 * \param restart If it is set to false each integration starts from the final state of
+	 * the previous one. This may give an additional speed-up because the system
+	 * could start already at steady state.
    */
   void RestartFromX0(bool restart);
 
@@ -189,11 +228,27 @@ class BifurcationDiagram : public Object {
    */
   int GetNumberOfThreads() const;
 
+	/**
+   * Saves the list of SummaryEntry resulting from ComputeDiagram in an ASCII file, sorted by parameters.
+	 * \param filename Name of the file where results are saved.
+   */
   bool SaveSummaryData(const char *filename) const;
-  double** GetSummaryData(int *size = NULL) const;
 
+	/**
+   * Returns the results of ComputeDiagram as a matrix of SummaryEntry, sorted by parameters.
+   */
+  double** GetSummaryData(int *size = NULL) const;
+	
+  /** Defines what kind of analysis will be performed. */
   bool SetMode(diagram_mode _mode);
   int GetMode() const;
+	
+	/**
+   * Initializes the set of initial conditions used for basins of attraction analysis.
+	 * \param nx0 Number of initial conditions.
+	 * \param x0  Matrix of initial conditions where the generic entry \f$x[i][j]\f$ refers to
+	 *						the \f$j_{th}\f$ component of the \f$i_{th}\f$ initial condition.
+   */
   void SetInitialConditions(int nx0, double **x0);
 
  protected:
@@ -215,7 +270,7 @@ class BifurcationDiagram : public Object {
   Parameters * parameters;
   /**
    * The object used to save data to a file: by default H5 file logging
-   * is used, i.e., logger is an instance of the H5Logger class:
+   * is used, i.e.\ logger is an instance of the H5Logger class:
    * if the user wants to use another logger, they should provide it
    * by using the SetLogger member.
    */
@@ -242,7 +297,7 @@ class BifurcationDiagram : public Object {
    * previous integration (false) */
   bool restart_from_x0;
 
-  /*** multithreading stuff ***/
+  //// multithreading stuff ////
   /**
    * A list containing the results of the numerical integrations: when the list
    * is full, the threads that integrate stop and another thread saves data to file

@@ -38,6 +38,9 @@ namespace bal {
 /**
  * \class Lorenz
  * \brief Implementation of Lorenz dynamical system
+ *
+ * \example lorenz.cpp lorenzLyap.cpp
+ *
  * \sa DynamicalSystem
  */
 class Lorenz : public DynamicalSystem {

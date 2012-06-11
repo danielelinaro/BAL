@@ -42,7 +42,9 @@ namespace bal {
 
 /**
  * \class BaseInterp1D 
- * \brief Base class for one dimensional interpolation of vector functions f: R -> R^{nf}.
+ * \brief Base class for one dimensional interpolation of vector functions \f$f: R \rightarrow R^{m}\f$.
+ *
+ * \example interp.cpp 
  *
  * \sa Interpolator
  */
@@ -58,31 +60,39 @@ class BaseInterp1D : public Interpolator {
 
   /** Destroys a BaseInterp1D. */
   virtual void Destroy();
-  
-  /** Sets the interpolation points.
-   *  xi is a vector containing the abscissas of the points
-   *  yi is a matrix containing the different ordinates corresponding to each ascissa. yi must have dimensions nf x length.
-   *  length is the number of interpolation points.
-   *  nf is the number of ordinates for each abscissa (dimension of the function codomain) */
+
+ /**
+  * Sets interpolation points.
+  * \param xi Vector containing the abscissas of the points.
+  * \param yi Matrix containing the different ordinates corresponding to each ascissa. \f$y_i\f$ must have dimension \f$m \times length\f$. 
+  * \param length Number of interpolation points.
+  * \param nf Number of ordinates for each abscissa (dimension \f$m\f$ of the function codomain).
+  */
   virtual void SetInterpolationPoints(double * xi, double **yi, int length, int nf);
   
   /**
-   * Given a value x, return a value j such that x is (insofar as possible) centered in the subrange 
-   * xx[j..j+mm-1], where xx is the stored pointer. The values in xx must be monotonic, either 
-   * increasing or decreasing. The returned value is not less than 0, nor greater than n-1. 
+   * \param x Generic domain point.
+   * \return Returns a value \f$j\f$ such that \f$x\f$ is (insofar as possible) centered in the subrange 
+   * \f$xx[j,\dots,j+mm-1]\f$, where \f$xx\f$ is the vector of stored points and \f$mm\f$ is the interpolation order. 
+   * The returned value is not less than 0, nor greater than n-1.
+   * 
+   * Before calling this function, the values in \f$xx\f$ must be already monotonic, either increasing or decreasing.
    *
-   * Taken from "Numerical Recipes: The art of scientific computing". Third
-   * Edition, page 115.
+   * Taken from <a href="http://www.nr.com">Numerical Recipes: 
+   * The art of scientific computing" [Third Edition]</a>, page 115.
    */
   int Locate(const double x);
   
   /**
-   * Given a value x, return a value j such that x is (insofar as possible) centered in the subrange 
-   * xx[j..j+mm-1], where xx is the stored pointer. The values in xx must be monotonic, either 
-   * increasing or decreasing. The returned value is not less than 0, nor greater than n-1.
+   * \param x Generic domain point.
+   * \return Returns a value \f$j\f$ such that \f$x\f$ is (insofar as possible) centered in the subrange 
+   * \f$xx[j,\dots,j+mm-1]\f$, where \f$xx\f$ is the vector of stored points and \f$mm\f$ is the interpolation order. 
+   * The returned value is not less than 0, nor greater than n-1.
+   * 
+   * Before calling this function, the values in \f$xx\f$ must be already monotonic, either increasing or decreasing.
    *
-   * Taken from "Numerical Recipes: The art of scientific computing". Third
-   * Edition, page 116.
+   * Taken from <a href="http://www.nr.com/">Numerical Recipes: 
+   * The art of scientific computing" [Third Edition]</a>, page 116.
    */
   int Hunt(const double x);
 
@@ -107,7 +117,7 @@ class BaseInterp1D : public Interpolator {
 
 /**
  * \class LinearInterp1D 
- * \brief Class for one dimensional linear interpolation of vector functions f: R -> R^{nf}.
+ * \brief Class for one dimensional linear interpolation of vector functions \f$f: R \rightarrow R^{m}\f$.
  *
  * \sa BaseInterp1D
  */
@@ -127,16 +137,10 @@ class LinearInterp1D : public BaseInterp1D {
   static LinearInterp1D * Copy(LinearInterp1D *interp);
   virtual LinearInterp1D * Clone() const;
   
-  /** Evaluates the function in point x. The result is stored in array y. 
-   *  If an error has occurred the return value is -1, otherwise it is 0. */
-  virtual int Evaluate(double *x, double *y);
+	virtual int Evaluate(double *x, double *y);
   
-  /** Evaluates the Jacobian matrix of the function in point x. The result is stored in matrix y (of dimensions nf x 1). 
-   *  If an error has occurred the return value is -1, otherwise it is 0. */
   virtual int EvaluateJacobian(double *x, double **y);
-  
-  /** Evaluates (if nd = nf) the divergence of the vector field in point x. The result is stored in y (scalar). 
-   *  If an error has occurred the return value is -1, otherwise it is 0. */
+
   virtual int EvaluateDivergence(double *x, double *y);  
 
  protected:
@@ -154,8 +158,8 @@ class LinearInterp1D : public BaseInterp1D {
 
 /**
  * \class PolyInterp1D 
- * \brief Class for one dimensional polynomial interpolation of vector functions f: R -> R^{nf}.
-.
+ * \brief Class for one dimensional polynomial interpolation of vector functions \f$f: R \rightarrow R^{m}\f$.
+ *
  * \sa BaseInterp1D
  */
 class PolyInterp1D : public BaseInterp1D {
@@ -177,17 +181,10 @@ class PolyInterp1D : public BaseInterp1D {
   /** Sets the interpolation order, i.e. the order of the polinomial used to interpolate. Default: 2 (linear interpolation) */
   void SetInterpolationOrder(int m);
 
-  /** Evaluates the function in point x. The result is stored in array y. 
-   *  If an error has occurred the return value is -1, otherwise it is 0. */
   virtual int Evaluate(double *x, double *y);
-  
-  /** Evaluates the Jacobian matrix of the function in point x. The result is stored in matrix y (of dimensions nf x 1).
-   *  If an error has occurred the return value is -1, otherwise it is 0. 
-   *  Implemented with finite differences. */
+
   virtual int EvaluateJacobian(double *x, double **y);
-  
-  /** Evaluates (if nd = nf) the divergence of the vector field in point x. The result is stored in y (scalar). 
-   *  If an error has occurred the return value is -1, otherwise it is 0. */
+
   virtual int EvaluateDivergence(double *x, double *y);  
   
  protected:
@@ -207,7 +204,7 @@ class PolyInterp1D : public BaseInterp1D {
 
 /**
  * \class SplineInterp1D 
- * \brief Class for one dimensional interpolation of vector functions f: R -> R^{nf} by using splines.
+ * \brief Class for one dimensional interpolation of vector functions \f$f: R \rightarrow R^{m}\f$ using splines.
  *
  * \sa BaseInterp1D
  */
@@ -231,21 +228,13 @@ class SplineInterp1D : public BaseInterp1D {
    *  Default value: natural splines (second derivative equal to 0 in the boundaries) */
   void SetBoundaryConditions(double yp1, double ypn);
 
-  /** Initializes the Spline1D. You have to perform this operation before evaluating the function. 
-   *  If an error has occurred the return value is -1, otherwise it is 0. */
   int Init();
   
-  /** Evaluates the function in point x. The result is stored in array y. 
-   *  If an error has occurred the return value is -1, otherwise it is 0. */
   virtual int Evaluate(double *x, double *y);
-  
-  /** Evaluates the Jacobian matrix of the function in point x. The result is stored in matrix y (of dimensions nf x 1). 
-   *  If an error has occurred the return value is -1, otherwise it is 0. */
+
   virtual int EvaluateJacobian(double *x, double **y);
-  
-  /** Evaluates (if nd = nf) the divergence of the vector field in point x. The result is stored in y (scalar). 
-   *  If an error has occurred the return value is -1, otherwise it is 0. */
-  virtual int EvaluateDivergence(double *x, double *y);  
+
+  virtual int EvaluateDivergence(double *x, double *y); 
 
   
  protected:
@@ -268,8 +257,9 @@ class SplineInterp1D : public BaseInterp1D {
 
 /**
  * \class SmoothingSplineInterp1D 
- * \brief Class for one dimensional approximation of vector functions f: R -> R^{nf} by using smoothing Reinsch splines.
- *        Notice that an interpolation is not performed.
+ * \brief Class for one dimensional approximation of vector functions \f$f: R \rightarrow R^{m}\f$ using smoothing Reinsch splines.
+ * Notice that an interpolation is not performed.
+ *
  * \sa BaseInterp1D
  */
 class SmoothingSplineInterp1D : public BaseInterp1D {
@@ -290,40 +280,30 @@ class SmoothingSplineInterp1D : public BaseInterp1D {
   
   /** Sets the smoothing factors. The smoothing spline is computed by finding a third order polinomial which minimizes the
    *  integral of the square of the second derivative under these constraints:
-   *  __
-   *  \
-   *  /_ ( (f(x_i) - y_i) / dy_i )^2 <= S
-   *
-   * If S = 0, or all dy values = 0, an interpolation is performed.
-   * By increasing S or dy values the function becomes smoother and smoother.
+   * \f[
+   * \sum_i{( \frac{f(x_i) - y_i}{dy_i})^2} \leq S
+   * \f]
+   * If \f$S=0\f$ or \f$dy_i=0\f$ for each \f$i\f$, an interpolation is performed.
+   * By increasing \f$S\f$ or \f$dy_i\f$ values the function becomes smoother and smoother.
    */
   void SetSmoothingParameters(double *dy, double S);
    
   /** Sets the smoothing factors. The smoothing spline is computed by finding a third order polinomial which minimizes the
    *  integral of the square of the second derivative under these constraints:
-   *  __
-   *  \
-   *  /_ (f(x_i) - y_i)^2 <= smooth^2
-   *
-   * If smooth = 0 an interpolation is performed.
-   * By increasing smooth the function becomes smoother and smoother.
+   * \f[
+   * \sum_i{(f(x_i) - y_i)^2} \leq smooth^2
+   * \f]
+   * If \f$smooth = 0\f$ an interpolation is performed.
+   * By increasing \f$smooth\f$ the function becomes smoother and smoother.
    */
   void SetSmoothingParameters(double smooth);
-  
-  /** Initializes the SmoothingSplineInterp1D. You have to perform this operation before evaluating the function. 
-   *  If an error has occurred the return value is -1, otherwise it is 0. */
+
   int Init();
 
-  /** Evaluates the function in point x. The result is stored in array y. 
-   *  If an error has occurred the return value is -1, otherwise it is 0. */
   virtual int Evaluate(double *x, double *y);
-  
-  /** Evaluates the Jacobian matrix of the function in point x. The result is stored in matrix y (of dimensions nf x 1). 
-   *  If an error has occurred the return value is -1, otherwise it is 0. */
+
   virtual int EvaluateJacobian(double *x, double **y);
-  
-  /** Evaluates (if nd = nf) the divergence of the vector field in point x. The result is stored in y (scalar). 
-   *  If an error has occurred the return value is -1, otherwise it is 0. */
+
   virtual int EvaluateDivergence(double *x, double *y);  
   
  protected:

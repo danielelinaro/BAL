@@ -45,6 +45,8 @@ enum {MINIMA, MAXIMA, ANY};
  * \brief Implementation of a dynamical system that describes a
  * model of Chinese dynasty.
  * 
+ * \example dynasty.cpp
+ *
  * \sa DynamicalSystem
  */
 class Dynasty : public DynamicalSystem {

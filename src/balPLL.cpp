@@ -22,7 +22,7 @@
 
 /** 
  * \file balPLL.cpp
- * \brief Implementation of the class PLL
+ * \brief Implementation of the class PLL.
  */
 
 #include "balPLL.h"

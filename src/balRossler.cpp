@@ -86,8 +86,7 @@ int Rossler::RHS (realtype t, N_Vector x, N_Vector xdot, void * data) {
   
   Ith (xdot, 0) = - x2 - x3;
   Ith (xdot, 1) = x1 + a*x2;
-  Ith (xdot, 2) = b + x3*(x1 - c);
-  
+  Ith (xdot, 2) = b + x3*(x1 - c);  
   return CV_SUCCESS;
 }
 
@@ -125,7 +124,7 @@ int Rossler::Jacobian (int N, realtype t, N_Vector x, N_Vector fy, DlsMat J,
   return CV_SUCCESS;
 }
  
- int Rossler::Events (realtype t, N_Vector x, realtype * event, void * data) {
+int Rossler::Events (realtype t, N_Vector x, realtype * event, void * data) {
    RHS(t,x,xderiv,data);
    for(int i=0; i<GetNumberOfEvents(); i++)
      event[i] = Ith(xderiv,i);

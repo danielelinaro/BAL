@@ -47,10 +47,9 @@ namespace bal {
 /**
  * \class PLL
  * \brief Implementation of a dynamical system that describes a
- * Phase-Locked Loop
+ * Phase-Locked Loop.\ This PLL is modelled as a switch system.
  *
- * This PLL is modelled as a switch system.
- *
+ * \example pll.cpp
  * \sa DynamicalSystem
  */
 class PLL : public DynamicalSystem {

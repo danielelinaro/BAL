@@ -36,9 +36,12 @@ namespace bal {
 
 /**
  * \class Solution
- * \brief Class that contains the result of an integration of a dynamical
- * system
- * \sa DynamicalSystem Parameters ODESolver
+ * \brief Class that stores all the informations related to 
+ * integration of a dynamical system: trajectory, system parameters
+ * and Lyapunov exponents or number of turns.
+ * This class allows to manage and sort more easily large number of solutions needed
+ * for the realization of diagrams. 
+ * \sa bal::CompareBalSolutions DynamicalSystem Parameters ODESolver
  */
 class Solution : public Object {
  public:
@@ -46,11 +49,13 @@ class Solution : public Object {
   virtual const char * GetClassName() const;
   /** Creates a new Solution. */
   static Solution * Create();
-  /** Copies a Solution */
+  /** Copies a Solution. */
   static Solution * Copy(Solution * solution);
   /** Destroys a Solution. */
   virtual void Destroy();
-  
+ 
+//@{
+/*! \name Get/Set methods*/
   int GetRows() const;
   int GetColumns() const;
   void GetSize(int * r, int * c) const;
@@ -66,12 +71,16 @@ class Solution : public Object {
   void SetNumberOfTurns(int _nturns);
 
 	realtype * GetLyapunovExponents() const;
+  /** \param n dimension of the dynamical system
+   *  \param lp vector containing Lyapunov exponents orted in descending order
+   */
   void SetLyapunovExponents(int n, realtype * lp);
 	
   int GetID() const;
   void SetID(int id);
 	
 	bool IsLyapunovMode() const;
+//@}
 
  protected:
   /* Protected destructor of the class. */
@@ -90,6 +99,8 @@ class Solution : public Object {
 	bool lyapunov_mode;
 };
 
+/** Compare function (based on solution ID number) that allows to
+  * sort list of solutions with std::list::sort method.*/
 bool CompareBalSolutions(Solution *sol1, Solution *sol2);
 
 } // namespace bal

@@ -20,11 +20,9 @@
  *
  *=========================================================================*/
 
-/** 
- * \file balODESolver.h
- * \brief Definition of the class balODESolver
+/** \file balODESolver.h
+ Definition of the class balODESolver for integration of dynamical systems
  */
-
 
 #ifndef _BALODESOLVER_
 #define _BALODESOLVER_
@@ -46,10 +44,10 @@
 #include <sundials/sundials_direct.h>
 #endif
 
-/** Default relative tolerance */
+/** Default relative tolerance for numerical integration */
 #define RTOL (1.0E-7)
 
-/** Default absolute tolerance */
+/** Default absolute tolerance for numerical integration */
 #define ATOL (1.0E-10)
 
 /** Default integration step   */
@@ -80,14 +78,22 @@
 /** Error file for CVode */
 #define ERROR_FILE "bal.log"
 
-#define DUMPBUFFER(fid)					\
-  {							\
-    int i, j;						\
-    for(i=0; i<rows; i++) {				\
-      for(j=0; j<cols; j++)				\
+/*! \def DUMPBUFFER(fid)
+ \brief A macro that prints in the file \a fid the integration results.
+ 
+ The results are saved in a solution matrix. Each row contains: a time instant, the state vector components at this time instant, a label that gives information on the
+ type of entry in the matrix.
+ \param fid The descriptor to write to.
+ */
+
+#define DUMPBUFFER(fid)							\
+  {												\
+    int i, j;									\
+    for(i=0; i<rows; i++) {						\
+      for(j=0; j<cols; j++)						\
 	fprintf(fid, "%e ", buffer[i*cols+j]);		\
-      fprintf(fid, "\n");				\
-    }							\
+      fprintf(fid, "\n");						\
+    }											\
   }
 
 
@@ -98,7 +104,7 @@ namespace bal {
 typedef enum {
         /** Records the trajectory of the system */
         TRAJ = 1,
-        /** Records the events, i.e. the crossings of Poincare' sections */
+        /** Records the events, i.e.\ the crossings of Poincare' sections */
         EVENTS,
         /** Records both trajectory and events */
         BOTH,
@@ -107,11 +113,10 @@ typedef enum {
 } integration_mode;
 
 
-/**
- * The labels associated to every row in the solution matrix. Events have
- * labels that start from 1 and that correspond to the order in which the
- * corresponding Poincare' section has been loaded into the solver.
- */
+/** The labels associated to every row in the solution matrix.
+* Events have labels that start from 1 and that correspond to the order in which the
+* corresponding Poincare' section has been loaded into the solver.
+*/
 typedef enum {
         /** Integration has terminated due to an error in CVode */
         ERROR = -10,
@@ -135,11 +140,67 @@ typedef enum {
 } cycle_label;
 
 /**
- * \class ODESolver
- * \brief Class for integration of dynamical systems
- * 
- * \sa DynamicalSystem BifurcationParameters Solution
- */
+ \class ODESolver
+ This class performs the numerical integration of a dynamical system
+ described by a set of ordinary differential equations (ODEs). 
+ It can be used in four different working modes:
+ 
+ - <b>'Trajectory'</b> (bal::TRAJ): The system is integrated from an initial time \f$t_0\f$ to a 
+	final time \f$t_1\f$ with a time step \f$dt\f$. The whole solution of the integration 
+	is stored in memory and available to the user.
+ 
+ - <b>'Events'</b> (bal::EVENTS): The system is integrated from \f$t_0\f$ to \f$t_1\f$ and CVode is 
+	 instructed to find the zeroes of appropriate root functions that are 
+	 given by the user in the definition of the dynamical system. Only the 
+	 state of the system at the times when any of the root functions equals 0 
+	 are stored in memory. The time step dt has no meaning in this working 
+	 mode.
+ 
+ - <b>'Trajectory + Events'</b> (bal::BOTH): This mode is the "sum" of the two previous 
+	 ones. The trajectory is stored with step dt and root finding is enabled.
+	 
+ - <b>'Lyapunov'</b> (bal::LYAP): In this mode, the dynamical system is extended and the 
+	 Lyapunov spectrum is calculated. The user can specify the time step at 
+	 which the value of the exponents should be updated (for example of use see \ref lorenzLyap.cpp and \ref hrLyap.cpp).
+	 
+ Another important feature of this class is its ability to perform a 
+ classification of the type of trajectory as it is computed: in 
+ particular, balODESolver is able to detect whether the trajectory 
+ converges to an equilibrium point, or - if events are enabled - to a 
+ chaotic attractor or a limit cycle. In the latter case, it can also 
+ compute the number of turns in each closed orbit, i.e. the number of 
+ distinct intersections with a particular Poincare' section. This feature 
+ is particularly useful for the classification of behaviours in 
+ bifurcation diagrams, also in combination with the complementary 
+ information (about the complexity of chaotic solutions) provided by the 
+ Lyapunov spectrum.
+ 
+ The solution buffer is organized as follows:
+ \f[
+	\begin{tabular}{|c|ccccc|c|}
+	\hline
+	time	&	$x^1$	&	$\dots$	&	$x^i$	&	$\dots$	&	$x^n$	&	label	\\
+	\hline
+	$t_{start}$	&	$x_0^1$	&	$\dots$	&	$x_0^i$	&	$\dots$	&	$x_0^n$	&	$-2$	\\
+	$t_{tran}$	&	$x_1^1$	&	$\dots$	&	$x_1^i$	&	$\dots$	&	$x_1^n$	&	$-1$	\\
+	$t_j$	&	$x_j^1$	&	$\dots$	&	$x_j^i$	&	$\dots$	&	$x_j^n$	&	$0$		\\
+	$\vdots$	&	$\vdots$	&	$\vdots$	&	$\vdots$	&	$\vdots$	&	$\vdots$	&	$\vdots$	\\
+	$t_k$	&	$x_k^1$	&	$\dots$	&	$x_k^i$	&	$\dots$	&	$x_k^n$	&	$l$		\\
+	\hline
+	\end{tabular}
+ \f]
+ The \a label column contains information about each entry: \a -2 for the initial condition, \a -1 at the
+ end of the transient period, \a 0 for a standard entry, every \a l integer grater than zero indicates
+ a zero value of the \a l-th event function at that point. Other possible values are: \a -3 at an equilibrium point 
+ and \a -10 if an error occurred during integration.
+ 
+ \example solver.cpp
+ \example lorenzLyap.cpp
+ \example hrLyap.cpp
+ 
+ \sa DynamicalSystem BifurcationParameters Solution
+*/
+	
 class ODESolver : public Object {
 
  public:
@@ -152,6 +213,10 @@ class ODESolver : public Object {
   /** Destroys a ODESolver. */
   virtual void Destroy();
   
+	//@{
+	
+	/*! \name Get/Set methods*/
+	
   realtype * GetBuffer() const;
   int GetBufferSize() const;
   void GetBufferSize(int * r, int * c) const;
@@ -165,36 +230,48 @@ class ODESolver : public Object {
   
   realtype GetInitialTime() const;
   void SetInitialTime(realtype T0);
+  
   realtype GetTransientDuration () const;
   void SetTransientDuration (realtype tran);
+  
   realtype GetFinalTime () const;
   void SetFinalTime (realtype final);
+  
   realtype GetTimeStep () const;
   void SetTimeStep (realtype step);
+  
   realtype GetLyapunovTimeStep () const;
+	/** Sets the interval of time between each update procedure of exponents values. */
   void SetLyapunovTimeStep (realtype tstep);
+  
   realtype GetRelativeTolerance () const;
   void SetRelativeTolerance (realtype rtol);
+  
   realtype GetAbsoluteTolerance () const;
   void SetAbsoluteTolerance (realtype atol);
+  
   integration_mode GetIntegrationMode () const;
   void SetIntegrationMode (integration_mode m);
-  void IsStiff(bool stiffness);
+  
   int GetMaxNumberOfIntersections() const;
   void SetMaxNumberOfIntersections(int intersections);
+
+  void SetClassificationEvent(int ce);
+  int GetClassificationEvent() const;
+  int GetNumberOfTurns() const;
+  
+  realtype * GetLyapunovExponents() const;
+  
+  void IsStiff(bool stiffness);
   void HaltAtEquilibrium(bool halt);
   bool HaltsAtEquilibrium() const;
   void HaltAtCycle(bool halt);
   bool HaltsAtCycle() const;
-  void SetClassificationEvent(int ce);
-  int GetClassificationEvent() const;
-  int GetNumberOfTurns() const;
   realtype GetEquilibriumTolerance() const;
   void SetEquilibriumTolerance(realtype tol);
   realtype GetCycleTolerance() const;
   void SetCycleTolerance(realtype tol);
-
-  realtype * GetLyapunovExponents() const;
+  
   
   N_Vector GetX() const;
   N_Vector GetXdot() const;
@@ -203,9 +280,18 @@ class ODESolver : public Object {
   void SetX0(N_Vector X0, int n = -1);
   void SetX0(realtype * X0, int n = -1);
   
+	//@}
+	
+/** Saves in a ASCII file only the steady state part of an oscillating solution.
+	The solution has to be obtained by an integration in bal::EVENTS or bal::BOTH mode.
+*/
   bool SaveOrbit(const char *filename) const;
-
+  
+/** Initializes and configures CVode for integration with the fields previously set by user (dynamical system, jacobian, tollerances, stiffness).\ Allocates memory for the solution buffer depending on integration time options.
+*/
   virtual bool Setup();
+  
+/** Performs the integration according to the chosen bal::integration_mode. */
   virtual bool Solve();
   
  protected:
@@ -274,9 +360,9 @@ class ODESolver : public Object {
   /** Absolute tolerance */
   realtype abstol; // SG
   
-  /** Integration mode (step by step or event-driven */
+  /** Integration mode (step by step or event-driven) */
   integration_mode mode; // SG
-  /** Indicates whether we are solving a stiff or non-stiff system (the former one is the default */
+  /** Indicates whether we are solving a stiff or non-stiff system (the former one is the default) */
   bool stiff; // S
 
   /** The memory for CVode */
@@ -287,8 +373,7 @@ class ODESolver : public Object {
   
   /** The maximum number of intersections */
   int max_intersections; // SG
-  /** Event location array (each element has value 1 when the corresponding
-   * event has been located */
+  /** Event location array (each element has value 1 or -1 when the corresponding event has been located)*/
   int *events;
   bool delete_events;
   /** Constraints on the location of events */
