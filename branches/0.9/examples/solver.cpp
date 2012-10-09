@@ -46,26 +46,40 @@ int main(int argc, char *argv[]) {
   solver->SetDynamicalSystem(hr);
   solver->SetTransientDuration(0.0);
   solver->SetFinalTime(1000.0);
+  solver->SetTimeStep(0.01);
+
+  //~~ Full trajectory without stopping at equilibrium
+  printf("\n>>> Computing the whole trajectory <<<\n");
+  solver->HaltAtEquilibrium(false);
+  solver->SetIntegrationMode(TRAJ);
+  solver->Solve();
+  printf("Ok.\n");
+
+  //~~ Only events
+  printf("\n>>> Computing only the events <<<\n");
+  solver->SetIntegrationMode(EVENTS);
+  solver->Solve();
+  printf("Ok.\n");
+
+  //~~ Trajectory and events
+  printf("\n>>> Computing trajectory and events <<<\n");
+  solver->SetIntegrationMode(BOTH);
+  solver->Solve();
+  printf("Ok.\n");
+
+  //~~ Full trajectory, this time stopping at an equilibrium point
+  printf("\n>>> Computing the whole trajectory and stopping at an equilibrium point <<<\n");
+  pars->At(1) = 1.0;
   solver->HaltAtEquilibrium(true);
   solver->SetIntegrationMode(TRAJ);
-  printf("Computing the whole trajectory... ");
   solver->Solve();
-  printf("done.\n");
-  solver->SetIntegrationMode(EVENTS);
-  printf("Computing only the events... ");
-  solver->Solve();
-  printf("done.\n");
-  solver->SetIntegrationMode(BOTH);
-  printf("Computing trajectory and events... ");
-  solver->Solve();
-  printf("done.\n");
-  pars->At(1) = 1.0;
-  solver->SetIntegrationMode(TRAJ);
-  printf("Computing the whole trajectory and stopping at an equilibrium point... ");
-  solver->Solve();
-  printf("done.\n");
+  printf("Ok.\n\n");
+
+  //~~ Clean up
   solver->Destroy();
-  
+  hr->Destroy();
+  pars->Destroy();
+
   return 0;
 }
 

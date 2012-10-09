@@ -5,8 +5,8 @@ LDADD = ../src/libbal.la
 AM_CPPFLAGS = "@CVODEVERSION@" -I$(srcdir)/../src -I.
 
 if EXAMPLES
-noinst_PROGRAMS = obj params loggers dynsys bifparams solver bifdiag interp pll lorenz interpsystem basin dynasty lorenzLyap hrLyap bifdiagLyap
-#bin_PROGRAMS = obj params loggers dynsys bifparams solver bifdiag interp pll lorenz interpsystem basin dynasty lorenzLyap hrLyap bifdiagLyap
+#noinst_PROGRAMS = obj params loggers dynsys bifparams solver bifdiag interp pll lorenz interpsystem basin dynasty lorenzLyap hrLyap bifdiagLyap
+bin_PROGRAMS = obj params loggers dynsys bifparams solver bifdiag interp pll lorenz interpsystem basin dynasty lorenzLyap hrLyap bifdiagLyap
 interp_SOURCES = interp.cpp 
 obj_SOURCES = obj.cpp 
 params_SOURCES = params.cpp 

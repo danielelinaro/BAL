@@ -836,6 +836,11 @@ bool ODESolver::ResetCVode() {
 
 bool ODESolver::Solve() {
   bool retval;
+  
+  if ((mode == LYAP && lyap_tstep == 0) || tstep == 0) {
+    fprintf (stderr, "Can't continue: the integration time step is 0.\n");
+    throw "Zero integration time step";
+  }
 
   if(mode == LYAP) {
     if(!dynsys->IsExtended()) {
