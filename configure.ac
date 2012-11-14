@@ -2,7 +2,7 @@
 AC_PREREQ([2.61])
 
 # init autoconf, automake and libtool
-AC_INIT([bal], [0.9.6], [danielelinaro@gmail.com])
+AC_INIT([bal], [0.9.7], [danielelinaro@gmail.com])
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_SRCDIR([src/balObject.h])
 AM_INIT_AUTOMAKE([-Wall -Werror foreign])
@@ -41,33 +41,22 @@ AC_CHECK_FUNCS([floor pow sqrt])
 AC_HEADER_STDBOOL
 AC_TYPE_SIGNAL
 AC_TYPE_SIZE_T
-# required libraries
-AC_CHECK_LIB([hdf5], [H5Fcreate], [], [
-echo "Can't find HDF5 library."
-exit
-])
-AC_CHECK_LIB([hdf5_hl], [H5LTmake_dataset_double], [], [
-echo "Can't find HDF5 library."
-exit
-])
-AC_CHECK_LIB([boost_thread], [pthread_create], [], [
-echo "Can't find boost thread library."
-exit
-])
-AC_SEARCH_LIBS([CVodeCreate], [sundials_cvode], [], [
-echo "Can't find CVode library."
-exit
-])
+
+# required libraries in C
+AC_CHECK_LIB([hdf5], [H5Fcreate], [], [AC_MSG_ERROR([hdf5 library not found.])])
+AC_CHECK_LIB([hdf5_hl], [H5LTmake_dataset_double], [], [AC_MSG_ERROR([hdf5 library not found.])])
+AC_SEARCH_LIBS([CVodeCreate], [sundials_cvode], [], [AC_MSG_ERROR([CVode library not found.])])
 AC_CHECK_LIB([sundials_cvode], [CVodeInit], [
 CVODEVERSION=-DCVODE26
 echo "CVode is version 2.6 or latter."], [])
 AC_CHECK_LIB([sundials_cvode], [CVodeMalloc], [
 CVODEVERSION=-DCVODE25
 echo "CVode is version 2.5 or previous."], [])
-AC_CHECK_LIB([sundials_nvecserial], [N_VNew_Serial], [], [
-echo "Can't find NVecSerial library."
-exit
-])
+AC_CHECK_LIB([sundials_nvecserial], [N_VNew_Serial], [], [AC_MSG_ERROR([NVecSerial library not found.])])
+
+# required libraries in C++
+AC_LANG_CPLUSPLUS
+AC_CHECK_LIB([boost_thread], [main], [], [AC_MSG_ERROR([boost thread library not found.])])
 
 # defines
 LIB_CURRENT=0
