@@ -14,6 +14,10 @@ int main(int argc, char *argv[]) {
   int nx1, nx2, nx3, nx12, nx123;
   double x0[3] = {0.1,-0.1, 0.1}; 
 
+  if (argc != 2) {
+    fprintf(stderr, "Usage: %s vectorfield-file\n", argv[0]);
+    exit(0);
+  }
 
   // Instantiate eye
   InterpSystem * interpsystem = InterpSystem::Create();
