@@ -55,9 +55,11 @@ void ResetColours(int d);
 /** The type of dynamical system analysis. */
 typedef enum {
 	/** Bifurcation analysis in parameter domain specified by BifurcationParameters object. */		
-	PARAMS,
+	PARAMS = 0,
 	/** Analysis of dynamical system behaviour (parameters fixed) by varying initial conditions. */
-	IC
+	IC,
+	/** Computation of the maximum Lyapunov exponent. */
+	MLE
 } diagram_mode;
 
 /**

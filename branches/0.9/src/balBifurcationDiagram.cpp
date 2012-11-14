@@ -59,7 +59,7 @@ SummaryEntry::SummaryEntry(Solution *sol, diagram_mode mode) {
   for(int i=0; i<np; i++)
     data[i] = sol->GetParameters()->At(i);
   switch(mode) {
-  case LYAP:
+  case MLE:
     data[n-1] = sol->GetLyapunovExponents()[0]; //saving Maximal Lyapunov exponent (MLE)
     break;
   case IC:
