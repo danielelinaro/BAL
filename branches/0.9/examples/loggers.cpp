@@ -41,11 +41,9 @@ int main(int argc, char *argv[]) {
 
 	// H5Logger
 	Logger * logger = H5Logger::Create();
-	logger->SetFilename("test.1.h5");
+	logger->SetFilename("test.h5");
 	logger->SetNumberOfColumns(5);
 	logger->SetParameters(pars);
-	logger->SaveBuffer(buffer, 2);
-	logger->SetFilename("test.2.h5");
 	logger->SaveBuffer(buffer, 2);
 	logger->Destroy();
 

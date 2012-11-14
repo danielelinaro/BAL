@@ -358,7 +358,6 @@ void BifurcationDiagram::ComputeDiagramMultiThread() {
   if (solver->GetIntegrationMode() != LYAP) {
     logger_thread = new boost::thread(&Logger::SaveSolutionThreaded,logger,solutions,&list_mutex,&q_empty,&q_full);
   }
-  printf("eccomi2!\n");
   /**
    * calculating the first total % nthreads solutions in a serial fashion
    **/
@@ -412,16 +411,13 @@ void BifurcationDiagram::ComputeDiagramMultiThread() {
 	lsol[i]->SetX0(X0[idx]);
       break;
     }
-    printf("eccomi3! %d\n",cnt);
     /* launch the nthread solvers */
     for (i = 0; i < nthreads; i++, solutionId++)
       threads[i] = new boost::thread(&BifurcationDiagram::IntegrateAndEnqueue,this,lsol[i],solutionId);
 		
     
     for (i = 0; i < nthreads; i++) {
-      printf("eccomi4! %d\n",i);
-			threads[i]->join();
-			
+      threads[i]->join();
       printf("%c%s", ESC, GREEN);
 #ifdef DEBUG
       if(mode == IC)

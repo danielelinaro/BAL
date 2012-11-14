@@ -62,10 +62,10 @@ ODESolver::ODESolver() {
   stiff = true;
   t0 = 0.0;
   t = t0;
-  tstep = REGUL;
+  tstep = STEP;
   ttran = T_TRAN;
   tfinal = T_END;
-  lyap_tstep = 100*REGUL;
+  lyap_tstep = 100*STEP;
   setup = false;
   max_intersections = DEFAULT_INTERSECTIONS;
   bufsize = 0;

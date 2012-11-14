@@ -2,7 +2,7 @@
 AC_PREREQ([2.61])
 
 # init autoconf, automake and libtool
-AC_INIT([bal], [0.9.5], [danielelinaro@gmail.com])
+AC_INIT([bal], [0.9.6], [danielelinaro@gmail.com])
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_SRCDIR([src/balObject.h])
 AM_INIT_AUTOMAKE([-Wall -Werror foreign])
@@ -42,6 +42,18 @@ AC_HEADER_STDBOOL
 AC_TYPE_SIGNAL
 AC_TYPE_SIZE_T
 # required libraries
+AC_CHECK_LIB([hdf5], [H5Fcreate], [], [
+echo "Can't find HDF5 library."
+exit
+])
+AC_CHECK_LIB([hdf5_hl], [H5LTmake_dataset_double], [], [
+echo "Can't find HDF5 library."
+exit
+])
+AC_CHECK_LIB([boost_thread], [pthread_create], [], [
+echo "Can't find boost thread library."
+exit
+])
 AC_SEARCH_LIBS([CVodeCreate], [sundials_cvode], [], [
 echo "Can't find CVode library."
 exit
@@ -54,18 +66,6 @@ CVODEVERSION=-DCVODE25
 echo "CVode is version 2.5 or previous."], [])
 AC_CHECK_LIB([sundials_nvecserial], [N_VNew_Serial], [], [
 echo "Can't find NVecSerial library."
-exit
-])
-AC_CHECK_LIB([hdf5], [H5Fcreate], [], [
-echo "Can't find HDF5 library."
-exit
-])
-AC_CHECK_LIB([hdf5_hl], [H5LTmake_dataset_double], [], [
-echo "Can't find HDF5 library."
-exit
-])
-AC_CHECK_LIB([boost_thread], [pthread_create], [], [
-echo "Can't find boost thread library."
 exit
 ])
 
@@ -86,7 +86,6 @@ AC_ARG_WITH([examples],
  	    [with_examples=yes],[echo "WARNING: not building the examples."])
 AM_CONDITIONAL([EXAMPLES],[test "$with_examples" == "yes"])
 
-echo "$host_os"
 case "$host_os" in
   darwin*)
 		EXTENSION="dylib"
