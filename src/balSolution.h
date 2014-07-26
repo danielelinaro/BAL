@@ -28,6 +28,9 @@
 #ifndef _BALSOLUTION_
 #define _BALSOLUTION_
 
+#include <string>
+#include <boost/shared_ptr.hpp>
+#include <boost/shared_array.hpp>
 #include "balObject.h"
 #include "balCommon.h"
 #include "balParameters.h"
@@ -44,64 +47,49 @@ namespace bal {
  * \sa bal::CompareBalSolutions DynamicalSystem Parameters ODESolver
  */
 class Solution : public Object {
- public:
-  /** Returns the name of the class. */
-  virtual const char * GetClassName() const;
-  /** Creates a new Solution. */
-  static Solution * Create();
-  /** Copies a Solution. */
-  static Solution * Copy(Solution * solution);
-  /** Destroys a Solution. */
-  virtual void Destroy();
- 
-//@{
-/*! \name Get/Set methods*/
+public:
+  Solution(int r, int c, realtype *buf);
+  Solution(const Solution& solution);
+  virtual ~Solution();
+
+  std::string ToString() const;
+
   int GetRows() const;
   int GetColumns() const;
-  void GetSize(int * r, int * c) const;
+  void GetSize(int *r, int *c) const;
   void SetSize(int r, int c);
   
-  Parameters * GetParameters() const;
-  void SetParameters(Parameters * p);
+  Parameters* GetParameters() const;
+  void SetParameters(const Parameters *p);
   
-  realtype * GetData() const;
-  void SetData(int r, int c, realtype * data);
+  realtype* GetData() const;
   
   int GetNumberOfTurns() const;
-  void SetNumberOfTurns(int _nturns);
+  void SetNumberOfTurns(int nturns);
 
-	realtype * GetLyapunovExponents() const;
-  /** \param n dimension of the dynamical system
-   *  \param lp vector containing Lyapunov exponents orted in descending order
-   */
-  void SetLyapunovExponents(int n, realtype * lp);
+  realtype* GetLyapunovExponents() const;
+  void SetLyapunovExponents(const realtype *lp);
+  bool IsLyapunovMode() const;
 	
   int GetID() const;
   void SetID(int id);
-	
-	bool IsLyapunovMode() const;
-//@}
-
- protected:
-  /* Protected destructor of the class. */
-  virtual ~Solution();
-  Solution();
-  Solution(const Solution & solution);
   
+  bool operator< (const Solution& sol) const;
+
  private:
-  Parameters * parameters;
-  realtype * buffer;
-	realtype * lyapunov_exponents;
-	int spectrum_dimension;
+  boost::shared_ptr<Parameters> parameters;
+  boost::shared_array<realtype> buffer;
+  boost::shared_array<realtype> lyapunov_exponents;
+  int spectrum_dimension;
   int rows, columns;
   int nturns;
   int ID;
-	bool lyapunov_mode;
+  bool lyapunov_mode;
 };
 
 /** Compare function (based on solution ID number) that allows to
   * sort list of solutions with std::list::sort method.*/
-bool CompareBalSolutions(Solution *sol1, Solution *sol2);
+bool CompareSolutions(Solution *sol1, Solution *sol2);
 
 } // namespace bal
 

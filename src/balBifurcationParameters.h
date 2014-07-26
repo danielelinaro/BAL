@@ -23,8 +23,8 @@
 #ifndef _BALBIFURCATIONPARAMETERS_
 #define _BALBIFURCATIONPARAMETERS_
 
+#include <boost/shared_array.hpp>
 #include "balParameters.h"
-#include "balCommon.h"
 
 /** 
  * \file balBifurcationParameters.h
@@ -68,24 +68,21 @@ namespace bal {
  */
 class BifurcationParameters : public Parameters {
  public:
-  virtual const char * GetClassName () const;
-  static BifurcationParameters * Create ();
-  virtual void Destroy ();
-  
-  virtual void SetNumber(int n);
-	
-	bool SetIthParameter(int i, double p);
-  bool SetIthParameterLowerBound(int i, double p);
-  bool SetIthParameterUpperBound(int i, double p);
-	/** \remark Parameters that don't change during analysis have the same lower and upper bound. */
-  void SetParameterBounds(Parameters * lower, Parameters * upper);
-  
-  double GetIthParameterUpperBound(int i) throw(Exception);
-  double GetIthParameter(int i) throw(Exception);
-  double GetIthParameterLowerBound(int i) throw(Exception);
+  BifurcationParameters(int np);
+  BifurcationParameters(const BifurcationParameters& bp);
+  ~BifurcationParameters();
+  virtual Object* Clone() const;
+
+  void SetIthParameterLowerBound(int i, double p);
+  void SetIthParameter(int i, double p);
+  void SetIthParameterUpperBound(int i, double p);
+  void SetParameterBounds(const Parameters& lower, const Parameters& upper);
+  double GetIthParameterUpperBound(int i);
+  double GetIthParameter(int i);
+  double GetIthParameterLowerBound(int i);
   
   bool SetNumberOfSteps(int i, int s);
-  void SetNumberOfSteps(const int * s);
+  void SetNumberOfSteps(const int *s);
   int GetNumberOfSteps(int i) const;
   
   void Reset();
@@ -98,29 +95,24 @@ class BifurcationParameters : public Parameters {
   bool IsLast() const;
   
  protected:
-  BifurcationParameters();
-  ~BifurcationParameters();
   void Setup();
   
  private:
   /** The lower bounds of the parameters. */
-  Parameters * plower;
+  Parameters plower;
   /** The upper bounds of the parameters. */
-  Parameters * pupper;
+  Parameters pupper;
   /** The parameter steps for every parameter. */
-  double * steps;
+  boost::shared_array<double> steps;
   /** The number of steps associated with every parameter. */
-  int * nsteps;
+  boost::shared_array<int> nsteps;
   /** The current steps associated with every parameter. */
-  int * isteps;
+  boost::shared_array<int> isteps;
   /** The total number of steps, i.e. the product of the values contained
    * in nsteps. */
   int total;
   /** The current parameters' tuple. */
   int count;
-
-  /** Tells whether memory has been allocated or not */
-  bool _dealloc;
 };
 
 } // namespace bal

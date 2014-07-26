@@ -20,8 +20,6 @@
  *
  *=========================================================================*/
 
-#include <cstdio>
-#include <cstdlib>
 #include <iostream>
 #include <nvector/nvector_serial.h>
 #include "balObject.h"
@@ -52,28 +50,19 @@ void PrintJacobian(int n, DlsMat J) {
 int main(int argc, char *argv[]) {
 	
   // parameters
-  Parameters * pars = Parameters::Create();
-  pars->SetNumber(4);
-  pars->At(0) = 3.0;
-  pars->At(1) = 5.0;
-  pars->At(2) = 0.01;
-  pars->At(3) = 4.0;
-  
-  // DynamicalSystem
-  DynamicalSystem * dynsys = DynamicalSystem::Create();
-  std::cout << dynsys->GetClassName() << std::endl;
-  dynsys->Destroy();
+  Parameters pars(4);
+  pars[0] = 3.0;
+  pars[1] = 5.0;
+  pars[2] = 0.01;
+  pars[3] = 4.0;
   
   // HindmarshRose
   int i, n;
-  DynamicalSystem * hr = HindmarshRose::Create();
-  n = hr->GetDimension();
+  HindmarshRose hr;
+  hr.SetParameters(&pars);
+  n = hr.GetDimension();
   N_Vector x = N_VNew_Serial(n);
   N_Vector xdot = N_VNew_Serial(n);
-
-  //HindmarshRose *hrcopy = (HindmarshRose *) hr->Copy();
-//  printf("hrcopy->xrest = %f\n", hrcopy->xrest);
-//  hrcopy->Destroy();
 
   if(argc == n+1) {
     for(i=0; i<n; i++)
@@ -83,9 +72,8 @@ int main(int argc, char *argv[]) {
     for(i=0; i<n; i++)
       NV_Ith_S(x,i) = 0.0;
   }
-  std::cout << hr->GetClassName() << std::endl;
-  hr->SetParameters(pars);
-  DynamicalSystem::RHSWrapper(0,x,xdot,hr);
+  std::cout << hr.ToString() << std::endl;
+  DynamicalSystem::RHSWrapper(0, x, xdot, (void *) &hr);
 
   std::cout << "xdot = (";
   for(i=0; i<n-1; i++) {
@@ -95,15 +83,15 @@ int main(int argc, char *argv[]) {
   
 #ifdef CVODE25
   DenseMat jac = newDenseMat(n,n);
-  DynamicalSystem::JacobianWrapper(n,jac,0,x,NULL,hr,NULL,NULL,NULL);
+  DynamicalSystem::JacobianWrapper(n, jac, 0, x, NULL, (void *) &hr, NULL, NULL, NULL);
 #endif
 #ifdef CVODE26
   DlsMat jac = NewDenseMat(n,n);
-  DynamicalSystem::JacobianWrapper(n,0,x,NULL,jac,hr,NULL,NULL,NULL);
+  DynamicalSystem::JacobianWrapper(n, 0, x, NULL, jac, (void *) &hr, NULL, NULL, NULL);
 #endif
   printf("\n>> Exact Jacobian matrix <<\n");
   PrintJacobian(n,jac);
-  DynamicalSystem::JacobianFiniteDifferences(n,0,x,jac,hr);
+  DynamicalSystem::JacobianFiniteDifferences(n, 0, x, jac, (void *) &hr);
   printf("\n>> Approximated Jacobian matrix <<\n");
   PrintJacobian(n,jac);
 
@@ -116,7 +104,10 @@ int main(int argc, char *argv[]) {
 
   N_VDestroy_Serial(x);
   N_VDestroy_Serial(xdot);
-  hr->Destroy();
+
+  HindmarshRose hrcopy(hr);
+  std::cout << "hrcopy.n = " << hrcopy.GetDimension() << std::endl;
+  std::cout << "hrcopy.xrest = " << hrcopy.xrest << std::endl;
 
   return 0;
 }

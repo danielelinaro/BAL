@@ -26,6 +26,7 @@
  */
 
 #include "balObject.h"
+#include <iostream>
 
 namespace bal {
 
@@ -33,22 +34,6 @@ Object::Object() {
 }
 
 Object::~Object() {
-}
-
-Object* Object::Create() {
-  return new Object;
-}
-
-void Object::Destroy() {
-  delete this;
-}
-
-const char* Object::GetClassName() const {
-  return "bal::Object";
-}
-
-bool Object::IsA(const char * name) const {
-  return (strcmp(name, this->GetClassName()) == 0);
 }
 
 } // namespace bal

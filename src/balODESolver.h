@@ -27,14 +27,18 @@
 #ifndef _BALODESOLVER_
 #define _BALODESOLVER_
 
+#include <cmath>
+#include <iostream>
+#include <string>
+#include <boost/shared_array.hpp>
+#include <boost/shared_ptr.hpp>
+
 #include "balObject.h"
 #include "balCommon.h"
 #include "balParameters.h"
 #include "balDynamicalSystem.h"
 #include "balSolution.h"
 
-#include <cstdio>
-#include <cstdlib>
 #include <sundials/sundials_types.h>
 #include <cvode/cvode.h>
 #include <cvode/cvode_dense.h>
@@ -78,25 +82,15 @@
 /** Error file for CVode */
 #define ERROR_FILE "bal.log"
 
-/*! \def DUMPBUFFER(fid)
- \brief A macro that prints in the file \a fid the integration results.
- 
- The results are saved in a solution matrix. Each row contains: a time instant, the state vector components at this time instant, a label that gives information on the
- type of entry in the matrix.
- \param fid The descriptor to write to.
- */
-
-#define DUMPBUFFER(fid)							\
-  {												\
-    int i, j;									\
-    for(i=0; i<rows; i++) {						\
-      for(j=0; j<cols; j++)						\
-	fprintf(fid, "%e ", buffer[i*cols+j]);		\
-      fprintf(fid, "\n");						\
-    }											\
+#define DUMPBUFFER(ofs)					   \
+  {							   \
+    int i, j;						   \
+    for(i=0; i<rows; i++) {				   \
+      for(j=0; j<cols; j++)				   \
+	ofs << std::scientific << buffer[i*cols+j] << " "; \
+      ofs << std::endl;					   \
+    }							   \
   }
-
-
 
 namespace bal {
 
@@ -204,29 +198,21 @@ typedef enum {
 class ODESolver : public Object {
 
  public:
-  /** Returns the name of the class. */
-  virtual const char * GetClassName() const;
-  /** Creates a new ODESolver. */
-  static ODESolver * Create();
-  /** Creates a copy of ODESolver. */
-  static ODESolver * Copy (ODESolver * solver);
-  /** Destroys a ODESolver. */
-  virtual void Destroy();
+  ODESolver();
+  ODESolver(const ODESolver& solver);
+  virtual ~ODESolver();
+
+  std::string ToString() const;
   
-	//@{
-	
-	/*! \name Get/Set methods*/
-	
-  realtype * GetBuffer() const;
+  boost::shared_array<realtype> GetBuffer() const;
   int GetBufferSize() const;
-  void GetBufferSize(int * r, int * c) const;
+  void GetBufferSize(int *r, int *c) const;
   
-  void SetDynamicalSystem(DynamicalSystem * ds);
-  DynamicalSystem * GetDynamicalSystem() const;
+  void SetDynamicalSystem(DynamicalSystem *ds);
+  boost::shared_ptr<DynamicalSystem> GetDynamicalSystem() const;
+  //void SetDynamicalSystemParameters(Parameters *par);
   
-  void SetDynamicalSystemParameters(Parameters * par);
-  
-  Solution * GetSolution() const;
+  Solution* GetSolution() const;
   
   realtype GetInitialTime() const;
   void SetInitialTime(realtype T0);
@@ -241,7 +227,7 @@ class ODESolver : public Object {
   void SetTimeStep (realtype step);
   
   realtype GetLyapunovTimeStep () const;
-	/** Sets the interval of time between each update procedure of exponents values. */
+  /** Sets the interval of time between each update procedure of exponents values. */
   void SetLyapunovTimeStep (realtype tstep);
   
   realtype GetRelativeTolerance () const;
@@ -260,8 +246,6 @@ class ODESolver : public Object {
   int GetClassificationEvent() const;
   int GetNumberOfTurns() const;
   
-  realtype * GetLyapunovExponents() const;
-  
   void IsStiff(bool stiffness);
   void HaltAtEquilibrium(bool halt);
   bool HaltsAtEquilibrium() const;
@@ -271,17 +255,15 @@ class ODESolver : public Object {
   void SetEquilibriumTolerance(realtype tol);
   realtype GetCycleTolerance() const;
   void SetCycleTolerance(realtype tol);
-  
+  boost::shared_array<realtype> GetLyapunovExponents() const;
   
   N_Vector GetX() const;
   N_Vector GetXdot() const;
   N_Vector GetX0() const;
-  realtype * GetXEnd() const;
+  realtype* GetXEnd() const;
   void SetX0(N_Vector X0, int n = -1);
-  void SetX0(realtype * X0, int n = -1);
+  void SetX0(realtype *X0, int n = -1);
   
-	//@}
-	
 /** Saves in a ASCII file only the steady state part of an oscillating solution.
 	The solution has to be obtained by an integration in bal::EVENTS or bal::BOTH mode.
 */
@@ -295,9 +277,6 @@ class ODESolver : public Object {
   virtual bool Solve();
   
  protected:
-  ODESolver();
-  ODESolver (const ODESolver & solver);
-  virtual ~ODESolver();
   bool AllocateSolutionBuffer();
   void StoreRecordInBuffer(int lbl);
   void ResetPositionInBuffer();
@@ -329,8 +308,7 @@ class ODESolver : public Object {
   int nev;
   
   /** Buffer for integration data */
-  realtype * buffer;
-  bool delete_buffer;
+  boost::shared_array<realtype> buffer;
   /** The total size of the buffer */
   unsigned long bufsize;
   /** The (virtual) dimensions of the buffer */
@@ -351,9 +329,8 @@ class ODESolver : public Object {
   realtype tstep; // SG
   /** Lypunov exponents calculus tstep*/
   realtype lyap_tstep;
-	
-  realtype * lyapunov_exponents;
-  bool delete_lyapunov_exponents;
+  /** The Lyapunov spectrum of the system */
+  boost::shared_array<realtype> lyapunov_exponents;
 	
   /** Relative tolerance */
   realtype reltol; // SG
@@ -373,13 +350,11 @@ class ODESolver : public Object {
   
   /** The maximum number of intersections */
   int max_intersections; // SG
-  /** Event location array (each element has value 1 or -1 when the corresponding event has been located)*/
-  int *events;
-  bool delete_events;
+  /** Event location array (each element has value 1 when the corresponding
+   * event has been located */
+  boost::shared_array<int> events;
   /** Constraints on the location of events */
-  int *events_constraints;
-  bool delete_events_constraints;
-
+  boost::shared_array<int> events_constraints;
   /** Initial state */
   N_Vector x0; // SG
   /** Current state */
@@ -414,9 +389,9 @@ class ODESolver : public Object {
   realtype cycle_tolerance; // SG
   
   /** Parameters of the system */
-  Parameters * params;
+  //Parameters *params;
   /** The dynamical system that has to be integrated */
-  DynamicalSystem * dynsys;
+  boost::shared_ptr<DynamicalSystem> dynsys;
 
   bool _dealloc;
 };

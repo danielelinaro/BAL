@@ -28,8 +28,7 @@
 #ifndef _BALOBJECT_
 #define _BALOBJECT_
 
-#include <cstdio>
-#include <cstring>
+#include <string>
 
 namespace bal {
 
@@ -37,41 +36,22 @@ namespace bal {
  *  \class Object
  *  \brief Base class for all BAL objects.
  *  
- *  balObject is the base class for all objects in the Bifurcation Analysis
+ *  Object is the base class for all objects in the Bifurcation Analysis
  *  Library. Every object in the library should be a subclass of balObject.
- *  Constructor and destructor of the subclasses of balObject
- *  should be protected, so that only Create() and Destroy() actually
- *  call them.
- *  Note: Objects of subclasses of balObjects should always be
- *  created with the Create() method and deleted with the Destroy()
- *  method. They cannot be allocated off the stack (i.e., automatic
- *  objects) because the constructor is a protected method.
  *
  * \example obj.cpp
  */
 class Object {
 
  public:
-
-  /** Returns the name of the class. */
-  virtual const char * GetClassName() const;
-
-  /** Creates a new balObject. */
-  static Object * Create();
-
-  /** Destroys a balObject. */
-  virtual void Destroy();
-
-  /** Checks whether this object is of a particular type. */
-  virtual bool IsA(const char * name) const;
-
- protected:
-
-  /** Protected constructor of the class. */
+  /** Constructor of the class. */
   Object();
-
-  /** Protected destructor of the class. */
+  /** Destructor of the class. */
   virtual ~Object();
+  /** Method for cloning an object. */
+  virtual Object* Clone() const = 0;
+  /** Builds a string that represents the object. */
+  virtual std::string ToString() const = 0;
 };
 
 } // namespace bal

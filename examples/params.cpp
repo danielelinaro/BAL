@@ -23,22 +23,26 @@
 #include <iostream>
 #include "balObject.h"
 #include "balParameters.h"
+#include "balCommon.h"
 using namespace bal;
 
 // TEST Parameters
 int main(int argc, char *argv[]) {
 
-	Parameters * pars = Parameters::Create();
-	std::cout << pars->GetClassName() << std::endl;
-	pars->SetNumber(4);
-	pars->At(0) = 3.0;
-	pars->At(1) = 5.0;
-	pars->At(2) = 0.01;
-	pars->At(3) = 4.0;
-	std::cout << *pars << std::endl;
-	Parameters * parsCopy = Parameters::Copy(pars);
-	std::cout << *parsCopy << std::endl;
-
-	return 0;
+  Parameters pars(4);
+  pars[0] = 3.0;
+  pars[1] = 5.0;
+  pars[2] = 0.01;
+  pars[3] = 4.0;
+  std::cout << pars.ToString() << std::endl;
+  Parameters parsCopy(pars);
+  std::cout << parsCopy.ToString() << std::endl;
+  try {
+    Parameters wrong(-1);
+  }
+  catch(std::bad_alloc e) {
+    std::cerr << e.what() << std::endl;
+  }
+  return 0;
 }
 

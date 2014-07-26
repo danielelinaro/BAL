@@ -29,7 +29,9 @@
 #define _BALPARAMETERS_
 
 #include "balObject.h"
-#include <fstream>
+#include "balCommon.h"
+#include <string>
+#include <boost/shared_array.hpp>
 
 namespace bal {
 
@@ -49,36 +51,28 @@ namespace bal {
  * \sa DynamicalSystem
  */
 class Parameters : public Object {
- public:
-  virtual const char * GetClassName () const;
-  static Parameters * Create ();
-  static Parameters * Copy (Parameters * params);
-  virtual void Destroy ();
-	/** Sets the number of parameters. */
-  virtual void SetNumber (int);
-  int GetNumber () const;
-  
-	/** Allows to access to a parameter as a vector element. */
-  double & At (int k);
-	/** Returns a pointer to parameters vector. */
-  double * GetParameters() const;
-  
-  void CopyValues(Parameters* _par);
-  
-  friend std::ostream & operator<< (std::ostream & out, const Parameters & bp);
-  
- protected:
-  Parameters ();
-  Parameters (const Parameters & param);
+public:
+  Parameters (int numpars);
+  Parameters (const Parameters& param);
   virtual ~Parameters ();
-  
- private:
+  virtual Object* Clone() const;
+  virtual std::string ToString() const;
+
+  int GetNumber () const;
+  /** Returns a pointer to parameters vector. */
+  double* GetParameters () const;
+  /** Allows to access to a parameter as a vector element. */
+  double At (int k) const;
+  double& operator[] (int k);
+  void operator=(const Parameters& param);
+
+protected:
   int p;
-  double * pars;
-  bool _dealloc;
+
+private:
+  boost::shared_array<double> pars;  
 };
 
-std::ostream & operator<< (std::ostream & out, const Parameters & bp);
 
 } // namespace bal
 

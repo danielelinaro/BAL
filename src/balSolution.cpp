@@ -29,47 +29,43 @@
 
 namespace bal {
 
-Solution::Solution() {
-  rows = columns = 0;
-  buffer = NULL;
-	lyapunov_exponents = NULL;
-	spectrum_dimension = 0;
-  parameters = NULL;
-  ID = 0;
-	lyapunov_mode = false;
+Solution::Solution(int r, int c, realtype *buf)
+  : rows(r), columns(c),
+    nturns(0), spectrum_dimension(c-2), ID(0),
+    lyapunov_mode(false),
+    buffer(new realtype[r*c]), lyapunov_exponents(new realtype[c-2]) {
+#ifdef DEBUG
+  std::cout << "Solution constructor.\n";
+#endif
+  memcpy(buffer.get(), buf, r*c*sizeof(realtype));
 }
 
-Solution::Solution(const Solution& solution) {
-  Solution();
-  solution.GetSize(&rows,&columns);
-  SetSize(rows,columns);
-  memcpy(buffer,solution.buffer,rows*columns*sizeof(realtype));
-	nturns = solution.nturns;
-  ID = solution.ID;
-	if (solution.lyapunov_mode)
-		SetLyapunovExponents(solution.spectrum_dimension,solution.lyapunov_exponents);
+Solution::Solution(const Solution& solution) 
+  : rows(solution.rows), columns(solution.columns),
+    nturns(solution.nturns), spectrum_dimension(solution.spectrum_dimension),
+    ID(solution.ID), lyapunov_mode(solution.lyapunov_mode),
+    buffer(new realtype[solution.rows*solution.columns]),
+    lyapunov_exponents(new realtype[solution.spectrum_dimension]),
+    parameters(dynamic_cast<Parameters*>(solution.parameters->Clone())) {
+#ifdef DEBUG
+  std::cout << "Solution copy constructor.\n";
+#endif
+  memcpy(buffer.get(), solution.buffer.get(), rows*columns*sizeof(realtype));
+  memcpy(lyapunov_exponents.get(), solution.lyapunov_exponents.get(), spectrum_dimension*sizeof(realtype));
 }
 
 Solution::~Solution() {
-  if(buffer != NULL) delete [] buffer;
-	if(lyapunov_exponents !=NULL) delete [] lyapunov_exponents;
-  if(parameters != NULL) parameters->Destroy();
+#ifdef DEBUG
+  std::cout << "Solution destructor.\n";
+#endif
 }
 
-const char * Solution::GetClassName() const {
+Object* Solution::Clone() const {
+  return new Solution(*this);
+}
+
+std::string Solution::ToString() const {
   return "Solution";
-}
-
-Solution * Solution::Create() {
-  return new Solution;
-}
-
-Solution * Solution::Copy(Solution * solution) {
-  return new Solution(*solution);
-}
-
-void Solution::Destroy() {
-  delete this;
 }
 
 int Solution::GetRows() const {
@@ -80,55 +76,37 @@ int Solution::GetColumns() const {
   return columns;
 }
 
-void Solution::SetSize(int r, int c) {
-  if(buffer != NULL) delete [] buffer;
-  rows = r;
-  columns = c;
-  buffer = new realtype[rows*columns];
-}
-
-void Solution::GetSize(int * r, int * c) const {
+void Solution::GetSize(int *r, int *c) const {
   *r = rows;
-  *c= columns;
+  *c = columns;
 }
 
-void Solution::SetData(int r, int c, realtype * data) {
-  SetSize(r,c);
-  memcpy(buffer,data,rows*columns*sizeof(realtype));
-}
-
-realtype * Solution::GetData() const {
-  return buffer;
+realtype* Solution::GetData() const {
+  return buffer.get();
 }	
 
-void Solution::SetParameters(Parameters * p) {
-  if(parameters != NULL) parameters->Destroy();
-  parameters = Parameters::Copy(p);
+void Solution::SetParameters(const Parameters *p) {
+  parameters = boost::shared_ptr<Parameters>(dynamic_cast<Parameters *>(p->Clone()));
 }
 
-Parameters * Solution::GetParameters() const {
-  return parameters;
+Parameters* Solution::GetParameters() const {
+  return parameters.get();
 }
 
-void Solution::SetNumberOfTurns(int _nturns) {
-  nturns = _nturns;
+void Solution::SetNumberOfTurns(int nturns_) {
+  nturns = nturns_;
 }
   
 int Solution::GetNumberOfTurns() const {
   return nturns;
 }
 
-void Solution::SetLyapunovExponents(int n, realtype * lp) {
-	if (lyapunov_exponents == NULL || n != spectrum_dimension)
-		lyapunov_exponents = new realtype[n];
-	spectrum_dimension = n;
-	lyapunov_mode = true;
-	for (int i=0; i<spectrum_dimension ; i++)
-		lyapunov_exponents[i] = lp[i];
+void Solution::SetLyapunovExponents(const realtype *lp) {
+  memcpy(lyapunov_exponents.get(), lp, spectrum_dimension*sizeof(realtype));
 }
 
-realtype * Solution::GetLyapunovExponents() const {
-	return lyapunov_exponents;
+realtype* Solution::GetLyapunovExponents() const {
+  return lyapunov_exponents.get();
 }
 
 void Solution::SetID(int id) {
@@ -140,10 +118,14 @@ int Solution::GetID() const {
 }
 
 bool Solution::IsLyapunovMode() const {
-	return lyapunov_mode;
+  return lyapunov_mode;
 }
 
-bool CompareBalSolutions(Solution *sol1, Solution *sol2) {
+bool Solution::operator< (const Solution& sol) const {
+  return GetID() < sol.GetID();
+}
+
+bool CompareSolutions(Solution *sol1, Solution *sol2) {
   return sol1->GetID() < sol2->GetID();
 }
 

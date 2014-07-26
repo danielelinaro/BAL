@@ -29,12 +29,11 @@
 #ifndef _BALLOGGER_
 #define _BALLOGGER_
 
-#include <cstring>
-#include <cstdio>
+
 #include <sundials/sundials_types.h>
 
+#include <string>
 #include <list>
-#include <algorithm>
 #include <boost/thread.hpp>
 #include <boost/thread/thread.hpp>
 #include <boost/thread/condition.hpp>
@@ -46,11 +45,6 @@
 #include "balParameters.h"
 #include "balSolution.h"
 #include "balCommon.h"
-
-#define FILENAME_LENGTH (200)
-#define DATASETNAME_LENGTH (10)
-
-using std::list;
 
 namespace bal {
 
@@ -88,46 +82,34 @@ namespace bal {
  */
 	
 class Logger : public Object {
- public:
+public:
+  Logger();
+  Logger(const Logger& logger);
+  virtual ~Logger();
+  virtual void Open(const std::string& fname, bool compress = false) = 0;
+  virtual void Close() = 0;
 
-  virtual const char * GetClassName () const;
-  virtual void SetFilename(const char * fname, bool compress = false);
-  const char * GetFilename() const;
-  void SetParameters(Parameters * p);
-  Parameters * GetParameters() const;
-  void SetNumberOfColumns(int c);
-  int GetNumberOfColumns() const;
-  bool IsFileOpen() const;
-  
-	/** Base method to save an entry to file.\ Must be overriden by each derived class. */ 
-  virtual bool SaveBuffer(realtype * buffer, int rows, int id = 1);
-	/** It saves a Solution entry using \ref SaveBuffer method. */
-  bool SaveSolution(Solution * solution);
-	/** In multithread mode, try to get the mutex for a safe reading of the shared
-	 *	solutions list (filled by integration threads), then calls \ref SortAndWriteSolutionList
-	 *	method and release mutex.
-	 */
-  bool SaveSolutionThreaded(list <Solution *> * sol_list,  /// pubblica?
-			    boost::mutex * list_mutex,
-			    boost::condition_variable * q_empty,
-			    boost::condition_variable * q_full);
+  std::string GetFilename() const;
+  bool IsOpen() const;
+  bool SaveSolution(Solution *solution);
   
  protected:
-  Logger();
-  virtual ~Logger();
-  virtual bool OpenFile() = 0;
-  virtual bool CloseFile() = 0;
-  void SetFileIsOpen(bool open);
-	/** Sorts and writes to file the first element popped from the shared solutions list (actually a queue). */
-  virtual bool SortAndWriteSolutionList(list <Solution *> * sol_list);
+  virtual bool SaveBuffer(const Parameters* params,
+			  const realtype *buffer, int rows, int columns,
+			  int id) = 0;
   
- private:
+ protected:
+  /** The name of the file */
+  std::string filename;
   /** Tells whether the logging file is open or not */
-  bool opened;
-  char filename[FILENAME_LENGTH];
-  int cols;
-  Parameters * params;
+  bool file_is_open;
+  /** Whether data compression should be enabled (default: no) */
+  bool compressed;
 };
+
+void LoggerThread(Logger *logger, std::list<Solution*>& solutions,
+		  boost::mutex& list_mutex,
+		  boost::condition_variable& q_empty, boost::condition_variable& q_full);
 
 /**
  * \class H5Logger 
@@ -138,22 +120,31 @@ class Logger : public Object {
  *	More informations on H5 format and HDF5 library can be found <a href="http://www.hdfgroup.org/HDF5/">here</a>.
  * \sa Logger ODESolver
  */
+
 class H5Logger : public Logger {
  public:
-  virtual const char * GetClassName () const;
-  static H5Logger * Create();
-  virtual void Destroy();
-	/** Sets H5 dataset filename and allows to enable data compression. */
-  virtual void SetFilename(const char * fname, bool compress = false);
-	/** \brief Performs data storage using HDF5 library functions. */
-  virtual bool SaveBuffer(realtype * buffer, int rows, int id = 1);
+  H5Logger();
+  H5Logger(const std::string& fname, bool compress);
+  H5Logger(const H5Logger& logger);
+  virtual ~H5Logger();
+  
+  // inherited from Object
+  std::string ToString() const;
+
+  // inherited from Logger
+  virtual void Open(const std::string& fname, bool compress = false);
+  virtual void Close();
   
  protected:
-  H5Logger();
-  virtual ~H5Logger();
-  virtual bool OpenFile();
-  virtual bool CloseFile();
-  
+  // inherited from Logger
+  virtual bool SaveBuffer(const Parameters* params,
+			  const realtype *buffer, int rows, int columns,
+			  int id);
+ 
+ private:
+  void EnableCompression();
+  void DisableCompression();
+
  private:
   // the handle of the file
   hid_t h5_fid;
@@ -161,13 +152,8 @@ class H5Logger : public Logger {
   hid_t dcpl;
   // chunk size
   hsize_t chunk[2];
-  /** Indicates if data compression is enabled (default: no). */
-  bool compressed;
-  /** The name of the dataset in the H5 file. */
-  char datasetname[DATASETNAME_LENGTH];
 };
 
 } // namespace bal
 
 #endif
-

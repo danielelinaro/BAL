@@ -37,7 +37,7 @@ void ResetColours(int d) {
   exit(1);
 }
 
-bool CompareBalSummaryEntries(SummaryEntry *entry1, SummaryEntry *entry2) {
+bool CompareSummaryEntries(SummaryEntry *entry1, SummaryEntry *entry2) {
   return entry1->GetID() < entry2->GetID();
 }
 
@@ -93,33 +93,31 @@ double* SummaryEntry::GetData() const {
 
 /***** BifurcationDiagram *****/
 
-const char * BifurcationDiagram::GetClassName() const {
-  return "BifurcationDiagram";
-}
-
-BifurcationDiagram * BifurcationDiagram::Create() {
-  return new BifurcationDiagram;
-}
-
-void BifurcationDiagram::Destroy() {
-  delete this;
-}
-
-BifurcationDiagram::BifurcationDiagram() {
-  logger = H5Logger::Create();
-  destroy_logger = true;
-  solver = ODESolver::Create();
-  destroy_solver = true;
+BifurcationDiagram::BifurcationDiagram() : logger(new H5Logger) {
   restart_from_x0 = true;
   nthreads = 2;
   mode = PARAMS;
-  solutions = NULL;
-  summary = NULL;
-  destroy_lists = false;
   nX0 = 0;
   X0 = NULL;
-  //SetFilename("BifurcationDiagram.h5",false,false);
   signal(SIGINT, ResetColours);
+}
+
+BifurcationDiagram::BifurcationDiagram(const BifurcationDiagram& bifd) {
+  restart_from_x0 = bifd.restart_from_x0;
+  nthreads = bifd.nthreads;
+  mode = bifd.mode;
+  // TODO: COMPLETARE!
+}
+
+BifurcationDiagram::~BifurcationDiagram() {
+}
+
+std::string BifurcationDiagram::ToString() const {
+  return "BifurcationDiagram";
+}
+
+Object* BifurcationDiagram::Clone() const {
+  return new BifurcationDiagram(*this);
 }
 
 void BifurcationDiagram::SetNumberOfThreads(int _nthreads) {
@@ -131,35 +129,21 @@ int BifurcationDiagram::GetNumberOfThreads() const {
   return nthreads;
 }
 
-BifurcationDiagram::~BifurcationDiagram() {
-  if(destroy_logger)
-    logger->Destroy();
-  if(destroy_solver)
-    solver->Destroy();
-  if(destroy_lists) {
-    delete solutions;
-    delete summary;
-  }
-}
-
-void BifurcationDiagram::SetDynamicalSystem(DynamicalSystem * sys) {
-  system = sys;
+void BifurcationDiagram::SetDynamicalSystem(DynamicalSystem *sys) {
+  system = boost::shared_ptr<DynamicalSystem>(static_cast<DynamicalSystem>(sys->Clone()));
   ndim = system->GetDimension();
   solver->SetDynamicalSystem(sys);
-  parameters = system->GetParameters();
-  npar = parameters->GetNumber();
+  //parameters = system->GetParameters();
+  //npar = parameters->GetNumber();
+  npar = system->GetParameters()->GetNumber();
 }
 
-DynamicalSystem * BifurcationDiagram::GetDynamicalSystem() const {
-  return system;
+DynamicalSystem* BifurcationDiagram::GetDynamicalSystem() const {
+  return system.get();
 }
 
-void BifurcationDiagram::SetLogger(Logger * log) {
-  if(destroy_logger) {
-    logger->Destroy();
-    destroy_logger = false;
-  }
-  logger = log;
+void BifurcationDiagram::SetLogger(Logger *log) {
+  logger = boost::shared_ptr<Logger>(static_cast<Logger>(log->Clone()));
 }
 
 Logger * BifurcationDiagram::GetLogger() const {

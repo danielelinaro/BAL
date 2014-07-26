@@ -29,46 +29,38 @@ using namespace bal;
 
 // TEST balBifurcationParameters
 int main(int argc, char *argv[]) {
+  int np = 4;
+  // parameters
+  Parameters pars(np);
+  pars[0] = 3.0;
+  pars[1] = 5.0;
+  pars[2] = 0.01;
+  pars[3] = 4.0;
+  // bifurcation parameters
+  BifurcationParameters bp(np);
+  Parameters parupper(pars);
+  parupper[0] = parupper[0] + 1;
+  parupper[1] = parupper[1] + 1;
+  bp.SetParameterBounds(pars, parupper);
+  int steps[4] = {3,3,1,1};
+  bp.SetNumberOfSteps(steps);
 
-	// parameters
-	Parameters * pars = Parameters::Create();
-	pars->SetNumber(4);
-	pars->At(0) = 3.0;
-	pars->At(1) = 5.0;
-	pars->At(2) = 0.01;
-	pars->At(3) = 4.0;
+  std::cout << "par lower: " << pars.ToString() << std::endl;
+  std::cout << "par upper: " << parupper.ToString() << std::endl;
 
-	BifurcationParameters * bp = BifurcationParameters::Create();
-	Parameters * parupper = Parameters::Create();
-	parupper->SetNumber(4);
-	parupper->At(0) = pars->At(0)+1;
-	parupper->At(1) = pars->At(1)+1;
-	parupper->At(2) = pars->At(2);
-	parupper->At(3) = pars->At(3);
-	bp->SetParameterBounds(pars, parupper);
-	int steps[4] = {6,6,1,1};
-	bp->SetNumberOfSteps(steps);
-
-        std::cout << "par lower: " << *pars << std::endl;
-        std::cout << "par upper: " << *parupper << std::endl;
-
-	// print all tuples
-	while(bp->HasTuples()) {
-		std::cout << *bp << std::endl;
-		bp->Next();
-	}
-	std::cout << std::endl;
-	bp->Reset();
-	// leave last tuple out
-	while(bp->HasNext()) {
-		std::cout << *bp << std::endl;
-		bp->Next();
-	}
-	std::cout << std::endl;
-	pars->Destroy();
-	parupper->Destroy();
-	bp->Reset();
-
-	return 0;
+  // print all tuples
+  while(bp.HasTuples()) {
+    std::cout << bp.ToString() << std::endl;
+    bp.Next();
+  }
+  std::cout << std::endl;
+  bp.Reset();
+  // leave last tuple out
+  while(bp.HasNext()) {
+    std::cout << bp.ToString() << std::endl;
+    bp.Next();
+  }
+  std::cout << std::endl;
+  return 0;
 }
 

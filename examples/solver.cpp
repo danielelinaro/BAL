@@ -31,54 +31,37 @@ using namespace bal;
 int main(int argc, char *argv[]) {
 	
   // parameters
-  Parameters * pars = Parameters::Create();
-  pars->SetNumber(4);
-  pars->At(0) = 3.0;
-  pars->At(1) = 5.0;
-  pars->At(2) = 0.01;
-  pars->At(3) = 4.0;
+  Parameters pars(4);
+  pars[0] = 2.5;
+  pars[1] = 3.5;
+  pars[2] = 0.01;
+  pars[3] = 4.0;
   
   // HindmarshRose
-  HindmarshRose *hr = HindmarshRose::Create();
-  hr->SetParameters(pars);
+  HindmarshRose hr;
+  hr.SetParameters(&pars);
   
-  ODESolver * solver = ODESolver::Create();
-  solver->SetDynamicalSystem(hr);
-  solver->SetTransientDuration(0.0);
-  solver->SetFinalTime(1000.0);
-  solver->SetTimeStep(0.01);
-
-  //~~ Full trajectory without stopping at equilibrium
-  printf("\n>>> Computing the whole trajectory <<<\n");
-  solver->HaltAtEquilibrium(false);
-  solver->SetIntegrationMode(TRAJ);
-  solver->Solve();
-  printf("Ok.\n");
-
-  //~~ Only events
-  printf("\n>>> Computing only the events <<<\n");
-  solver->SetIntegrationMode(EVENTS);
-  solver->Solve();
-  printf("Ok.\n");
-
-  //~~ Trajectory and events
-  printf("\n>>> Computing trajectory and events <<<\n");
-  solver->SetIntegrationMode(BOTH);
-  solver->Solve();
-  printf("Ok.\n");
-
-  //~~ Full trajectory, this time stopping at an equilibrium point
-  printf("\n>>> Computing the whole trajectory and stopping at an equilibrium point <<<\n");
-  pars->At(1) = 1.0;
-  solver->HaltAtEquilibrium(true);
-  solver->SetIntegrationMode(TRAJ);
-  solver->Solve();
-  printf("Ok.\n\n");
-
-  //~~ Clean up
-  solver->Destroy();
-  hr->Destroy();
-  pars->Destroy();
+  ODESolver solver;
+  solver.SetDynamicalSystem(&hr);
+  solver.SetTransientDuration(1000.0);
+  solver.SetFinalTime(2000.0);
+  solver.SetMaxNumberOfIntersections(1000);
+  solver.SetTimeStep(0.05);
+  solver.HaltAtEquilibrium(true);
+  solver.HaltAtCycle(false);
+  solver.SetIntegrationMode(TRAJ);
+  printf("Computing the whole trajectory... ");
+  solver.Solve();
+  printf("done.\n");
+  solver.SetIntegrationMode(EVENTS);
+  printf("Computing only the events... ");
+  solver.Solve();
+  printf("done.\n");
+  solver.SetIntegrationMode(BOTH);
+  printf("Computing trajectory and events... ");
+  solver.Solve();
+  solver.SaveOrbit("bursting.dat");
+  printf("done.\n");
 
   return 0;
 }
