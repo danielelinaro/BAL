@@ -7,16 +7,6 @@
 
 namespace bal {
 
-const char * Interpolator::getClassName() const {
-    return "Interpolator";
- }
-
-//virtual Interpolator * Clone(Interpolator *interp);
-
-void Interpolator::Destroy() {
-   delete this;
- }
-
 int Interpolator::Init() {
   return 0;
  }

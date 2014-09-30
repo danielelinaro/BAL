@@ -25,10 +25,11 @@
  * \brief Implementation of the class HeartNeuron
  */
 
+#include <cmath>
 #include "balHeartNeuron.h"
 
 bal::DynamicalSystem* HeartNeuronFactory() {
-  return bal::HeartNeuron::Create();
+  return new bal::HeartNeuron;
 }
 
 namespace bal {
@@ -47,28 +48,24 @@ HeartNeuron::HeartNeuron() :
   xderiv = N_VNew_Serial(GetDimension());
 }
 
+HeartNeuron::HeartNeuron(const HeartNeuron& hn) : DynamicalSystem(hn),
+  C(hn.C),gK2(hn.gK2),EK(hn.EK),ENa(hn.ENa),gNa(hn.gNa),E1(hn.E1),g1(hn.g1),tauNa(hn.tauNa) {
+  A[0] = hn.A[0];
+  A[1] = hn.A[1];
+  A[2] = hn.A[2];
+  B[0] = hn.B[0];
+  B[1] = hn.B[1];
+  B[2] = hn.B[2];
+  SetDimension(3);
+  SetNumberOfParameters(3);
+  SetNumberOfEvents(1);
+  xderiv = N_VNew_Serial(GetDimension());
+  for(int i = 0; i < GetDimension(); i++)
+    Ith(xderiv,i) = Ith(hn.xderiv,i);
+}
+
 HeartNeuron::~HeartNeuron(){
   N_VDestroy_Serial(xderiv);
-}
-
-HeartNeuron * HeartNeuron::Create () {
-  return new HeartNeuron;
-}
-
-HeartNeuron * HeartNeuron::Copy (HeartNeuron *hn) {
-  return new HeartNeuron(*hn);
-}
-
-DynamicalSystem * HeartNeuron::Clone() const {
-  return new HeartNeuron(*this);
-}
-
-void HeartNeuron::Destroy () {
-  delete this;
-}
-
-const char * HeartNeuron::GetClassName () const {
-  return "HeartNeuron";
 }
 
 bool HeartNeuron::HasJacobian() const {
@@ -195,6 +192,10 @@ void HeartNeuron::EventsConstraints (realtype t, N_Vector x, int * constraints, 
     constraints[0] = 1;
   else
     constraints[0] = 0;
+}
+
+DynamicalSystem* HeartNeuron::Clone() const {
+  return new HeartNeuron(*this);
 }
 
 } // namespace bal

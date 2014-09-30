@@ -55,16 +55,20 @@ public:
   Parameters (int numpars);
   Parameters (const Parameters& param);
   virtual ~Parameters ();
-  virtual Object* Clone() const;
-  virtual std::string ToString() const;
 
   int GetNumber () const;
   /** Returns a pointer to parameters vector. */
   double* GetParameters () const;
   /** Allows to access to a parameter as a vector element. */
-  double At (int k) const;
+  double At (int k);
   double& operator[] (int k);
   void operator=(const Parameters& param);
+
+  virtual Parameters* Clone() const;
+
+  void CopyValues(Parameters* _par);
+
+  friend std::ostream& operator<< (std::ostream& os, Parameters& pars);
 
 protected:
   int p;
@@ -73,6 +77,7 @@ private:
   boost::shared_array<double> pars;  
 };
 
+std::ostream& operator<< (std::ostream& os, Parameters& pars);
 
 } // namespace bal
 

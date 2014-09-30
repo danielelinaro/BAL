@@ -51,17 +51,15 @@ namespace bal {
 class BaseInterp1D : public Interpolator {
 		
  public:
-  /** Returns the name of the class. */
-  virtual const char * GetClassName() const;
+ /** Constructor of BaseInterp1D. */
+  BaseInterp1D();
 
-  /** Copies a BaseInterp1D. */
-  static BaseInterp1D * Copy(const BaseInterp1D & interp);
-  
-
-  /** Destroys a BaseInterp1D. */
-  virtual void Destroy();
-
- /**
+ /** Copy constructor of BaseInterp1D. */
+  BaseInterp1D(const BaseInterp1D & interp);
+ 
+ /** Destructor of BaseInterp1D. */
+  virtual ~BaseInterp1D();
+  /**
   * Sets interpolation points.
   * \param xi Vector containing the abscissas of the points.
   * \param yi Matrix containing the different ordinates corresponding to each ascissa. \f$y_i\f$ must have dimension \f$m \times length\f$. 
@@ -100,16 +98,7 @@ class BaseInterp1D : public Interpolator {
   bool nextHunt();
   
  protected:
-
- /** Constructor of BaseInterp1D. */
-  BaseInterp1D();
-
- /** Copy constructor of BaseInterp1D. */
-  BaseInterp1D(const BaseInterp1D & interp);
  
- /** Destructor of BaseInterp1D. */
-  ~BaseInterp1D();
-  
   int n, mm, jsav, cor, dj; 
   double *xx, **yy; 
 };
@@ -124,27 +113,6 @@ class BaseInterp1D : public Interpolator {
 class LinearInterp1D : public BaseInterp1D {
  public:
   
-  /** Returns the name of the class. */
-  virtual const char * GetClassName() const;
-  
-  /** Destroys a LinearInterp1D. */
-  virtual void Destroy();
-  
-  /** Creates a LinearInterp1D */
-  static LinearInterp1D * Create();
-  
-  /** Copies a LinearInterp1D */
-  static LinearInterp1D * Copy(LinearInterp1D *interp);
-  virtual LinearInterp1D * Clone() const;
-  
-	virtual int Evaluate(double *x, double *y);
-  
-  virtual int EvaluateJacobian(double *x, double **y);
-
-  virtual int EvaluateDivergence(double *x, double *y);  
-
- protected:
- 
   /** Constructor of LinearInterp1D. */
   LinearInterp1D();
   
@@ -154,6 +122,12 @@ class LinearInterp1D : public BaseInterp1D {
   /** Destructor of LinearInterp1D. */
   ~LinearInterp1D();
   
+  virtual int Evaluate(double *x, double *y);
+  
+  virtual int EvaluateJacobian(double *x, double **y);
+
+  virtual int EvaluateDivergence(double *x, double *y);  
+
 };
 
 /**
@@ -165,30 +139,6 @@ class LinearInterp1D : public BaseInterp1D {
 class PolyInterp1D : public BaseInterp1D {
  public:
   
-  /** Returns the name of the class. */
-  virtual const char * GetClassName() const;
-  
-  /** Destroys a PolyInterp1D. */
-  virtual void Destroy();
-  
-  /** Creates a PolyInterp1D */
-  static PolyInterp1D * Create();
-  
-  /** Copies a PolyInterp1D */
-  static PolyInterp1D * Copy(PolyInterp1D *interp);
-  virtual PolyInterp1D * Clone() const;
-
-  /** Sets the interpolation order, i.e. the order of the polinomial used to interpolate. Default: 2 (linear interpolation) */
-  void SetInterpolationOrder(int m);
-
-  virtual int Evaluate(double *x, double *y);
-
-  virtual int EvaluateJacobian(double *x, double **y);
-
-  virtual int EvaluateDivergence(double *x, double *y);  
-  
- protected:
-  
   /** Constructor of PolyInterp1D. */
   PolyInterp1D();
 
@@ -197,6 +147,15 @@ class PolyInterp1D : public BaseInterp1D {
   
   /** Destructor of PolyInterp1D. */
   ~PolyInterp1D();
+  
+  /** Sets the interpolation order, i.e. the order of the polinomial used to interpolate. Default: 2 (linear interpolation) */
+  void SetInterpolationOrder(int m);
+
+  virtual int Evaluate(double *x, double *y);
+
+  virtual int EvaluateJacobian(double *x, double **y);
+
+  virtual int EvaluateDivergence(double *x, double *y);  
   
  private:
   double dy;
@@ -210,20 +169,16 @@ class PolyInterp1D : public BaseInterp1D {
  */
 class SplineInterp1D : public BaseInterp1D {
  public:
+ /** Constructor of SplineInterp1D. */
+  SplineInterp1D();
   
-  /** Returns the name of the class. */
-  virtual const char * GetClassName() const;
+  /** Copy constructor of SplineInterp1D. */
+  SplineInterp1D(const SplineInterp1D & interp);
   
-  /** Destroys a SplineInterp1D. */
-  virtual void Destroy();
-  
-  /** Creates a SplineInterp1D */
-  static SplineInterp1D * Create();
-  
-  /** Copies a SplineInterp1D */
-  static SplineInterp1D * Copy(SplineInterp1D *interp);
-  virtual SplineInterp1D * Clone() const;
-  
+  /** Destructor of SplineInterp1D. */
+  ~SplineInterp1D();
+ 
+ 
   /** Sets the value of the first derivative at the boundaries of the domain. There is a single value for each component of the codomain.
    *  Default value: natural splines (second derivative equal to 0 in the boundaries) */
   void SetBoundaryConditions(double yp1, double ypn);
@@ -238,17 +193,7 @@ class SplineInterp1D : public BaseInterp1D {
 
   
  protected:
-  
-  /** Constructor of SplineInterp1D. */
-  SplineInterp1D();
-  
-  /** Copy constructor of SplineInterp1D. */
-  SplineInterp1D(const SplineInterp1D & interp);
-  
-  /** Destructor of SplineInterp1D. */
-  ~SplineInterp1D();
- 
-  /** Method used by Init(). */
+    /** Method used by Init(). */
   void Sety2();
 
  private:
@@ -264,20 +209,16 @@ class SplineInterp1D : public BaseInterp1D {
  */
 class SmoothingSplineInterp1D : public BaseInterp1D {
  public:
+ /** Constructor of SmoothingSplineInterp1D. */
+  SmoothingSplineInterp1D();
   
-  /** Returns the name of the class. */
-  virtual const char * GetClassName() const;
+  /** Copy constructor of SmoothingSplineInterp1D. */
+  SmoothingSplineInterp1D(const SmoothingSplineInterp1D & interp);
   
-  /** Destroys a SmoothingSplineInterp1D. */
-  virtual void Destroy();
-
-  /** Creates a SmoothingSplineInterp1D. */
-  static SmoothingSplineInterp1D * Create();
-  virtual SmoothingSplineInterp1D * Clone() const;
+  /** Destructor of SmoothingSplineInterp1D. */
+  ~SmoothingSplineInterp1D();
   
-  /** Copies a SmoothingSplineInterp1D. */
-  static SmoothingSplineInterp1D * Copy(SmoothingSplineInterp1D *interp);
-  
+ 
   /** Sets the smoothing factors. The smoothing spline is computed by finding a third order polinomial which minimizes the
    *  integral of the square of the second derivative under these constraints:
    * \f[
@@ -307,15 +248,6 @@ class SmoothingSplineInterp1D : public BaseInterp1D {
   virtual int EvaluateDivergence(double *x, double *y);  
   
  protected:
-  
-  /** Constructor of SmoothingSplineInterp1D. */
-  SmoothingSplineInterp1D();
-  
-  /** Copy constructor of SmoothingSplineInterp1D. */
-  SmoothingSplineInterp1D(const SmoothingSplineInterp1D & interp);
-  
-  /** Destructor of SmoothingSplineInterp1D. */
-  ~SmoothingSplineInterp1D();
   
   /** Method used by Init(). */
   int ComputeCoefficients(int i);

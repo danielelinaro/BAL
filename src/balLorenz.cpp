@@ -28,7 +28,7 @@
 #include "balLorenz.h"
 
 bal::DynamicalSystem* LorenzFactory() {
-  return bal::Lorenz::Create();
+  return new bal::Lorenz;
 }
 
 namespace bal {
@@ -42,26 +42,6 @@ Lorenz::Lorenz() {
 Lorenz::Lorenz(const Lorenz& lor) : DynamicalSystem(lor) {}
 
 Lorenz::~Lorenz() {}
-
-const char * Lorenz::GetClassName () const {
-  return "Lorenz";
-}
-
-Lorenz * Lorenz::Create () {
-  return new Lorenz;
-}
-
-Lorenz * Lorenz::Copy (Lorenz *lor) {
-  return new Lorenz(*lor);
-}
-
-DynamicalSystem * Lorenz::Clone() const {
-  return new Lorenz(*this);
-}
-
-void Lorenz::Destroy() {
-  delete this;
-}
 
 bool Lorenz::HasJacobian() const {
   return (IsExtended() ? false : true);
@@ -123,6 +103,10 @@ int Lorenz::Jacobian (int N, realtype t, N_Vector x, N_Vector fy, DlsMat J,
   IJth (J, 2, 2) = -beta;
 
   return CV_SUCCESS;
+}
+
+DynamicalSystem* Lorenz::Clone() const {
+  return new Lorenz(*this);
 }
 
 } // namespace bal

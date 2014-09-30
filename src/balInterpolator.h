@@ -43,15 +43,15 @@ namespace bal {
 
 class Interpolator : public Object {
   public:
-  
-    /** Returns the name of the class. */
-    virtual const char * getClassName() const;
+    /** Constructor of Interpolator. */
+    Interpolator();
     
-    /** Destroys a Interpolator. */
-    virtual void Destroy();
-    
-    virtual Interpolator * Clone() const = 0;
-    
+    /** Destructor of Interpolator. */
+    virtual ~Interpolator();
+
+    /** Copy constructor of Interpolator. */
+    Interpolator(const Interpolator & interp);
+
   /** Evaluates the function in a generic point.
 	 * \param x Point of \f$R^{n}\f$.
 	 * \param y Value of \f$f(x)\f$. 
@@ -89,15 +89,6 @@ class Interpolator : public Object {
     int GetCodomainDimensions();
 
   protected:
-    /** Constructor of Interpolator. */
-    Interpolator();
-    
-    /** Destructor of Interpolator. */
-    virtual ~Interpolator();
-
-    /** Copy constructor of Interpolator. */
-    Interpolator(const Interpolator & interp);
-
     int nnd, nnf;
 
 };

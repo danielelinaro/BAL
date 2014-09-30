@@ -29,7 +29,7 @@
 #include "balInterpSystem.h"
 
 bal::DynamicalSystem* InterpSystemFactory() {
-  return bal::InterpSystem::Create();
+  return new bal::InterpSystem;
 }
 
 namespace bal {
@@ -45,47 +45,26 @@ InterpSystem::InterpSystem() {
 }
 
 InterpSystem::InterpSystem(const InterpSystem& interpsystem) : DynamicalSystem( interpsystem ) {
+  /*
   if (interpsystem.interpolator != NULL) {
-    interpolator = interpsystem.interpolator->Clone();
+    interpolator = new Interpolator(*interpsystem.interpolator);
     _dealloc = true;
   }
   else { 
     interpolator = NULL;
     _dealloc = false;
   }
+  */
+  interpolator = interpsystem.interpolator;
+  _dealloc = false;
   backward = interpsystem.backward;
   arclength = interpsystem.arclength;
-  //xderiv = N_VNew_Serial(eye.GetDimension());
-  /*for(int i = 0; i < eye.GetDimension(); i++)
-    Ith(xderiv,i)=Ith(eye.xderiv,i);
-  _dealloc = eye._dealloc;
-  */
 }
 
 InterpSystem::~InterpSystem() {  
   if (_dealloc)
-     interpolator->Destroy();
+     delete interpolator;
   //N_VDestroy_Serial(xderiv);
-}
-
-InterpSystem * InterpSystem::Create () {
-  return new InterpSystem;
-}
-
-void InterpSystem::Destroy () {
-  delete this;
-}
-
-InterpSystem * InterpSystem::Copy(InterpSystem *is) {
-  return new InterpSystem(*is);
-}
-
-DynamicalSystem * InterpSystem::Clone() const {
-  return new InterpSystem(*this);
-}
-  
-const char * InterpSystem::GetClassName () const { 
-  return "InterpSystem";
 }
 
 bool InterpSystem::HasEvents() const {
@@ -150,6 +129,10 @@ bool InterpSystem::SpecialOptions(const void *opt) {
   backward = b[0];
   arclength = b[1];
   return true;
+}
+
+DynamicalSystem* InterpSystem::Clone() const {
+  return new InterpSystem(*this);
 }
 
 } // namespace bal

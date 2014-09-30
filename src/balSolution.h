@@ -52,8 +52,6 @@ public:
   Solution(const Solution& solution);
   virtual ~Solution();
 
-  std::string ToString() const;
-
   int GetRows() const;
   int GetColumns() const;
   void GetSize(int *r, int *c) const;

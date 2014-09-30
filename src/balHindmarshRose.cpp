@@ -62,17 +62,6 @@ HindmarshRose::~HindmarshRose() {
   N_VDestroy_Serial(xderiv);
 }
 
-Object* HindmarshRose::Clone() const {
-  return new HindmarshRose(*this);
-}
-
-std::string HindmarshRose::ToString() const {
-  std::stringstream ss;
-  ss << ">> HindmarshRose -- ";
-  ss << "Parameters: " << GetParameters()->ToString();
-  return ss.str();
-}
-
 int HindmarshRose::RHS (realtype t, N_Vector x, N_Vector xdot, void *sys) {
   realtype x1, x2, x3;
   realtype b, I, u, s;
@@ -176,5 +165,9 @@ bool HindmarshRose::HasEventsConstraints() const {
   return true;
 }
  
+DynamicalSystem* HindmarshRose::Clone() const {
+  return new HindmarshRose(*this);
+}
+
 }
 

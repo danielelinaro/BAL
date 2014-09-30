@@ -43,13 +43,16 @@ namespace bal {
 class BaseInterp2D : public Interpolator {
   
  public:
-  /** Returns the name of the class. */
-  virtual const char * GetClassName() const;
-  
-  /** Destroys a BaseInterp2D. */
-  virtual void Destroy();
+ /** Constructor of BaseInterp2D. */
+  BaseInterp2D();
  
-	/** Sets the interpolation points.
+ /** Copy constructor of BaseInterp2D. */
+  BaseInterp2D(const BaseInterp2D & interp);
+ 
+ /** Destructor of BaseInterp2D. */
+  virtual ~BaseInterp2D();
+
+ 	/** Sets the interpolation points.
 	 * \param xi1 First components of the interpolation points.
 	 * \param xi2 Second components of the interpolation points.
 	 * \param yi  Matrix containing the different values of the function in correspondence to each input point.
@@ -61,15 +64,6 @@ class BaseInterp2D : public Interpolator {
   virtual void SetInterpolationPoints(double * xi1, double * xi2, double **yi, int nx1, int nx2, int nf);
   
  protected:
- 
- /** Constructor of BaseInterp2D. */
-  BaseInterp2D();
- 
- /** Copy constructor of BaseInterp2D. */
-  BaseInterp2D(const BaseInterp2D & interp);
- 
- /** Destructor of BaseInterp2D. */
-  ~BaseInterp2D();
   
   int nnx1, nnx2;
   double *xx1, *xx2, **yy;
@@ -83,30 +77,6 @@ class BaseInterp2D : public Interpolator {
 class LinearInterp2D : public BaseInterp2D {
   
  public:
-  /** Returns the name of the class. */
-  virtual const char * GetClassName() const;
-  
-  /** Destroys a LinearInterp2D. */
-  virtual void Destroy();
-  
-  /** Creates a LinearInterp2D. */
-  static LinearInterp2D * Create();
-  
-  LinearInterp2D * Clone() const;
- 
-  /** Copies a LinearInterp2D */
-  static LinearInterp2D * Copy(LinearInterp2D *interp);
-
-	virtual int Evaluate(double *x, double *y);
-  
-  virtual int EvaluateJacobian(double *x, double **y);  
-
-  virtual int EvaluateDivergence(double *x, double *y);  
-
-  int Init();
-
- protected:
- 
  /** Constructor of LinearInterp2D. */
   LinearInterp2D();
  
@@ -115,6 +85,16 @@ class LinearInterp2D : public BaseInterp2D {
  
  /** Destructor of LinearInterp2D. */
   ~LinearInterp2D();
+
+  virtual int Evaluate(double *x, double *y);
+  
+  virtual int EvaluateJacobian(double *x, double **y);  
+
+  virtual int EvaluateDivergence(double *x, double *y);  
+
+  int Init();
+
+ protected:
   
   LinearInterp1D *x1terp, *x2terp;
   
@@ -128,21 +108,16 @@ class LinearInterp2D : public BaseInterp2D {
 class PolyInterp2D : public BaseInterp2D {
   
  public:
-  /** Returns the name of the class. */
-  virtual const char * GetClassName() const;
-  
-  /** Destroys a PolyInterp2D. */
-  virtual void Destroy();
-  
-  /** Creates a PolyInterp2D. */
-  static PolyInterp2D * Create();
+
+ /** Constructor of PolyInterp2D. */
+  PolyInterp2D();
  
-  /** Copies a PolyInterp2D */
-  static PolyInterp2D * Copy(PolyInterp2D *interp);
-  
-  PolyInterp2D * Clone() const;
-  
-	
+ /** Copy constructor of PolyInterp2D. */
+  PolyInterp2D(const PolyInterp2D & interp);
+ 
+ /** Destructor of PolyInterp2D. */
+  ~PolyInterp2D();
+
   virtual int Evaluate(double *x, double *y);
   
   virtual int EvaluateJacobian(double *x, double **y);  
@@ -156,15 +131,6 @@ class PolyInterp2D : public BaseInterp2D {
 
  protected:
  
- /** Constructor of PolyInterp2D. */
-  PolyInterp2D();
- 
- /** Copy constructor of PolyInterp2D. */
-  PolyInterp2D(const PolyInterp2D & interp);
- 
- /** Destructor of PolyInterp2D. */
-  ~PolyInterp2D();
-
   int mm1, mm2;
   PolyInterp1D ** interpsx, *interpy;
   PolyInterp1D *x2terp;
@@ -180,29 +146,6 @@ class PolyInterp2D : public BaseInterp2D {
 class SplineInterp2D : public BaseInterp2D {
   
  public:
-  /** Returns the name of the class. */
-  virtual const char * GetClassName() const;
-  
-  /** Destroys a SplineInterp2D. */
-  virtual void Destroy();
-  
-  /** Creates a SplineInterp2D. */
-  static SplineInterp2D * Create();
- 
-  /** Copies a SplineInterp2D */
-  static SplineInterp2D * Copy(SplineInterp2D *interp);
-  
-  SplineInterp2D * Clone() const;
-  
-  virtual int Evaluate(double *x, double *y);
-
-  virtual int EvaluateJacobian(double *x, double **y);  
-
-  virtual int EvaluateDivergence(double *x, double *y);  
- 
-  int Init();
-
- protected:
  
  /** Constructor of SplineInterp2D. */
   SplineInterp2D();
@@ -213,6 +156,16 @@ class SplineInterp2D : public BaseInterp2D {
  /** Destructor of SplineInterp2D. */
   ~SplineInterp2D();
 
+  virtual int Evaluate(double *x, double *y);
+
+  virtual int EvaluateJacobian(double *x, double **y);  
+
+  virtual int EvaluateDivergence(double *x, double *y);  
+ 
+  int Init();
+
+ protected:
+ 
   PolyInterp1D *x1terp, *x2terp;
   int wt[16][16];
   double ***y1d, ***y2d, ***y12d, ***c;
@@ -226,20 +179,16 @@ class SplineInterp2D : public BaseInterp2D {
 class SmoothingSplineInterp2D : public BaseInterp2D {
   
  public:
-  /** Returns the name of the class. */
-  virtual const char * GetClassName() const;
-  
-  /** Destroys a SmoothingSplineInterp2D. */
-  virtual void Destroy();
-  
-  /** Creates a SmoothingSplineInterp2D. */
-  static SmoothingSplineInterp2D * Create();
  
-  /** Copies a SmoothingSplineInterp2D */
-  static SmoothingSplineInterp2D * Copy(SmoothingSplineInterp2D *interp);
-  
-  SmoothingSplineInterp2D * Clone() const;
-  
+ /** Constructor of SmoothingSplineInterp2D. */
+  SmoothingSplineInterp2D();
+ 
+ /** Copy constructor of SmoothingSplineInterp2D. */
+  SmoothingSplineInterp2D(const SmoothingSplineInterp2D & interp);
+ 
+ /** Destructor of SmoothingSplineInterp2D. */
+  ~SmoothingSplineInterp2D();
+
   virtual int Evaluate(double *x, double *y);
   
   virtual int EvaluateJacobian(double *x, double **y);  
@@ -260,15 +209,6 @@ class SmoothingSplineInterp2D : public BaseInterp2D {
 
  protected:
  
- /** Constructor of SmoothingSplineInterp2D. */
-  SmoothingSplineInterp2D();
- 
- /** Copy constructor of SmoothingSplineInterp2D. */
-  SmoothingSplineInterp2D(const SmoothingSplineInterp2D & interp);
- 
- /** Destructor of SmoothingSplineInterp2D. */
-  ~SmoothingSplineInterp2D();
-
   int window;
   double SS;
   SmoothingSplineInterp1D ** interpsx, *interpy;

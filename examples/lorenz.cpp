@@ -21,6 +21,7 @@
  *=========================================================================*/
 
 #include <cstdio>
+#include <iostream>
 #include "balObject.h"
 #include "balLorenz.h"
 #include "balParameters.h"
@@ -31,28 +32,29 @@ using namespace bal;
 int main(int argc, char *argv[]) {
 	
   // parameters
-  Parameters * pars = Parameters::Create();
-  pars->SetNumber(3);
-  pars->At(0) = 10.0;
-  pars->At(1) = 28.0;
-  pars->At(2) = 8./3.;
+  Parameters pars(3);
+  pars[0] = 10.0;
+  pars[1] = 28.0;
+  pars[2] = 8./3.;
   
   // Lorenz
-  Lorenz *lor = Lorenz::Create();
-  lor->SetParameters(pars);
-  lor->Extend(true);
-  
+  Lorenz lor;
+  lor.SetParameters(pars);
+  lor.Extend(true);
+
   double x0[12] = {0,1,0,1,0,0,0,1,0,0,0,1};
-  ODESolver * solver = ODESolver::Create();
-  solver->SetDynamicalSystem(lor);
-  solver->SetTransientDuration(0.0);
-  solver->SetFinalTime(100.0);
-  solver->SetTimeStep(0.001);
-  solver->SetIntegrationMode(TRAJ);
-  solver->SetX0(x0);
-  solver->Solve();
-  
-  Solution *sol = solver->GetSolution();
+  ODESolver solver;
+  solver.SetDynamicalSystem(&lor);
+  solver.SetTransientDuration(0.0);
+  solver.SetFinalTime(100.0);
+  solver.SetTimeStep(0.001);
+  solver.SetIntegrationMode(TRAJ);
+  solver.SetX0(x0);
+  solver.Solve();
+
+  return 0;
+
+  Solution *sol = solver.GetSolution();
   int r,c,i,j;
   double *buffer;
   sol->GetSize(&r,&c);
@@ -63,10 +65,7 @@ int main(int argc, char *argv[]) {
     printf("%d\n", (int) buffer[i*c+j]);
   }
   
-  sol->Destroy();
-  solver->Destroy();
-  lor->Destroy();
-  pars->Destroy();
+  delete sol;
   
   return 0;
 }

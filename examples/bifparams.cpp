@@ -45,19 +45,19 @@ int main(int argc, char *argv[]) {
   int steps[4] = {3,3,1,1};
   bp.SetNumberOfSteps(steps);
 
-  std::cout << "par lower: " << pars.ToString() << std::endl;
-  std::cout << "par upper: " << parupper.ToString() << std::endl;
+  std::cout << "par lower: " << pars << std::endl;
+  std::cout << "par upper: " << parupper << std::endl;
 
   // print all tuples
   while(bp.HasTuples()) {
-    std::cout << bp.ToString() << std::endl;
+    std::cout << bp << std::endl;
     bp.Next();
   }
   std::cout << std::endl;
   bp.Reset();
   // leave last tuple out
   while(bp.HasNext()) {
-    std::cout << bp.ToString() << std::endl;
+    std::cout << bp << std::endl;
     bp.Next();
   }
   std::cout << std::endl;

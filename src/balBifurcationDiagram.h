@@ -126,9 +126,6 @@ class BifurcationDiagram : public Object {
   BifurcationDiagram(const BifurcationDiagram& bifd);
   virtual ~BifurcationDiagram();
 
-  std::string ToString() const;
-  Object* Clone() const;
-
   /**
    * Sets the dynamical system to integrate. BifurcationDiagram
    * assumes that the dynamical system contains an instance of BifurcationParameters,
@@ -144,7 +141,7 @@ class BifurcationDiagram : public Object {
    * \return The dynamical system used in the computation of the
    * bifurcation diagram.
    */
-  DynamicalSystem* GetDynamicalSystem() const;
+  boost::shared_ptr<DynamicalSystem> GetDynamicalSystem() const;
 
   /**
    * Sets the logger used for saving integration data to file. A logger
@@ -160,7 +157,7 @@ class BifurcationDiagram : public Object {
   /**
    * \return The logger used for saving data to file.
    */
-  Logger* GetLogger() const;
+  boost::shared_ptr<Logger> GetLogger() const;
 
   /**
    * Sets the ODESolver used to integrate the dynamical system. An ODE
@@ -177,7 +174,7 @@ class BifurcationDiagram : public Object {
    * the system. It is useful to set parameters of the ODE solver.
    * \return The ODE solver used to integrate the system.
    */
-  ODESolver* GetODESolver() const;
+  boost::shared_ptr<ODESolver> GetODESolver() const;
 
   /**
    * Sets the name of the file where data will be saved.
@@ -189,7 +186,7 @@ class BifurcationDiagram : public Object {
   /**
    * \return The name of the file where data is saved.
    */
-  const char* GetFilename();
+  std::string GetFilename();
 
   /**
    * Performs the actual computation of the brute-force bifurcation
@@ -226,29 +223,29 @@ class BifurcationDiagram : public Object {
    */
   int GetNumberOfThreads() const;
 
-	/**
+  /**
    * Saves the list of SummaryEntry resulting from ComputeDiagram in an ASCII file, sorted by parameters.
-	 * \param filename Name of the file where results are saved.
+   * \param filename Name of the file where results are saved.
    */
-  bool SaveSummaryData(const char *filename) const;
+  bool SaveSummaryData(const char *filename);
 
-	/**
+  /**
    * Returns the results of ComputeDiagram as a matrix of SummaryEntry, sorted by parameters.
    */
-  double** GetSummaryData(int *size = NULL) const;
+  double** GetSummaryData(int *size = NULL);
 	
   /** Defines what kind of analysis will be performed. */
   bool SetMode(diagram_mode _mode);
   int GetMode() const;
 	
-	/**
+  /**
    * Initializes the set of initial conditions used for basins of attraction analysis.
-	 * \param nx0 Number of initial conditions.
-	 * \param x0  Matrix of initial conditions where the generic entry \f$x[i][j]\f$ refers to
-	 *						the \f$j_{th}\f$ component of the \f$i_{th}\f$ initial condition.
+   * \param nx0 Number of initial conditions.
+   * \param x0  Matrix of initial conditions where the generic entry \f$x[i][j]\f$ refers to
+   *						the \f$j_{th}\f$ component of the \f$i_{th}\f$ initial condition.
    */
   void SetInitialConditions(int nx0, double **x0);
-
+  
  private:
 
   void ComputeDiagramMultiThread();
@@ -262,7 +259,7 @@ class BifurcationDiagram : public Object {
   /** The dynamical system to integrate */
   boost::shared_ptr<DynamicalSystem> system;
   /** The parameters of the dynamical system */
-  Parameters * parameters;
+  Parameters *parameters;
 
   /**
    * The object used to save data to a file: by default H5 file logging

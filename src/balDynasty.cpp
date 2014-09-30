@@ -26,9 +26,10 @@
  */
 
 #include "balDynasty.h"
+#include <cmath>
 
 bal::DynamicalSystem* DynastyFactory() {
-  return bal::Dynasty::Create();
+  return new bal::Dynasty;
 }
 
 namespace bal {
@@ -51,26 +52,6 @@ Dynasty::Dynasty(const Dynasty& dyn) : DynamicalSystem(dyn) {
 
 Dynasty::~Dynasty() {
   N_VDestroy_Serial(xderiv);
-}
-
-Dynasty * Dynasty::Create () {
-  return new Dynasty;
-}
-
-Dynasty * Dynasty::Copy(Dynasty *dynasty) {
-  return new Dynasty(*dynasty);
-}
-
-DynamicalSystem * Dynasty::Clone() const {
-  return new Dynasty(*this);
-}
-
-void Dynasty::Destroy () {
-  delete this;
-}
-
-const char * Dynasty::GetClassName () const {
-  return "Dynasty";
 }
 
 int Dynasty::RHS (realtype t, N_Vector x, N_Vector xdot, void * data) {
@@ -260,6 +241,10 @@ bool Dynasty::HasEvents() const {
  
 bool Dynasty::HasEventsConstraints() const {
   return true;
+}
+
+DynamicalSystem* Dynasty::Clone() const {
+  return new Dynasty(*this);
 }
 
 } // namespace bal

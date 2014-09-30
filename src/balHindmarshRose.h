@@ -54,9 +54,6 @@ public:
   HindmarshRose(const HindmarshRose& hr);
   virtual ~HindmarshRose();
 
-  virtual Object* Clone() const;
-  virtual std::string ToString() const;
-
   int RHS (realtype t, N_Vector x, N_Vector xdot, void *sys);
 
 #ifdef CVODE25
@@ -74,6 +71,8 @@ public:
   bool HasEvents() const;
   bool HasEventsConstraints() const;
   
+  virtual DynamicalSystem* Clone() const;
+
 public:
   static const double xrest;
 

@@ -59,10 +59,6 @@ BifurcationParameters::~BifurcationParameters() {
   std::cout << "BifurcationParameters destructor.\n";
 }
 
-Object* BifurcationParameters::Clone() const {
-  return new BifurcationParameters(*this);
-}
-
 void BifurcationParameters::SetParameterBounds(const Parameters& lower, const Parameters& upper) {
   plower = lower;
   pupper = upper;
@@ -176,6 +172,10 @@ bool BifurcationParameters::IsFirst() const {
 
 bool BifurcationParameters::IsLast() const {
   return count == total;
+}
+
+Parameters* BifurcationParameters::Clone() const {
+  return new BifurcationParameters(*this);
 }
 
 } // namespace bal

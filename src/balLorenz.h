@@ -45,11 +45,9 @@ namespace bal {
  */
 class Lorenz : public DynamicalSystem {
  public:
-  virtual const char * GetClassName () const;
-  static Lorenz * Create ();
-  static Lorenz * Copy (Lorenz *lor);
-  virtual DynamicalSystem * Clone() const;
-  virtual void Destroy ();
+  Lorenz();
+  Lorenz(const Lorenz& lor);
+  virtual ~Lorenz();
   
   int RHS (realtype t, N_Vector x, N_Vector xdot, void * data);
 #ifdef CVODE25
@@ -63,11 +61,8 @@ class Lorenz : public DynamicalSystem {
 
   bool HasJacobian() const;
 
- protected:
-  Lorenz();
-  Lorenz(const Lorenz& lor);
-  virtual ~Lorenz();
-  
+  virtual DynamicalSystem* Clone() const;
+
 };
 
 } // namespace bal

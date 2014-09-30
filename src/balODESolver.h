@@ -202,15 +202,13 @@ class ODESolver : public Object {
   ODESolver(const ODESolver& solver);
   virtual ~ODESolver();
 
-  std::string ToString() const;
-  
   boost::shared_array<realtype> GetBuffer() const;
   int GetBufferSize() const;
   void GetBufferSize(int *r, int *c) const;
   
   void SetDynamicalSystem(DynamicalSystem *ds);
   boost::shared_ptr<DynamicalSystem> GetDynamicalSystem() const;
-  //void SetDynamicalSystemParameters(Parameters *par);
+  void SetDynamicalSystemParameters(boost::shared_ptr<Parameters>& par);
   
   Solution* GetSolution() const;
   
@@ -276,6 +274,8 @@ class ODESolver : public Object {
 /** Performs the integration according to the chosen bal::integration_mode. */
   virtual bool Solve();
   
+  virtual ODESolver* Clone() const;
+
  protected:
   bool AllocateSolutionBuffer();
   void StoreRecordInBuffer(int lbl);
@@ -389,7 +389,7 @@ class ODESolver : public Object {
   realtype cycle_tolerance; // SG
   
   /** Parameters of the system */
-  //Parameters *params;
+  boost::shared_ptr<Parameters> params;
   /** The dynamical system that has to be integrated */
   boost::shared_ptr<DynamicalSystem> dynsys;
 

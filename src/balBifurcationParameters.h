@@ -71,7 +71,6 @@ class BifurcationParameters : public Parameters {
   BifurcationParameters(int np);
   BifurcationParameters(const BifurcationParameters& bp);
   ~BifurcationParameters();
-  virtual Object* Clone() const;
 
   void SetIthParameterLowerBound(int i, double p);
   void SetIthParameter(int i, double p);
@@ -94,6 +93,8 @@ class BifurcationParameters : public Parameters {
   bool IsFirst() const;
   bool IsLast() const;
   
+  virtual Parameters* Clone() const;
+
  protected:
   void Setup();
   

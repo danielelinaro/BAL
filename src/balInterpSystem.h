@@ -52,12 +52,10 @@ namespace bal {
  */
 class InterpSystem : public DynamicalSystem {
  public:
-  virtual const char * GetClassName () const;
-  static InterpSystem * Create ();
-  static InterpSystem * Copy(InterpSystem *is);
-  virtual DynamicalSystem * Clone() const;
-  virtual void Destroy ();
-  
+  InterpSystem();
+  InterpSystem(const InterpSystem& interpsystem);
+  virtual ~InterpSystem();
+
   int RHS (realtype t, N_Vector x, N_Vector xdot, void * data);
   int Events (realtype t, N_Vector x, realtype * event, void * data);
   
@@ -66,11 +64,9 @@ class InterpSystem : public DynamicalSystem {
   
   // Used to set the direction of the integration (forward or backward in time)
   bool SpecialOptions(const void *opt); 
- protected:
-  InterpSystem();
-  InterpSystem(const InterpSystem& interpsystem);
-  virtual ~InterpSystem();
   
+  virtual DynamicalSystem* Clone() const;
+
  private:
 
   N_Vector xderiv;

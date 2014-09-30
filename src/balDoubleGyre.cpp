@@ -25,10 +25,11 @@
  * \brief Implementation of the class DoubleGyre
  */
 
+#include <cmath>
 #include "balDoubleGyre.h"
 
 bal::DynamicalSystem* DoubleGyreFactory() {
-  return bal::DoubleGyre::Create();
+  return new bal::DoubleGyre;
 }
 
 namespace bal {
@@ -44,26 +45,6 @@ DoubleGyre::DoubleGyre(const DoubleGyre& gyre) : DynamicalSystem(gyre) {
 }
 
 DoubleGyre::~DoubleGyre() {
-}
-
-DoubleGyre * DoubleGyre::Create () {
-  return new DoubleGyre;
-}
-
-DoubleGyre * DoubleGyre::Copy(DoubleGyre *gyre) {
-  return new DoubleGyre(*gyre);
-}
-
-DynamicalSystem * DoubleGyre::Clone() const {
-  return new DoubleGyre(*this);
-}
-
-void DoubleGyre::Destroy () {
-  delete this;
-}
-
-const char * DoubleGyre::GetClassName () const {
-  return "DoubleGyre";
 }
 
 realtype DoubleGyre::f(realtype t, realtype x, realtype omega, realtype eps) const {
@@ -115,6 +96,10 @@ int DoubleGyre::Jacobian (int N, realtype t, N_Vector x, N_Vector fy, DlsMat J,
 bool DoubleGyre::HasJacobian() const {
   return false;
 }
- 
+
+DynamicalSystem* DoubleGyre::Clone() const {
+  return new DoubleGyre(*this);
+}
+
 } // namespace bal
 

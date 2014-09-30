@@ -44,16 +44,13 @@ Parameters::Parameters(const Parameters& params) : p(params.p), pars(new double[
 #endif
   for(int i=0; i<p; i++)
     pars[i] = params.pars[i];
+  std::cout << *this << std::endl;
 }
 
 Parameters::~Parameters () {
 #ifdef DEBUG
   std::cout << "Parameters destructor.\n";
 #endif
-}
-
-Object* Parameters::Clone() const {
-  return new Parameters(*this);
 }
 
 int Parameters::GetNumber () const {
@@ -71,24 +68,35 @@ void Parameters::operator= (const Parameters& params) {
     pars[i] = params.pars[i];
 }
 
-double Parameters::At (int k) const {
-  return pars[k];
+double Parameters::At (int k) {
+  std::cout << *this << std::endl;
+  //printf("%d %d\n", pars.use_count(), p);
+  //for (int i=0; i<p; i++)
+  //  printf("%g ", pars[i]);
+  //printf("\n");
+  //return pars[k];
+  return 0.;
 }
 
 double* Parameters::GetParameters () const {
   return pars.get();
 }
 
-std::string Parameters::ToString() const {
-  std::stringstream ss;
-  ss << "(";
-  if(p > 0) {
-    for(int i=0; i<p-1; i++)
-      ss << pars[i] << ",";
-    ss << pars[p-1];
-  }
-  ss << ")";
-  return ss.str();
+Parameters* Parameters::Clone() const {
+  return new Parameters(*this);
+}
+
+void Parameters::CopyValues(Parameters* _par){
+  for (int i = 0; i < _par->GetNumber(); i++)
+    pars[i] = _par->At(i);
+}
+
+std::ostream& operator<< (std::ostream& os, Parameters& pars) {
+  os << "[";
+  for (int i=0; i<pars.GetNumber()-1; i++)
+    os << pars[i] << ",";
+  os << pars[pars.GetNumber()-1] << "]";
+  return os;
 }
 
 } // namespace bal

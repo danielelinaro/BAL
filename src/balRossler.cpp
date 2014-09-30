@@ -28,7 +28,7 @@
 #include "balRossler.h"
 
 bal::DynamicalSystem* RosslerFactory() {
-  return bal::Rossler::Create();
+  return new bal::Rossler;
 }
 
 namespace bal {
@@ -48,26 +48,6 @@ Rossler::Rossler(const Rossler& ros) : DynamicalSystem(ros) {
 
 Rossler::~Rossler() {
   N_VDestroy_Serial(xderiv);
-}
-
-Rossler * Rossler::Create () {
-  return new Rossler;
-}
-
-Rossler * Rossler::Copy (Rossler *ros) {
-  return new Rossler(*ros);
-}
-
-DynamicalSystem * Rossler::Clone() const {
-  return new Rossler(*this);
-}
-
-void Rossler::Destroy () {
-  delete this;
-}
-
-const char * Rossler::GetClassName () const {
-  return "Rossler";
 }
 
 int Rossler::RHS (realtype t, N_Vector x, N_Vector xdot, void * data) {
@@ -158,17 +138,21 @@ void Rossler::EventsConstraints (realtype t, N_Vector x, int * constraints, void
     constraints[i] = (ris[i] < 0 ? 1 : 0);
 }
 
- bool Rossler::HasJacobian() const {
-   return (IsExtended() ? false : true);
- }
- 
- bool Rossler::HasEvents() const {
-   return true;
- }
- 
- bool Rossler::HasEventsConstraints() const {
-   return true;
- }
- 
+bool Rossler::HasJacobian() const {
+  return (IsExtended() ? false : true);
+}
+
+bool Rossler::HasEvents() const {
+  return true;
+}
+
+bool Rossler::HasEventsConstraints() const {
+  return true;
+}
+
+DynamicalSystem* Rossler::Clone() const {
+  return new Rossler(*this);
+}
+
 } // namespace bal
 

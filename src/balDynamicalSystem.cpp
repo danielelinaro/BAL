@@ -43,7 +43,7 @@ DynamicalSystem::DynamicalSystem() {
 }
 
 DynamicalSystem::DynamicalSystem(const DynamicalSystem& system)
-  : pars(static_cast<Parameters*>(system.pars->Clone())) {
+  : pars(new Parameters(*system.pars.get())) {
 #ifdef DEBUG
   std::cout << "DynamicalSystem copy constructor.\n";
 #endif
@@ -193,10 +193,16 @@ int DynamicalSystem::EventsWrapper (realtype t, N_Vector x, realtype *event, voi
 void DynamicalSystem::EventsConstraints (realtype t, N_Vector x, int *constraints, void *sys) {
 }
 
-void DynamicalSystem::SetParameters (Parameters *params) {
+void DynamicalSystem::SetParameters (boost::shared_ptr<Parameters>& params) {
   if(p != params->GetNumber())
     throw Exception("Wrong number of parameters");
-  pars = boost::shared_ptr<Parameters>(static_cast<Parameters*>(params->Clone()));
+  pars = params;
+}
+
+void DynamicalSystem::SetParameters (const Parameters& params) {
+  if(p != params.GetNumber())
+    throw Exception("Wrong number of parameters");
+  pars = boost::shared_ptr<Parameters>(params.Clone());
 }
 
 boost::shared_ptr<Parameters> DynamicalSystem::GetParameters () const {

@@ -44,14 +44,16 @@ namespace bal {
 class BaseInterp3D : public Interpolator {
   
  public:
-  /** Returns the name of the class. */
-  virtual const char * GetClassName() const;
-  
-  /** Destroys a BaseInterp3D. */
-  virtual void Destroy();
-  
-  
-   /** Sets the interpolation points.
+/** Constructor of BaseInterp3D. */
+  BaseInterp3D();
+ 
+ /** Copy constructor of BaseInterp3D. */
+  BaseInterp3D(const BaseInterp3D & interp);
+ 
+ /** Destructor of BaseInterp3D. */
+  virtual ~BaseInterp3D();
+
+     /** Sets the interpolation points.
    *  xi1 is a vector containing the first components of the interpolation points
    *  xi2 is a vector containing the second components of the interpolation points
    *  xi3 is a vector containing the third components of the interpolation points
@@ -65,15 +67,6 @@ class BaseInterp3D : public Interpolator {
   
  protected:
  
- /** Constructor of BaseInterp3D. */
-  BaseInterp3D();
- 
- /** Copy constructor of BaseInterp3D. */
-  BaseInterp3D(const BaseInterp3D & interp);
- 
- /** Destructor of BaseInterp3D. */
-  ~BaseInterp3D();
-  
   int nnx1, nnx2, nnx3;
   double *xx1, *xx2, *xx3, **yy;
 };
@@ -86,21 +79,16 @@ class BaseInterp3D : public Interpolator {
 class LinearInterp3D : public BaseInterp3D {
   
  public:
-  /** Returns the name of the class. */
-  virtual const char * GetClassName() const;
-  
-  /** Destroys a LinearInterp3D. */
-  virtual void Destroy();
-  
-  /** Creates a LinearInterp3D. */
-  static LinearInterp3D * Create();
+ /** Constructor of LinearInterp3D. */
+  LinearInterp3D();
  
-  /** Copies a LinearInterp3D */
-  static LinearInterp3D * Copy(LinearInterp3D *interp);
-  
-  virtual LinearInterp3D * Clone() const; 
-  
-  /** Evaluates the function in point x. The result is stored in array y. 
+ /** Copy constructor of LinearInterp3D. */
+  LinearInterp3D(const LinearInterp3D & interp);
+ 
+ /** Destructor of LinearInterp3D. */
+  ~LinearInterp3D();
+
+   /** Evaluates the function in point x. The result is stored in array y. 
    *  If an error has occurred the return value is -1, otherwise it is 0. */
   virtual int Evaluate(double *x, double *y);
   
@@ -117,15 +105,6 @@ class LinearInterp3D : public BaseInterp3D {
   int Init();
 
  protected:
- 
- /** Constructor of LinearInterp3D. */
-  LinearInterp3D();
- 
- /** Copy constructor of LinearInterp3D. */
-  LinearInterp3D(const LinearInterp3D & interp);
- 
- /** Destructor of LinearInterp3D. */
-  ~LinearInterp3D();
   
   LinearInterp1D *x3terp;
   LinearInterp2D ** interpsxy;
@@ -142,20 +121,15 @@ class LinearInterp3D : public BaseInterp3D {
 class PolyInterp3D : public BaseInterp3D {
   
  public:
-  /** Returns the name of the class. */
-  virtual const char * GetClassName() const;
-  
-  /** Destroys a PolyInterp3D. */
-  virtual void Destroy();
-  
-  /** Creates a PolyInterp3D. */
-  static PolyInterp3D * Create();
+ /** Constructor of PolyInterp3D. */
+  PolyInterp3D();
  
-  /** Copies a PolyInterp3D */
-  static PolyInterp3D * Copy(PolyInterp3D *interp);
-  
-  virtual PolyInterp3D * Clone() const; 
-  
+ /** Copy constructor of PolyInterp3D. */
+  PolyInterp3D(const PolyInterp3D & interp);
+ 
+ /** Destructor of PolyInterp3D. */
+  ~PolyInterp3D();
+
   /** Evaluates the function in point x. The result is stored in array y. 
    *  If an error has occurred the return value is -1, otherwise it is 0. */
   virtual int Evaluate(double *x, double *y);
@@ -177,15 +151,6 @@ class PolyInterp3D : public BaseInterp3D {
 
  protected:
  
- /** Constructor of PolyInterp3D. */
-  PolyInterp3D();
- 
- /** Copy constructor of PolyInterp3D. */
-  PolyInterp3D(const PolyInterp3D & interp);
- 
- /** Destructor of PolyInterp3D. */
-  ~PolyInterp3D();
-
   int mm1, mm2, mm3;
   PolyInterp1D *x3terp;
   PolyInterp2D ** interpsxy;
@@ -202,20 +167,15 @@ class PolyInterp3D : public BaseInterp3D {
 class SplineInterp3D : public BaseInterp3D {
   
  public:
-  /** Returns the name of the class. */
-  virtual const char * GetClassName() const;
-  
-  /** Destroys a SplineInterp3D. */
-  virtual void Destroy();
-  
-  /** Creates a SplineInterp3D. */
-  static SplineInterp3D * Create();
+ /** Constructor of SplineInterp3D. */
+  SplineInterp3D();
  
-  /** Copies a SplineInterp3D */
-  static SplineInterp3D * Copy(SplineInterp3D *interp);
-  
-  virtual SplineInterp3D * Clone() const; 
-  
+ /** Copy constructor of SplineInterp3D. */
+  SplineInterp3D(const SplineInterp3D & interp);
+ 
+ /** Destructor of SplineInterp3D. */
+  ~SplineInterp3D();
+ 
   /** Sets the dimension of the interpolation windows (how many points you want to use to perform the interpolation) */
   void SetWindow(int w);
   
@@ -237,15 +197,6 @@ class SplineInterp3D : public BaseInterp3D {
 
  protected:
  
- /** Constructor of SplineInterp3D. */
-  SplineInterp3D();
- 
- /** Copy constructor of SplineInterp3D. */
-  SplineInterp3D(const SplineInterp3D & interp);
- 
- /** Destructor of SplineInterp3D. */
-  ~SplineInterp3D();
-
   PolyInterp1D *x3terp;
   SplineInterp2D ** interpsxy;
   SplineInterp1D * interpz;
@@ -261,20 +212,15 @@ class SplineInterp3D : public BaseInterp3D {
 class SmoothingSplineInterp3D : public BaseInterp3D {
   
  public:
-  /** Returns the name of the class. */
-  virtual const char * GetClassName() const;
-  
-  /** Destroys a SmoothingSplineInterp3D. */
-  virtual void Destroy();
-  
-  /** Creates a SmoothingSplineInterp3D. */
-  static SmoothingSplineInterp3D * Create();
+ /** Constructor of SmoothingSplineInterp3D. */
+  SmoothingSplineInterp3D();
  
-  /** Copies a SmoothingSplineInterp3D */
-  static SmoothingSplineInterp3D * Copy(SmoothingSplineInterp3D *interp);
-  
-  virtual SmoothingSplineInterp3D * Clone() const; 
-  
+ /** Copy constructor of SmoothingSplineInterp3D. */
+  SmoothingSplineInterp3D(const SmoothingSplineInterp3D & interp);
+ 
+ /** Destructor of SmoothingSplineInterp3D. */
+  ~SmoothingSplineInterp3D();
+
   /** Evaluates the function in point x. The result is stored in array y. 
    *  If an error has occurred the return value is -1, otherwise it is 0. */
   virtual int Evaluate(double *x, double *y);
@@ -301,16 +247,6 @@ class SmoothingSplineInterp3D : public BaseInterp3D {
   int Init();
 
  protected:
- 
- /** Constructor of SmoothingSplineInterp3D. */
-  SmoothingSplineInterp3D();
- 
- /** Copy constructor of SmoothingSplineInterp3D. */
-  SmoothingSplineInterp3D(const SmoothingSplineInterp3D & interp);
- 
- /** Destructor of SmoothingSplineInterp3D. */
-  ~SmoothingSplineInterp3D();
-
   PolyInterp1D *x3terp;
   SmoothingSplineInterp2D ** interpsxy;
   SmoothingSplineInterp1D * interpz;

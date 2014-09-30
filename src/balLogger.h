@@ -92,6 +92,8 @@ public:
   std::string GetFilename() const;
   bool IsOpen() const;
   bool SaveSolution(Solution *solution);
+
+  virtual Logger* Clone() const = 0;
   
  protected:
   virtual bool SaveBuffer(const Parameters* params,
@@ -128,13 +130,12 @@ class H5Logger : public Logger {
   H5Logger(const H5Logger& logger);
   virtual ~H5Logger();
   
-  // inherited from Object
-  std::string ToString() const;
-
   // inherited from Logger
   virtual void Open(const std::string& fname, bool compress = false);
   virtual void Close();
   
+  virtual Logger* Clone() const;
+
  protected:
   // inherited from Logger
   virtual bool SaveBuffer(const Parameters* params,

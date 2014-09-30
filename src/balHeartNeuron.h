@@ -44,11 +44,9 @@ namespace bal {
  */
 class HeartNeuron : public DynamicalSystem {
  public:
-  virtual const char * GetClassName () const;
-  static HeartNeuron * Create ();
-  static HeartNeuron * Copy(HeartNeuron * hn);
-  virtual DynamicalSystem * Clone() const;
-  virtual void Destroy ();
+  HeartNeuron();
+  HeartNeuron(const HeartNeuron& hn);
+  virtual ~HeartNeuron();
   
   int RHS (realtype t, N_Vector x, N_Vector xdot, void * data);
 #ifdef CVODE25
@@ -66,6 +64,8 @@ class HeartNeuron : public DynamicalSystem {
   bool HasEvents() const;
   bool HasEventsConstraints() const;
   
+  virtual DynamicalSystem* Clone() const;
+
   inline static realtype BoltzmannF(realtype a, realtype b, realtype V) {
     return 1./(1. + exp(a*(b + V)));
   }
@@ -74,10 +74,6 @@ class HeartNeuron : public DynamicalSystem {
     realtype e = exp(a*(b+V));
     return - (a*e) / ((1.+e)*(1.+e));			
   }
-  
- protected:
-  HeartNeuron();
-  virtual ~HeartNeuron();
   
  private:
   N_Vector xderiv;

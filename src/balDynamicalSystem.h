@@ -155,7 +155,10 @@ public:
   int GetDimension() const;
   int GetOriginalDimension() const;
   int GetNumberOfParameters() const;
-  void SetParameters(Parameters *p);
+  // makes a copy of p
+  void SetParameters(const Parameters& params);
+  // just storestruct p
+  void SetParameters(boost::shared_ptr<Parameters>& params);
   boost::shared_ptr<Parameters> GetParameters() const;
 
   /** Extends dynamical system dimensionality to calculate Lyapunov exponents.
@@ -165,7 +168,9 @@ public:
   void Extend(bool extend);
   /** Tells if the system is extended. */
   bool IsExtended() const;
-  
+
+  virtual DynamicalSystem* Clone() const = 0;
+
 protected:
   void SetDimension(int n_);
   void SetNumberOfParameters(int p_);

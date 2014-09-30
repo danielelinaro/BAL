@@ -54,11 +54,8 @@ namespace bal {
  */
 class PLL : public DynamicalSystem {
  public:
-  virtual const char * GetClassName () const;
-  static PLL * Create ();
-  static PLL * Copy(PLL *pll);
-  virtual DynamicalSystem * Clone() const;
-  virtual void Destroy ();
+  PLL();
+  virtual ~PLL();
   
   int RHS (realtype t, N_Vector X, N_Vector Xdot, void * data);
 #ifdef CVODE25
@@ -78,13 +75,11 @@ class PLL : public DynamicalSystem {
   
   void Reset();
   void ManageEvents(realtype t, N_Vector x, int * events, int * constraints = NULL);
+
+  virtual DynamicalSystem* Clone() const;
   
   static const int npar;
   static const char * parname[14];
-  
- protected:
-  PLL();
-  virtual ~PLL();
   
  private:
   const realtype pi;

@@ -112,13 +112,11 @@ BifurcationDiagram::BifurcationDiagram(const BifurcationDiagram& bifd) {
 BifurcationDiagram::~BifurcationDiagram() {
 }
 
-std::string BifurcationDiagram::ToString() const {
-  return "BifurcationDiagram";
-}
-
+  /*
 Object* BifurcationDiagram::Clone() const {
   return new BifurcationDiagram(*this);
 }
+  */
 
 void BifurcationDiagram::SetNumberOfThreads(int _nthreads) {
   if(_nthreads > 0)
@@ -130,7 +128,7 @@ int BifurcationDiagram::GetNumberOfThreads() const {
 }
 
 void BifurcationDiagram::SetDynamicalSystem(DynamicalSystem *sys) {
-  system = boost::shared_ptr<DynamicalSystem>(static_cast<DynamicalSystem>(sys->Clone()));
+  system = boost::shared_ptr<DynamicalSystem>(dynamic_cast<DynamicalSystem*>(sys->Clone()));
   ndim = system->GetDimension();
   solver->SetDynamicalSystem(sys);
   //parameters = system->GetParameters();
@@ -138,43 +136,40 @@ void BifurcationDiagram::SetDynamicalSystem(DynamicalSystem *sys) {
   npar = system->GetParameters()->GetNumber();
 }
 
-DynamicalSystem* BifurcationDiagram::GetDynamicalSystem() const {
-  return system.get();
+boost::shared_ptr<DynamicalSystem> BifurcationDiagram::GetDynamicalSystem() const {
+  return system;
 }
 
 void BifurcationDiagram::SetLogger(Logger *log) {
-  logger = boost::shared_ptr<Logger>(static_cast<Logger>(log->Clone()));
+  logger = boost::shared_ptr<Logger>(dynamic_cast<Logger*>(log->Clone()));
 }
 
-Logger * BifurcationDiagram::GetLogger() const {
+boost::shared_ptr<Logger> BifurcationDiagram::GetLogger() const {
   return logger;
 }
 
 void BifurcationDiagram::SetODESolver(ODESolver * sol) {
-  if(destroy_solver) {
-    solver->Destroy();
-    destroy_solver = false;
-  }
-  solver = sol;
+  solver = boost::shared_ptr<ODESolver>(dynamic_cast<ODESolver*>(sol->Clone()));
 }
 
-ODESolver * BifurcationDiagram::GetODESolver() const {
+boost::shared_ptr<ODESolver> BifurcationDiagram::GetODESolver() const {
   return solver;
 }
 
 void BifurcationDiagram::SetFilename(const char * filename, bool compress) {
-  logger->SetFilename(filename,compress);
+  logger->Open(filename,compress);
 }
 
-const char * BifurcationDiagram::GetFilename() {
+std::string BifurcationDiagram::GetFilename() {
   return logger->GetFilename();
 }
 
-bool BifurcationDiagram::SaveSummaryData(const char *filename) const {
-  if(!destroy_lists)
+bool BifurcationDiagram::SaveSummaryData(const char *filename) {
+  if (!summary.size())
     return false;
   
-  summary->sort(CompareBalSummaryEntries);
+  // CHECK
+  //summary.sort(CompareSummaryEntry);
   
   int i;
   double *entry;
@@ -185,11 +180,11 @@ bool BifurcationDiagram::SaveSummaryData(const char *filename) const {
   if(fid == NULL)
     return false;
   
-  for(it=summary->begin(); it!=summary->end(); it++) {
+  for(it=summary.begin(); it!=summary.end(); it++) {
     entry = (*it)->GetData();
     for(i=0; i<(*it)->GetN()-1; i++)
       fprintf(fid, "%e ", entry[i]);
-    if (solver->GetIntegrationMode() == LYAP)
+    if (solver->GetIntegrationMode() == MLE)
       fprintf(fid,"%e\n", (double) entry[(*it)->GetN()-1]);
     else 
       fprintf(fid,"%d\n", (int) entry[(*it)->GetN()-1]);
@@ -199,23 +194,23 @@ bool BifurcationDiagram::SaveSummaryData(const char *filename) const {
   return true;
 }
 
-double** BifurcationDiagram::GetSummaryData(int *size) const {
-  if(!destroy_lists)
+double** BifurcationDiagram::GetSummaryData(int *size) {
+  if(!summary.size())
     return NULL;
   
-  summary->sort(CompareBalSummaryEntries);
+  summary.sort(CompareSummaryEntry);
   
   int i, j;
   double **data, *entry;
   std::list<SummaryEntry *>::iterator it;
 
-  data = new double*[summary->size()];
-  it = summary->begin();
+  data = new double*[summary.size()];
+  it = summary.begin();
   if(size != NULL) {
-    size[0] = summary->size();
+    size[0] = summary.size();
     size[1] = (*it)->GetN();
   }
-  for(i=0; it!=summary->end(); it++, i++) {
+  for(i=0; it!=summary.end(); it++, i++) {
     entry = (*it)->GetData();
     data[i] = new double[(*it)->GetN()];
     for(j=0; j<(*it)->GetN(); j++)
@@ -257,24 +252,19 @@ int BifurcationDiagram::GetMode() const {
 }
 
 void BifurcationDiagram::ComputeDiagram() {
-  if(destroy_lists) {
-    delete solutions;
-    delete summary;
-  }
-  solutions = new std::list<Solution *>;
-  summary = new std::list<SummaryEntry *>;
-  destroy_lists = true;
+  solutions.clear();
+  summary.clear();
 
   /* this switch is really not necessary: it is safe to always *
    * use ComputeDiagramMultiThread().                          */
   /*
-  switch(nthreads) {
-  case 1:
+    switch(nthreads) {
+    case 1:
     ComputeDiagramSingleThread();
     break;
-  default:
+    default:
     ComputeDiagramMultiThread();
-  }
+    }
   */
   ComputeDiagramMultiThread();
 }
@@ -313,7 +303,7 @@ void BifurcationDiagram::ComputeDiagramMultiThread() {
 
   BifurcationParameters *pars;
 	
-  if (solver->GetIntegrationMode() == LYAP)
+  if (solver->GetIntegrationMode() == MLE)
     restart_from_x0 = true;
   
   switch(mode) {
@@ -339,14 +329,16 @@ void BifurcationDiagram::ComputeDiagramMultiThread() {
   /**
    * launching the thread of the writing routine: it activates only when list size >= LIST_MAX_SIZE
    **/
-  if (solver->GetIntegrationMode() != LYAP) {
-    logger_thread = new boost::thread(&Logger::SaveSolutionThreaded,logger,solutions,&list_mutex,&q_empty,&q_full);
+  if (solver->GetIntegrationMode() != MLE) {
+    //logger_thread = new boost::thread(&Logger::SaveSolutionThreaded,logger,solutions,&list_mutex,&q_empty,&q_full);
+    // CHECK
+    //logger_thread = new boost::thread(&LoggerThread,logger,solutions,list_mutex,q_empty,q_full);
   }
   /**
    * calculating the first total % nthreads solutions in a serial fashion
    **/
   for(cnt = 0, solutionId = 1; cnt < prologue; cnt++, solutionId++) {
-    IntegrateAndEnqueue(solver,solutionId);
+    IntegrateAndEnqueue(solver.get(),solutionId);
     printf("%c%s", ESC, GREEN);
 #ifdef DEBUG
     if(mode == IC)
@@ -372,16 +364,16 @@ void BifurcationDiagram::ComputeDiagramMultiThread() {
   /*
    * we make nthreads copies of both the solvers and the parameters of the dynamical system
    */
-  ODESolver** lsol = new ODESolver*[nthreads];
-  Parameters** lpar = new Parameters*[nthreads];
+  boost::shared_ptr<ODESolver> *lsol = new boost::shared_ptr<ODESolver>[nthreads];
+  boost::shared_ptr<Parameters> *lpar = new boost::shared_ptr<Parameters>[nthreads];
   for(i = 0; i < nthreads; i++) {
-    lpar[i] = Parameters::Copy(parameters);
-    lsol[i] = ODESolver::Copy(solver);
+    lpar[i] = parameters->Clone();
+    lsol[i] = solver->Clone();
     lsol[i]->SetDynamicalSystemParameters(lpar[i]);
   }
 
   // the array of pointers to the threads
-  boost::thread * threads[nthreads];
+  boost::thread *threads[nthreads];
 
   for (cnt = 0; cnt < nloops; cnt++) {
     /* we set to each solver a different tuple of parameters */
@@ -397,7 +389,7 @@ void BifurcationDiagram::ComputeDiagramMultiThread() {
     }
     /* launch the nthread solvers */
     for (i = 0; i < nthreads; i++, solutionId++)
-      threads[i] = new boost::thread(&BifurcationDiagram::IntegrateAndEnqueue,this,lsol[i],solutionId);
+      threads[i] = new boost::thread(&BifurcationDiagram::IntegrateAndEnqueue,this,lsol[i].get(),solutionId);
 		
     
     for (i = 0; i < nthreads; i++) {
@@ -420,18 +412,14 @@ void BifurcationDiagram::ComputeDiagramMultiThread() {
   /**
    * we destroy the solvers and the parameters that were allocated previously
    **/
-  for(i = 0; i < nthreads; i++) {
-    lsol[i]->Destroy();
-    lpar[i]->Destroy();
-  }
   delete [] lsol;
   delete [] lpar;
 
-  if (solver->GetIntegrationMode() != LYAP) {
+  if (solver->GetIntegrationMode() != MLE) {
     /* interrupting logger_thread */
-    logger_thread->interrupt();
+    logger_thread.interrupt();
     /* waiting logger thread to writing the remaining solution in the queue and exit */
-    logger_thread->join();
+    logger_thread.join();
   }
 }
 
@@ -442,7 +430,7 @@ void BifurcationDiagram::IntegrateAndEnqueue(ODESolver * sol, int solutionId) {
   
   {
     boost::mutex::scoped_lock lock(list_mutex);
-    while (solutions->size() >= LIST_MAX_SIZE) {  
+    while (solutions.size() >= LIST_MAX_SIZE) {  
       
       /**
        * we notify the thread that will write (which is waiting on q_full)
@@ -457,14 +445,14 @@ void BifurcationDiagram::IntegrateAndEnqueue(ODESolver * sol, int solutionId) {
       q_empty.wait(lock);
     }
     // insert a new solution into the list
-    if (solver->GetIntegrationMode() != LYAP)
-      solutions->push_back(solution);
+    if (solver->GetIntegrationMode() != MLE)
+      solutions.push_back(solution);
     // insert a new summary into the list
-    summary->push_back(new SummaryEntry(solution,mode));
+    summary.push_back(new SummaryEntry(solution,mode));
   }	
   
-  if (solver->GetIntegrationMode() == LYAP)
-    solution->Destroy();
+  if (solver->GetIntegrationMode() == MLE)
+    delete solution;
   
   if(! restart_from_x0)
     sol->SetX0(sol->GetXEnd());

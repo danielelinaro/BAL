@@ -25,6 +25,7 @@
  * \brief Implementation of the class Solution
  */
 
+#include <cstring>
 #include "balSolution.h"
 
 namespace bal {
@@ -60,14 +61,6 @@ Solution::~Solution() {
 #endif
 }
 
-Object* Solution::Clone() const {
-  return new Solution(*this);
-}
-
-std::string Solution::ToString() const {
-  return "Solution";
-}
-
 int Solution::GetRows() const {
   return rows;
 }
@@ -86,7 +79,7 @@ realtype* Solution::GetData() const {
 }	
 
 void Solution::SetParameters(const Parameters *p) {
-  parameters = boost::shared_ptr<Parameters>(dynamic_cast<Parameters *>(p->Clone()));
+  parameters = boost::shared_ptr<Parameters>(new Parameters(*p));
 }
 
 Parameters* Solution::GetParameters() const {

@@ -1,8 +1,8 @@
 
-AM_CPPFLAGS = @CVODEVERSION@ -DDEBUG
+AM_CPPFLAGS = @CVODEVERSION@ -DDEBUG -g -O0
 
 lib_LTLIBRARIES = libbal.la
-libbal_la_SOURCES = balBifurcationDiagram.cpp balBifurcationDiagram.h balBifurcationParameters.cpp balBifurcationParameters.h \
+libbal_la_SOURCES = balBifurcationParameters.cpp balBifurcationParameters.h \
 balCommon.h balDynamicalSystem.cpp balDynamicalSystem.h balHindmarshRose.cpp balHindmarshRose.h balHeartNeuron.cpp balHeartNeuron.h \
 balLogger.cpp balLogger.h balODESolver.cpp balODESolver.h balObject.cpp balObject.h balParameters.cpp balParameters.h balPLL.cpp balPLL.h \
 balInterp1D.cpp balInterp1D.h balInterp2D.cpp balInterp2D.h balInterp3D.cpp balInterp3D.h balInterpolator.cpp balInterpolator.h balSolution.cpp balSolution.h \

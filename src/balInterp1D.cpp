@@ -26,18 +26,11 @@
  */
 
 #include "balInterp1D.h"
+#include <cstring>
 
 namespace bal {
 
-//////// BaseInterp1D ////////
-
-const char * BaseInterp1D::GetClassName() const {
-  return "BaseInterp1D";
-}
-
-void BaseInterp1D::Destroy() {
-  delete this;
-}
+/***** BaseInterp1D *****/
 
 int BaseInterp1D::Locate(const double x) {
   int ju, jm, jl, ascnd;
@@ -147,27 +140,7 @@ BaseInterp1D::BaseInterp1D(const BaseInterp1D & interp) : Interpolator(interp) {
 BaseInterp1D::~BaseInterp1D() {
 }
 
-//////// LinearInterp1D ////////
-
-const char * LinearInterp1D::GetClassName() const {
-  return "LinearInterp1D";
-}
-
-void LinearInterp1D::Destroy() {
-  delete this;
-}
-
-LinearInterp1D * LinearInterp1D::Create() {
-  return new LinearInterp1D();
-}
-
-LinearInterp1D * LinearInterp1D::Copy(LinearInterp1D *interp) {
-  return new LinearInterp1D(*interp);
-}
-
-LinearInterp1D * LinearInterp1D::Clone() const {
-  return new LinearInterp1D(*this);
-}
+/***** LinearInterp1D *****/
 
 LinearInterp1D::LinearInterp1D() :
   BaseInterp1D() {
@@ -236,28 +209,7 @@ int LinearInterp1D::EvaluateDivergence(double *x, double *y) {
   return 0;
 
 }
-
-//////// PolyInterp1D ////////
-
-const char * PolyInterp1D::GetClassName() const {
-  return "PolyInterp1D";
-}
-
-void PolyInterp1D::Destroy() {
-  delete this;
-}
-
-PolyInterp1D * PolyInterp1D::Create() {
-  return new PolyInterp1D();
-}
-
-PolyInterp1D * PolyInterp1D::Copy(PolyInterp1D *interp) {
-  return new PolyInterp1D(*interp);
-}
-
-PolyInterp1D * PolyInterp1D::Clone() const {
-  return new PolyInterp1D(*this);
-}
+/***** PolyInterp1D *****/
 
 PolyInterp1D::PolyInterp1D() :
   BaseInterp1D() {
@@ -396,27 +348,7 @@ int PolyInterp1D::EvaluateDivergence(double *x, double *y) {
   return 0;
 }
 
-//////// SplineInterp1D ////////
-
-const char * SplineInterp1D::GetClassName() const {
-  return "SplineInterp1D";
-}
-
-void SplineInterp1D::Destroy() {
-  delete this;
-}
-
-SplineInterp1D * SplineInterp1D::Create() {
-  return new SplineInterp1D();
-}
-
-SplineInterp1D * SplineInterp1D::Copy(SplineInterp1D *interp) {
-  return new SplineInterp1D(*interp);
-}
-  
-SplineInterp1D * SplineInterp1D::Clone() const {
-  return new SplineInterp1D(*this);
-}
+/***** SplineInterp1D *****/
 
 SplineInterp1D::SplineInterp1D() :
   BaseInterp1D() {
@@ -623,29 +555,8 @@ int SplineInterp1D::EvaluateDivergence(double *x, double *y) {
     
   return 0;
 }
-	
-//////// SmoothingSplineInterp1D ////////
+/***** SmoothingSplineInterp1D *****/
 
-const char * SmoothingSplineInterp1D::GetClassName() const {
-  return "SmoothingSplineInterp1D";
-}
-
-void SmoothingSplineInterp1D::Destroy() {
-  delete this;
-}
-
-SmoothingSplineInterp1D * SmoothingSplineInterp1D::Create() {
-  return new SmoothingSplineInterp1D();
-}
-
-SmoothingSplineInterp1D * SmoothingSplineInterp1D::Copy(SmoothingSplineInterp1D *interp) {
-  return new SmoothingSplineInterp1D(*interp);
-}
-
-SmoothingSplineInterp1D * SmoothingSplineInterp1D::Clone() const {
-  return new SmoothingSplineInterp1D(*this);
-}
-  
 SmoothingSplineInterp1D::SmoothingSplineInterp1D() :
   BaseInterp1D() {
   mm = 2;

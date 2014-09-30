@@ -25,36 +25,17 @@
  * \brief Implementation of the class PLL.
  */
 
+#include <cmath>
 #include "balPLL.h"
 
 bal::DynamicalSystem* PLLFactory() {
-  return bal::PLL::Create();
+  return new bal::PLL;
 }
 
 namespace bal {
 
 const int PLL::npar = 14;
 const char * PLL::parname[14] = {"fref","r1","fvco","vdd","rho0","rhoap","k0","krho","kap","alpha","kvcoa","kvcob","kvcoc","tuning"};
-
-const char * PLL::GetClassName () const {
-  return "PLL";
-}
-
-PLL * PLL::Create () {
-  return new PLL;
-}
-
-PLL * PLL::Copy(PLL *pll) {
-  return new PLL(*pll);
-}
-
-DynamicalSystem * PLL::Clone() const {
-  return new PLL(*this);
-}
-
-void PLL::Destroy () {
-  delete this;
-}
 
 bool PLL::HasJacobian() const {
   return false;
@@ -347,6 +328,10 @@ void PLL::ManageEvents(realtype t, N_Vector X, int * events, int * constraints) 
     treset = t;
     wait_reset = true;
   }
+}
+
+DynamicalSystem* PLL::Clone() const {
+  return new PLL(*this);
 }
 
 } // namespace bal

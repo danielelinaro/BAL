@@ -30,11 +30,9 @@
 using namespace bal;
 
 #ifdef CVODE25
-void PrintJacobian(int n, DenseMat J);
 void PrintJacobian(int n, DenseMat J) {
 #endif
 #ifdef CVODE26
-void PrintJacobian(int n, DlsMat J);
 void PrintJacobian(int n, DlsMat J) {
 #endif
   int i, j;
@@ -59,7 +57,7 @@ int main(int argc, char *argv[]) {
   // HindmarshRose
   int i, n;
   HindmarshRose hr;
-  hr.SetParameters(&pars);
+  hr.SetParameters(pars);
   n = hr.GetDimension();
   N_Vector x = N_VNew_Serial(n);
   N_Vector xdot = N_VNew_Serial(n);
@@ -72,7 +70,6 @@ int main(int argc, char *argv[]) {
     for(i=0; i<n; i++)
       NV_Ith_S(x,i) = 0.0;
   }
-  std::cout << hr.ToString() << std::endl;
   DynamicalSystem::RHSWrapper(0, x, xdot, (void *) &hr);
 
   std::cout << "xdot = (";
@@ -89,10 +86,10 @@ int main(int argc, char *argv[]) {
   DlsMat jac = NewDenseMat(n,n);
   DynamicalSystem::JacobianWrapper(n, 0, x, NULL, jac, (void *) &hr, NULL, NULL, NULL);
 #endif
-  printf("\n>> Exact Jacobian matrix <<\n");
+  printf(">> Exact Jacobian matrix <<\n");
   PrintJacobian(n,jac);
   DynamicalSystem::JacobianFiniteDifferences(n, 0, x, jac, (void *) &hr);
-  printf("\n>> Approximated Jacobian matrix <<\n");
+  printf(">> Approximated Jacobian matrix <<\n");
   PrintJacobian(n,jac);
 
 #ifdef CVODE25

@@ -42,17 +42,10 @@ namespace bal {
  */
 class Rossler : public DynamicalSystem {
  public:
-	/** Returns the name of the class. */
-  virtual const char * GetClassName () const;
-	/** Creates a new Rossler dynamical system. */
-  static Rossler * Create ();
-	/** Copies Rossler dynamical system. */
-  static Rossler * Copy (Rossler *ros);
-	/** Overrides bal::DynamicalSystem::Clone method. */
-  virtual DynamicalSystem * Clone() const;
-	/** Destroys Rossler dynamical system. */
-  virtual void Destroy();
-
+  Rossler();
+  Rossler(const Rossler& hr);
+  virtual ~Rossler();
+  
   int RHS (realtype t, N_Vector x, N_Vector xdot, void * data);
 #ifdef CVODE25
   int Jacobian (long int N, DenseMat J, realtype t, N_Vector x, N_Vector fy, 
@@ -71,11 +64,8 @@ class Rossler : public DynamicalSystem {
   bool HasEvents() const;
   bool HasEventsConstraints() const;
   
- protected:
-  Rossler();
-  Rossler(const Rossler& hr);
-  virtual ~Rossler();
-  
+  virtual DynamicalSystem* Clone() const;
+
  private:
   N_Vector xderiv;
 };

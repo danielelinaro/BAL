@@ -25,6 +25,7 @@
  *  \brief Implementation of the classes BaseInterp2D LinearInterp2D 
  */
 
+#include <cstring>
 #include "balInterp2D.h"
 
 namespace bal {
@@ -45,15 +46,6 @@ BaseInterp2D::BaseInterp2D(const BaseInterp2D &interp) : Interpolator(interp) {
   xx1 = interp.xx1;
   xx2 = interp.xx2;
 }
-
-const char * BaseInterp2D::GetClassName() const {
-  return "BaseInterp2D";
-}
-
-void BaseInterp2D::Destroy() {
-  delete this;
-}
-
 
 BaseInterp2D::~BaseInterp2D() { }
 
@@ -76,40 +68,20 @@ LinearInterp2D::LinearInterp2D(): BaseInterp2D() {
 
 LinearInterp2D::LinearInterp2D(const LinearInterp2D &interp):BaseInterp2D(interp) {
   if (interp.x1terp!=NULL)
-    x1terp = LinearInterp1D::Copy(interp.x1terp);
+    x1terp = new LinearInterp1D(*interp.x1terp);
   else
     x1terp = NULL;
   if (interp.x2terp!=NULL)
-    x2terp = LinearInterp1D::Copy(interp.x2terp);
+    x2terp = new LinearInterp1D(*interp.x2terp);
   else
     x2terp = NULL;
 }
 
-const char * LinearInterp2D::GetClassName() const {
-  return "LinearInterp2D";
-}
-
-void LinearInterp2D::Destroy() {
-  delete this;
-}
-
 LinearInterp2D::~LinearInterp2D() {
   if (x1terp != NULL)
-    x1terp->Destroy();
+    delete x1terp;
   if (x2terp != NULL)
-    x2terp->Destroy();
-}
-
-LinearInterp2D * LinearInterp2D::Create() {
-  return new LinearInterp2D();
-}
-
-LinearInterp2D * LinearInterp2D::Copy(LinearInterp2D *interp) {
-  return new LinearInterp2D(*interp);
-}
-
-LinearInterp2D * LinearInterp2D::Clone() const {
-  return new LinearInterp2D(*this);
+    delete x2terp;
 }
 
 int LinearInterp2D::Init() {
@@ -118,11 +90,11 @@ int LinearInterp2D::Init() {
     return -1;
   }
   if (x1terp != NULL)
-    x1terp->Destroy();
+    delete x1terp;
   if (x2terp != NULL)
-    x2terp->Destroy();
-  x1terp = LinearInterp1D::Create();
-  x2terp = LinearInterp1D::Create();
+    delete x2terp;
+  x1terp = new LinearInterp1D;
+  x2terp = new LinearInterp1D;
   x1terp->SetInterpolationPoints(xx1,&xx1,nnx1,1);
   x2terp->SetInterpolationPoints(xx2,&xx2,nnx2,1);
   return 0;
@@ -212,17 +184,17 @@ PolyInterp2D::PolyInterp2D(const PolyInterp2D &interp):BaseInterp2D(interp) {
   if (interp.interpsx != NULL) {
     interpsx = new PolyInterp1D * [nnx2];
     for (int i=0; i<nnx2; i++) 
-      interpsx[i] = PolyInterp1D::Copy(interp.interpsx[i]);
+      interpsx[i] = new PolyInterp1D(*interp.interpsx[i]);
   }
   else
     interpsx = NULL;
   if (interp.interpy != NULL) {
-    interpy = PolyInterp1D::Copy(interp.interpy);
+    interpy = new PolyInterp1D(*interp.interpy);
   }
   else
     interpy = NULL;
   if (interp.x2terp!=NULL)
-    x2terp = PolyInterp1D::Copy(interp.x2terp);
+    x2terp = new PolyInterp1D(*interp.x2terp);
   else 
     x2terp = NULL;
   if (interp.yloc != NULL) {
@@ -239,24 +211,16 @@ PolyInterp2D::PolyInterp2D(const PolyInterp2D &interp):BaseInterp2D(interp) {
     yloc = NULL;
 }
 
-const char * PolyInterp2D::GetClassName() const {
-  return "PolyInterp2D";
-}
-
-void PolyInterp2D::Destroy() {
-  delete this;
-}
-
 PolyInterp2D::~PolyInterp2D() {
   if (interpsx != NULL) {
     for (int i=0; i<nnx2; i++)
-      interpsx[i]->Destroy();
+      delete interpsx[i];
     delete [] interpsx;
   }
   if (interpy != NULL)
-    interpy->Destroy();
+    delete interpy;
   if (x2terp != NULL)
-    x2terp->Destroy();
+    delete x2terp;
   if (yloc != NULL){
     for (int i=0; i<nnx2; i++) {
       for (int j=0; j<nnf; j++)
@@ -265,18 +229,6 @@ PolyInterp2D::~PolyInterp2D() {
     }
     delete [] yloc;
   }
-}
-
-PolyInterp2D * PolyInterp2D::Copy(PolyInterp2D *interp) {
-  return new PolyInterp2D(*interp);
-}
-
-PolyInterp2D * PolyInterp2D::Clone() const {
-  return new PolyInterp2D(*this);
-}
-
-PolyInterp2D * PolyInterp2D::Create() {
-  return new PolyInterp2D();
 }
 
 void PolyInterp2D::SetInterpolationOrder(int m1, int m2) {
@@ -314,19 +266,19 @@ int PolyInterp2D::Init() {
      for (j=0; j<nnf; j++) {
        memcpy(yloc[i][j],&yy[j][i*nnx1],nnx1*sizeof(double));
      }
-     interpsx[i] = PolyInterp1D::Create();
+     interpsx[i] = new PolyInterp1D;
      interpsx[i]->SetInterpolationPoints(xx1,yloc[i],nnx1,nnf);
      interpsx[i]->SetInterpolationOrder(mm1);
   } 
   if (interpy != NULL)
-    interpy->Destroy();
-  interpy = PolyInterp1D::Create();
+    delete interpy;
+  interpy = new PolyInterp1D;
   interpy->SetInterpolationOrder(mm2);
   
   if (x2terp != NULL)
-    x2terp->Destroy();
+    delete x2terp;
   
-  x2terp = PolyInterp1D::Create();
+  x2terp = new PolyInterp1D;
   x2terp->SetInterpolationPoints(xx2,&xx2,nnx2,1);
   x2terp->SetInterpolationOrder(mm2);
   return 0;
@@ -688,11 +640,11 @@ SplineInterp2D::SplineInterp2D(const SplineInterp2D &interp):BaseInterp2D(interp
     for (j=0; j<16; j++)
       wt[i][j] = interp.wt[i][j];
   if (interp.x1terp != NULL)
-    x1terp = PolyInterp1D::Copy(interp.x1terp);
+    x1terp = new PolyInterp1D(*interp.x1terp);
   else
     x1terp = NULL;
   if (interp.x2terp != NULL)
-    x2terp = PolyInterp1D::Copy(interp.x2terp);
+    x2terp = new PolyInterp1D(*interp.x2terp);
   else
     x2terp = NULL;
   if (interp.y1d != NULL) {
@@ -747,20 +699,11 @@ SplineInterp2D::SplineInterp2D(const SplineInterp2D &interp):BaseInterp2D(interp
 
 }
 
-
-const char * SplineInterp2D::GetClassName() const {
-  return "SplineInterp2D";
-}
-
-void SplineInterp2D::Destroy() {
-  delete this;
-}
-
 SplineInterp2D::~SplineInterp2D() {
   if (x1terp != NULL)
-    x1terp->Destroy();
+    delete x1terp;
   if (x2terp != NULL)
-    x2terp->Destroy();
+    delete x2terp;
   if (y1d != NULL) {
     for (int i=0; i<nnf; i++) {
       for (int j=0; j<nnx1; j++) {
@@ -798,18 +741,6 @@ SplineInterp2D::~SplineInterp2D() {
     delete [] c;
   }
 
-}
-
-SplineInterp2D * SplineInterp2D::Copy(SplineInterp2D *interp) {
-  return new SplineInterp2D(*interp);
-}
-
-SplineInterp2D * SplineInterp2D::Clone() const {
-  return new SplineInterp2D(*this);
-}
-
-SplineInterp2D * SplineInterp2D::Create() {
-  return new SplineInterp2D();
 }
 
 int SplineInterp2D::Init() {
@@ -871,14 +802,14 @@ int SplineInterp2D::Init() {
   }
   
   if (x1terp != NULL)
-    x1terp->Destroy();
+    delete x1terp;
   if (x2terp != NULL)
-    x2terp->Destroy();
+    delete x2terp;
   
-  x1terp = PolyInterp1D::Create();
+  x1terp = new PolyInterp1D;
   x1terp->SetInterpolationPoints(xx1,&xx1,nnx1,1);
   x1terp->SetInterpolationOrder(2);
-  x2terp = PolyInterp1D::Create();
+  x2terp = new PolyInterp1D;
   x2terp->SetInterpolationPoints(xx2,&xx2,nnx2,1);
   x2terp->SetInterpolationOrder(2);
   
@@ -1098,17 +1029,17 @@ SmoothingSplineInterp2D::SmoothingSplineInterp2D(const SmoothingSplineInterp2D &
   if (interp.interpsx != NULL) {
     interpsx = new SmoothingSplineInterp1D * [nnx2];
     for (int i=0; i<nnx2; i++) 
-      interpsx[i] = SmoothingSplineInterp1D::Copy(interp.interpsx[i]);
+      interpsx[i] = new SmoothingSplineInterp1D(*interp.interpsx[i]);
   }
   else
     interpsx = NULL;
   if (interp.interpy != NULL) {
-    interpy = SmoothingSplineInterp1D::Copy(interp.interpy);
+    interpy = new SmoothingSplineInterp1D(*interp.interpy);
   }
   else
     interpy = NULL;
   if (interp.x2terp!=NULL)
-    x2terp = PolyInterp1D::Copy(interp.x2terp);
+    x2terp = new PolyInterp1D(*interp.x2terp);
   else
     x2terp = NULL;
   if (interp.yloc != NULL) {
@@ -1127,24 +1058,16 @@ SmoothingSplineInterp2D::SmoothingSplineInterp2D(const SmoothingSplineInterp2D &
   window = interp.window;
 }
 
-const char * SmoothingSplineInterp2D::GetClassName() const {
-  return "SmoothingSplineInterp2D";
-}
-
-void SmoothingSplineInterp2D::Destroy() {
-  delete this;
-}
-
 SmoothingSplineInterp2D::~SmoothingSplineInterp2D() {
   if (interpsx != NULL) {
     for (int i=0; i<nnx2; i++)
-      interpsx[i]->Destroy();
+      delete interpsx[i];
     delete [] interpsx;
   }
   if (interpy != NULL)
-    interpy->Destroy();
+    delete interpy;
   if (x2terp != NULL)
-    x2terp->Destroy();
+    delete x2terp;
   if (yloc != NULL){
     for (int i=0; i<nnx2; i++) {
       for (int j=0; j<nnf; j++)
@@ -1153,18 +1076,6 @@ SmoothingSplineInterp2D::~SmoothingSplineInterp2D() {
     }
     delete [] yloc;
   }
-}
-
-SmoothingSplineInterp2D * SmoothingSplineInterp2D::Copy(SmoothingSplineInterp2D *interp) {
-  return new SmoothingSplineInterp2D(*interp);
-}
-
-SmoothingSplineInterp2D * SmoothingSplineInterp2D::Clone() const {
-  return new SmoothingSplineInterp2D(*this);
-}
-
-SmoothingSplineInterp2D * SmoothingSplineInterp2D::Create() {
-  return new SmoothingSplineInterp2D();
 }
 
 void SmoothingSplineInterp2D::SetSmoothingParameter(double S) {
@@ -1204,7 +1115,7 @@ int SmoothingSplineInterp2D::Init() {
 
   if (interpsx != NULL) {
     for (int i=0; i<nnx2; i++)
-      interpsx[i]->Destroy();
+      delete interpsx[i];
     delete [] interpsx;
   }
 
@@ -1213,19 +1124,19 @@ int SmoothingSplineInterp2D::Init() {
      for (j=0; j<nnf; j++) {
        memcpy(yloc[i][j],&yy[j][i*nnx1],nnx1*sizeof(double));
      }
-     interpsx[i] = SmoothingSplineInterp1D::Create();
+     interpsx[i] = new SmoothingSplineInterp1D;
      interpsx[i]->SetInterpolationPoints(xx1,yloc[i],nnx1,nnf);
      interpsx[i]->SetSmoothingParameters(SS);
      interpsx[i]->Init();
   } 
   
   if (interpy != NULL)
-    interpy->Destroy();
-  interpy = SmoothingSplineInterp1D::Create();
+    delete interpy;
+  interpy = new SmoothingSplineInterp1D;
   
   if (x2terp != NULL)
-    x2terp->Destroy();
-  x2terp = PolyInterp1D::Create();
+    delete x2terp;
+  x2terp = new PolyInterp1D;
   x2terp->SetInterpolationPoints(xx2,&xx2,nnx2,1);
   x2terp->SetInterpolationOrder(window);
   return 0;

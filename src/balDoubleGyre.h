@@ -43,11 +43,9 @@ namespace bal {
  */
 class DoubleGyre : public DynamicalSystem {
  public:
-  virtual const char * GetClassName () const;
-  static DoubleGyre * Create ();
-  static DoubleGyre * Copy(DoubleGyre *gyre);
-  virtual DynamicalSystem * Clone() const;
-  virtual void Destroy ();
+  DoubleGyre();
+  DoubleGyre(const DoubleGyre& hr);
+  virtual ~DoubleGyre();
   
   int RHS (realtype t, N_Vector x, N_Vector xdot, void * data);
 #ifdef CVODE25
@@ -60,11 +58,8 @@ class DoubleGyre : public DynamicalSystem {
 #endif
   bool HasJacobian() const;
   
- protected:
-  DoubleGyre();
-  DoubleGyre(const DoubleGyre& hr);
-  virtual ~DoubleGyre();
-  
+  virtual DynamicalSystem* Clone() const;
+
  private:
   realtype f(realtype t, realtype x, realtype omega, realtype eps) const;
   realtype df(realtype t, realtype x, realtype omega, realtype eps) const;

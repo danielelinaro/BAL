@@ -48,10 +48,6 @@ class Object {
   Object();
   /** Destructor of the class. */
   virtual ~Object();
-  /** Method for cloning an object. */
-  virtual Object* Clone() const = 0;
-  /** Builds a string that represents the object. */
-  virtual std::string ToString() const = 0;
 };
 
 } // namespace bal

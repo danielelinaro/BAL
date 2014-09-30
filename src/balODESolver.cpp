@@ -71,7 +71,7 @@ ODESolver::ODESolver(const ODESolver& solver) {
 #endif
   rows = 0;
   nvectors_allocated = false;
-  SetDynamicalSystem(static_cast<DynamicalSystem*>(solver.dynsys->Clone()));
+  SetDynamicalSystem(dynamic_cast<DynamicalSystem*>(solver.dynsys->Clone()));
   for(int i=0; i<dynsys->GetDimension(); i++)
     Ith(x0,i) = Ith(solver.x0,i);
   reltol = solver.reltol;
@@ -118,10 +118,6 @@ ODESolver::~ODESolver() {
   fclose(errfp);
 }
 
-std::string ODESolver::ToString() const {
-  return "ODESolver";
-}
-
 boost::shared_array<realtype> ODESolver::GetBuffer() const {
   return buffer;
 }
@@ -136,10 +132,19 @@ void ODESolver::GetBufferSize(int *r, int *c) const {
 }
 
 void ODESolver::SetDynamicalSystem(DynamicalSystem *ds) {
-  dynsys = boost::shared_ptr<DynamicalSystem>(static_cast<DynamicalSystem*>(ds->Clone()));
+  if(nvectors_allocated) {
+    N_VDestroy_Serial(x);
+    N_VDestroy_Serial(xdot);
+    N_VDestroy_Serial(x0);
+    if (nev)
+      N_VDestroy_Serial(x_inters);
+    nvectors_allocated = false;
+  }
+
+  dynsys = boost::shared_ptr<DynamicalSystem>(dynamic_cast<DynamicalSystem*>(ds->Clone()));
   neq = dynsys->GetDimension();
-  if(dynsys->HasEvents()) {
-    nev = dynsys->GetNumberOfEvents();
+  nev = dynsys->GetNumberOfEvents();
+  if(nev) {
     events = boost::shared_array<int>(new int[nev]);
     if(dynsys->HasEventsConstraints()) {
 	// if constraints are presents, their number must be equal to the
@@ -148,45 +153,34 @@ void ODESolver::SetDynamicalSystem(DynamicalSystem *ds) {
 	// always return events_constraints[i] = 1.
       events_constraints = boost::shared_array<int>(new int[nev]);
     }
-
-    //~~
-    //params = dynsys->GetParameters();
-    //npar = params->GetNumber();
-    //~~
-
-    // the number of columns of the buffer is equal to the number of dimensions of the system
-    // plus 2, i.e. the time instant and a label that describes the type of
-    // record
-    cols = neq + 2;
-    if(nvectors_allocated) {
-      N_VDestroy_Serial(x);
-      N_VDestroy_Serial(xdot);
-      N_VDestroy_Serial(x0);
-      N_VDestroy_Serial(x_inters);
-      nvectors_allocated = false;
-    }
-    x = N_VNew_Serial(neq);
-    xdot = N_VNew_Serial(neq);
-    x0 = N_VNew_Serial(neq);
-    x_inters = N_VNew_Serial(neq);
-    nvectors_allocated = true;
-    // perform setup!
-    setup = false;
   }
+  //~~
+  //params = dynsys->GetParameters();
+  //npar = params->GetNumber();
+  //~~
+  
+  // the number of columns of the buffer is equal to the number of dimensions of the system
+  // plus 2, i.e. the time instant and a label that describes the type of
+  // record
+  cols = neq + 2;
+  printf("%d\n", neq);
+  x = N_VNew_Serial(neq);
+  xdot = N_VNew_Serial(neq);
+  x0 = N_VNew_Serial(neq);
+  x_inters = N_VNew_Serial(neq);
+  nvectors_allocated = true;
+  // perform setup!
+  setup = false;
 }
 
 boost::shared_ptr<DynamicalSystem> ODESolver::GetDynamicalSystem() const {
   return dynsys;
 }
 
-//~~
-/*
-void ODESolver::SetDynamicalSystemParameters(Parameters * par){
+void ODESolver::SetDynamicalSystemParameters(boost::shared_ptr<Parameters>& par){
   dynsys->SetParameters(par);
   params = par;
 }
-*/
-//~~
 
 Solution* ODESolver::GetSolution() const {
   if(rows == 0)
@@ -407,6 +401,7 @@ void ODESolver::SetX0(realtype * X0, int n) {
       stop = dynsys->GetDimension();
     else
       stop = n;
+    printf("stop = %d\n", stop);
     for(int i=0; i<stop; i++)
       Ith(x0,i) = X0[i];
   }
@@ -1212,6 +1207,10 @@ bool ODESolver::SolveWithEvents() {
     ChangeCurrentLabel(EQUIL);
     
   return true;
+}
+
+ODESolver* ODESolver::Clone() const {
+  return new ODESolver(*this);
 }
 
 } // namespace bal

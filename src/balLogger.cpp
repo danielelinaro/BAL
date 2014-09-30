@@ -135,10 +135,6 @@ H5Logger::~H5Logger() {
 #endif
 }
 
-std::string H5Logger::ToString() const {
-  return "H5Logger";
-}
-
 void H5Logger::DisableCompression() {
   compressed = false;
 }
@@ -289,6 +285,10 @@ bool H5Logger::SaveBuffer(const Parameters *params,
   }
 
   return status >= 0;
+}
+
+Logger* H5Logger::Clone() const {
+  return new H5Logger(*this);
 }
 
 } // namespace bal

@@ -51,11 +51,9 @@ enum {MINIMA, MAXIMA, ANY};
  */
 class Dynasty : public DynamicalSystem {
  public:
-  virtual const char * GetClassName () const;
-  static Dynasty * Create ();
-  static Dynasty * Copy(Dynasty *dynasty);
-  virtual DynamicalSystem * Clone() const;
-  virtual void Destroy ();
+  Dynasty();
+  Dynasty(const Dynasty& hr);
+  virtual ~Dynasty();
   
   int RHS (realtype t, N_Vector x, N_Vector xdot, void * data);
 #ifdef CVODE25
@@ -74,11 +72,8 @@ class Dynasty : public DynamicalSystem {
   bool HasEventsConstraints() const;
   bool SpecialOptions(const void *opt);
 
- protected:
-  Dynasty();
-  Dynasty(const Dynasty& hr);
-  virtual ~Dynasty();
-  
+  virtual DynamicalSystem* Clone() const;
+
  private:
   N_Vector xderiv;
   int constraint_type;
