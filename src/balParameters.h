@@ -31,7 +31,6 @@
 #include "balObject.h"
 #include "balCommon.h"
 #include <string>
-#include <boost/shared_array.hpp>
 
 namespace bal {
 
@@ -60,7 +59,7 @@ public:
   /** Returns a pointer to parameters vector. */
   double* GetParameters () const;
   /** Allows to access to a parameter as a vector element. */
-  double At (int k);
+  double& At (int k);
   double& operator[] (int k);
   void operator=(const Parameters& param);
 
@@ -74,7 +73,7 @@ protected:
   int p;
 
 private:
-  boost::shared_array<double> pars;  
+  double *pars;  
 };
 
 std::ostream& operator<< (std::ostream& os, Parameters& pars);

@@ -63,7 +63,7 @@ int DoubleGyre::RHS (realtype t, N_Vector x, N_Vector xdot, void * data) {
   realtype x1, x2;
   realtype A, omega, eps;
   realtype fx, dfx;
-  Parameters * parameters;
+  Parameters *parameters;
   
   parameters = (Parameters *) data;
   A = parameters->At(0);

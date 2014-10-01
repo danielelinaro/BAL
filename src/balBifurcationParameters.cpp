@@ -26,6 +26,7 @@
  */
 
 #include "balBifurcationParameters.h"
+#include <iostream>
 
 namespace bal {
 
@@ -57,6 +58,9 @@ BifurcationParameters::BifurcationParameters(const BifurcationParameters& bp) : 
 
 BifurcationParameters::~BifurcationParameters() {
   std::cout << "BifurcationParameters destructor.\n";
+  delete steps;
+  delete nsteps;
+  delete isteps;
 }
 
 void BifurcationParameters::SetParameterBounds(const Parameters& lower, const Parameters& upper) {

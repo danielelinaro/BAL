@@ -26,6 +26,7 @@
  */
 
 #include <iostream>
+#include "balCommon.h"
 #include "balInterpSystem.h"
 
 bal::DynamicalSystem* InterpSystemFactory() {

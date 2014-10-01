@@ -26,6 +26,7 @@
  */
 
 #include "balParameters.h"
+#include <iostream>
 #include <sstream>
 
 namespace bal {
@@ -51,6 +52,7 @@ Parameters::~Parameters () {
 #ifdef DEBUG
   std::cout << "Parameters destructor.\n";
 #endif
+  delete pars;
 }
 
 int Parameters::GetNumber () const {
@@ -68,18 +70,12 @@ void Parameters::operator= (const Parameters& params) {
     pars[i] = params.pars[i];
 }
 
-double Parameters::At (int k) {
-  std::cout << *this << std::endl;
-  //printf("%d %d\n", pars.use_count(), p);
-  //for (int i=0; i<p; i++)
-  //  printf("%g ", pars[i]);
-  //printf("\n");
-  //return pars[k];
-  return 0.;
+double& Parameters::At (int k) {
+  return pars[k];
 }
 
 double* Parameters::GetParameters () const {
-  return pars.get();
+  return pars;
 }
 
 Parameters* Parameters::Clone() const {
@@ -100,3 +96,4 @@ std::ostream& operator<< (std::ostream& os, Parameters& pars) {
 }
 
 } // namespace bal
+

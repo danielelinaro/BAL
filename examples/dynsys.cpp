@@ -22,6 +22,7 @@
 
 #include <iostream>
 #include <nvector/nvector_serial.h>
+#include <cstdlib>
 #include "balObject.h"
 #include "balCommon.h"
 #include "balDynamicalSystem.h"
@@ -46,22 +47,21 @@ void PrintJacobian(int n, DlsMat J) {
 
 // TEST balDynamicalSystem and balHindmarshRose
 int main(int argc, char *argv[]) {
-	
-  // parameters
-  Parameters pars(4);
-  pars[0] = 3.0;
-  pars[1] = 5.0;
-  pars[2] = 0.01;
-  pars[3] = 4.0;
-  
+	 
   // HindmarshRose
   int i, n;
   HindmarshRose hr;
-  hr.SetParameters(pars);
   n = hr.GetDimension();
   N_Vector x = N_VNew_Serial(n);
   N_Vector xdot = N_VNew_Serial(n);
-
+  
+  // parameters
+  Parameters *pars = hr.GetParameters();
+  pars->At(0) = 3.0;
+  pars->At(1) = 5.0;
+  pars->At(2) = 0.01;
+  pars->At(3) = 4.0;
+ 
   if(argc == n+1) {
     for(i=0; i<n; i++)
       NV_Ith_S(x,i) = atof(argv[i+1]);

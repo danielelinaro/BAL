@@ -46,7 +46,7 @@ int main(int argc, char *argv[]) {
   Solution sol(rows, columns, buffer);
   sol.SetParameters(&pars);
 
-  int copies = 25000;
+  int copies = 250;
   // H5Logger
   std::string filename;
   H5Logger logger;

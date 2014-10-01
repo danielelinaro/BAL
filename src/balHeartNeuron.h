@@ -28,8 +28,6 @@
 #ifndef _BALHEARTNEURON_
 #define _BALHEARTNEURON_
 
-#include "balObject.h"
-#include "balParameters.h"
 #include "balDynamicalSystem.h"
 #include <cvode/cvode.h>
 

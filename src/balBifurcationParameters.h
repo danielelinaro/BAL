@@ -23,7 +23,6 @@
 #ifndef _BALBIFURCATIONPARAMETERS_
 #define _BALBIFURCATIONPARAMETERS_
 
-#include <boost/shared_array.hpp>
 #include "balParameters.h"
 
 /** 
@@ -104,11 +103,11 @@ class BifurcationParameters : public Parameters {
   /** The upper bounds of the parameters. */
   Parameters pupper;
   /** The parameter steps for every parameter. */
-  boost::shared_array<double> steps;
+  double *steps;
   /** The number of steps associated with every parameter. */
-  boost::shared_array<int> nsteps;
+  int *nsteps;
   /** The current steps associated with every parameter. */
-  boost::shared_array<int> isteps;
+  int *isteps;
   /** The total number of steps, i.e. the product of the values contained
    * in nsteps. */
   int total;

@@ -28,10 +28,8 @@
 #ifndef _BALHINDMARSHROSE_
 #define _BALHINDMARSHROSE_
 
-#include <string>
 #include <cvode/cvode.h>
 #include "balObject.h"
-#include "balParameters.h"
 #include "balDynamicalSystem.h"
 
 namespace bal {

@@ -27,6 +27,7 @@
 
 #include "balDynasty.h"
 #include <cmath>
+#include <cstring>
 
 bal::DynamicalSystem* DynastyFactory() {
   return new bal::Dynasty;

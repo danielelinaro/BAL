@@ -28,8 +28,6 @@
 #ifndef _BALPLL_
 #define _BALPLL_
 
-#include "balObject.h"
-#include "balParameters.h"
 #include "balDynamicalSystem.h"
 #include <cvode/cvode.h>
 

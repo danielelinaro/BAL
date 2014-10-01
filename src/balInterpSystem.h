@@ -36,9 +36,6 @@
 #endif
 #include <cvode/cvode.h>
 
-#include "balCommon.h"
-#include "balObject.h"
-#include "balParameters.h"
 #include "balDynamicalSystem.h"
 #include "balInterpolator.h"
 

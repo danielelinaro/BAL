@@ -57,6 +57,7 @@ AC_CHECK_LIB([sundials_nvecserial], [N_VNew_Serial], [], [AC_MSG_ERROR([NVecSeri
 # required libraries in C++
 AC_LANG_CPLUSPLUS
 AC_CHECK_LIB([boost_thread], [main], [], [AC_MSG_ERROR([boost thread library not found.])])
+AC_CHECK_LIB([boost_system], [main], [], [AC_MSG_ERROR([boost system library not found.])])
 
 # defines
 LIB_CURRENT=0

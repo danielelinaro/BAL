@@ -26,6 +26,7 @@
  */
 
 #include "balDynamicalSystem.h"
+#include <iostream>
 
 namespace bal {
 
@@ -33,17 +34,21 @@ DynamicalSystem::DynamicalSystem() {
 #ifdef DEBUG
   std::cout << "DynamicalSystem constructor.\n";
 #endif
-  n = 0;
-  p = 0;
+  n = 1;
+  p = 1;
   nev = 0;
+  nExt = n*(n+1);
   ext = false;
-  nExt = 0;
-  jac = NULL;
-  dealloc_ = false;
+  pars = new BifurcationParameters(p);
+#ifdef CVODE25
+  jac = newDenseMat(n,n);
+#endif
+#ifdef CVODE26
+  jac = NewDenseMat(n,n);
+#endif
 }
 
-DynamicalSystem::DynamicalSystem(const DynamicalSystem& system)
-  : pars(new Parameters(*system.pars.get())) {
+DynamicalSystem::DynamicalSystem(const DynamicalSystem& system) {
 #ifdef DEBUG
   std::cout << "DynamicalSystem copy constructor.\n";
 #endif
@@ -58,19 +63,19 @@ DynamicalSystem::DynamicalSystem(const DynamicalSystem& system)
 #ifdef CVODE26
   jac = NewDenseMat(n,n);
 #endif
-  dealloc_ = true;
+  pars = new BifurcationParameters(*system.pars);
 }
 
 DynamicalSystem::~DynamicalSystem() {
 #ifdef DEBUG
   std::cout << "DynamicalSystem destructor.\n";
 #endif
-  if(dealloc_)
+  delete pars;
 #ifdef CVODE25
-    destroyMat(jac);
+  destroyMat(jac);
 #endif
 #ifdef CVODE26
-    DestroyMat(jac);
+  DestroyMat(jac);
 #endif
 }
 
@@ -193,19 +198,7 @@ int DynamicalSystem::EventsWrapper (realtype t, N_Vector x, realtype *event, voi
 void DynamicalSystem::EventsConstraints (realtype t, N_Vector x, int *constraints, void *sys) {
 }
 
-void DynamicalSystem::SetParameters (boost::shared_ptr<Parameters>& params) {
-  if(p != params->GetNumber())
-    throw Exception("Wrong number of parameters");
-  pars = params;
-}
-
-void DynamicalSystem::SetParameters (const Parameters& params) {
-  if(p != params.GetNumber())
-    throw Exception("Wrong number of parameters");
-  pars = boost::shared_ptr<Parameters>(params.Clone());
-}
-
-boost::shared_ptr<Parameters> DynamicalSystem::GetParameters () const {
+BifurcationParameters* DynamicalSystem::GetParameters () const {
   return pars;
 }
 
@@ -214,16 +207,14 @@ void DynamicalSystem::SetDimension(int n_) {
     return;
   n = n_;
   nExt = n*(n+1);
-  if(dealloc_)
 #ifdef CVODE25
-    destroyMat(jac);
+  destroyMat(jac);
   jac = newDenseMat(n,n);
 #endif
 #ifdef CVODE26
-    DestroyMat(jac);
+  DestroyMat(jac);
   jac = NewDenseMat(n,n);
 #endif
-  dealloc_ = true;
 }
 
 int DynamicalSystem::GetDimension() const {
@@ -274,8 +265,11 @@ int DynamicalSystem::GetNumberOfParameters() const {
 }
   
 void DynamicalSystem::SetNumberOfParameters(int p_) {
-  if(p_ >= 0)
+  if(p_ >= 0) {
     p = p_;
+    delete pars;
+    pars = new BifurcationParameters(p);
+  }
 }
 
 void DynamicalSystem::SetNumberOfEvents(int nev_) {

@@ -28,10 +28,7 @@
 #ifndef _BALDYNASTY_
 #define _BALDYNASTY_
 
-#include "balObject.h"
-#include "balParameters.h"
 #include "balDynamicalSystem.h"
-#include <cstring>
 #include <cvode/cvode.h>
 
 #define EPS (1.0E-4)

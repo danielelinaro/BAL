@@ -28,9 +28,6 @@
 #ifndef _BALDYNAMICALSYSTEM_
 #define _BALDYNAMICALSYSTEM_
 
-#include <string>
-#include <boost/shared_ptr.hpp>
-
 #include <sundials/sundials_types.h>
 #include <nvector/nvector_serial.h>
 #include <sundials/sundials_dense.h>
@@ -39,9 +36,8 @@
 #endif
 #include <cvode/cvode.h>
 
-#include "balCommon.h"
 #include "balObject.h"
-#include "balParameters.h"
+#include "balBifurcationParameters.h"
 
 namespace bal {
 
@@ -155,26 +151,22 @@ public:
   int GetDimension() const;
   int GetOriginalDimension() const;
   int GetNumberOfParameters() const;
-  // makes a copy of p
-  void SetParameters(const Parameters& params);
-  // just storestruct p
-  void SetParameters(boost::shared_ptr<Parameters>& params);
-  boost::shared_ptr<Parameters> GetParameters() const;
+  BifurcationParameters* GetParameters() const;
 
   /** Extends dynamical system dimensionality to calculate Lyapunov exponents.
    *  The algorithm used is described in Alan Wolf et al.
    *  "Determining Lyapunov exponents from a time series", Physica D: Nonlinear Phenomena, 16(3):285 – 317, 1985.
    */
   void Extend(bool extend);
-  /** Tells if the system is extended. */
+  /** Tells whether the system is extended. */
   bool IsExtended() const;
 
   virtual DynamicalSystem* Clone() const = 0;
 
 protected:
-  void SetDimension(int n_);
-  void SetNumberOfParameters(int p_);
-  void SetNumberOfEvents(int nev_);
+  virtual void SetDimension(int n);
+  virtual void SetNumberOfParameters(int p);
+  virtual void SetNumberOfEvents(int nev);
   
 private:
   int n;
@@ -184,7 +176,6 @@ private:
   int nExt;
   bool ext;
   
-  bool dealloc_;
 #ifdef CVODE25
   DenseMat jac;
 #endif
@@ -192,7 +183,7 @@ private:
   DlsMat jac;
 #endif
 
-  boost::shared_ptr<Parameters> pars;
+  BifurcationParameters *pars;
 };
 
 } // namespace bal
