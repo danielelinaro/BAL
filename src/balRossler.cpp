@@ -33,10 +33,7 @@ bal::DynamicalSystem* RosslerFactory() {
 
 namespace bal {
 
-Rossler::Rossler() {
-  SetDimension(3);
-  SetNumberOfParameters(3);
-  SetNumberOfEvents(GetDimension());
+Rossler::Rossler() : DynamicalSystem(3,3,3,false) {
   xderiv = N_VNew_Serial(GetDimension());
 }
 

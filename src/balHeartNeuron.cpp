@@ -34,7 +34,7 @@ bal::DynamicalSystem* HeartNeuronFactory() {
 
 namespace bal {
 
-HeartNeuron::HeartNeuron() : 
+HeartNeuron::HeartNeuron() : DynamicalSystem(3,3,1,false),
   C(0.5),gK2(30.),EK(-0.07),ENa(0.045),gNa(200.),E1(-0.046),g1(8.),tauNa(0.0405022) {
   A[0] = -150.;
   A[1] = 500.;
@@ -42,9 +42,6 @@ HeartNeuron::HeartNeuron() :
   B[0] = 0.0305;
   B[1] = 0.0333;
   B[2] = 0.018;
-  SetDimension(3);
-  SetNumberOfParameters(3);
-  SetNumberOfEvents(1);
   xderiv = N_VNew_Serial(GetDimension());
 }
 
@@ -56,9 +53,6 @@ HeartNeuron::HeartNeuron(const HeartNeuron& hn) : DynamicalSystem(hn),
   B[0] = hn.B[0];
   B[1] = hn.B[1];
   B[2] = hn.B[2];
-  SetDimension(3);
-  SetNumberOfParameters(3);
-  SetNumberOfEvents(1);
   xderiv = N_VNew_Serial(GetDimension());
   for(int i = 0; i < GetDimension(); i++)
     Ith(xderiv,i) = Ith(hn.xderiv,i);

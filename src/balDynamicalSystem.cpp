@@ -30,16 +30,21 @@
 
 namespace bal {
 
-DynamicalSystem::DynamicalSystem() {
+DynamicalSystem::DynamicalSystem(int ndim, int npar, int nevents, bool extended) : pars(npar) {
 #ifdef DEBUG
   std::cout << "DynamicalSystem constructor.\n";
 #endif
-  n = 1;
-  p = 1;
-  nev = 0;
+  if (ndim <= 0)
+    throw "DynamicalSystem::DynamicalSystem - number of dimensions must be positive";
+  if (npar < 0)
+    throw "DynamicalSystem::DynamicalSystem - number of parameters cannot be negative";
+  if (nevents < 0)
+    throw "DynamicalSystem::DynamicalSystem - number of events cannot be negative";
+  n = ndim;
+  p = npar;
   nExt = n*(n+1);
-  ext = false;
-  pars = new BifurcationParameters(p);
+  nev = nevents;
+  ext = extended;
 #ifdef CVODE25
   jac = newDenseMat(n,n);
 #endif
@@ -48,7 +53,7 @@ DynamicalSystem::DynamicalSystem() {
 #endif
 }
 
-DynamicalSystem::DynamicalSystem(const DynamicalSystem& system) {
+DynamicalSystem::DynamicalSystem(const DynamicalSystem& system) : pars(system.pars) {
 #ifdef DEBUG
   std::cout << "DynamicalSystem copy constructor.\n";
 #endif
@@ -63,14 +68,12 @@ DynamicalSystem::DynamicalSystem(const DynamicalSystem& system) {
 #ifdef CVODE26
   jac = NewDenseMat(n,n);
 #endif
-  pars = new BifurcationParameters(*system.pars);
 }
 
 DynamicalSystem::~DynamicalSystem() {
 #ifdef DEBUG
   std::cout << "DynamicalSystem destructor.\n";
 #endif
-  delete pars;
 #ifdef CVODE25
   destroyMat(jac);
 #endif
@@ -198,23 +201,8 @@ int DynamicalSystem::EventsWrapper (realtype t, N_Vector x, realtype *event, voi
 void DynamicalSystem::EventsConstraints (realtype t, N_Vector x, int *constraints, void *sys) {
 }
 
-BifurcationParameters* DynamicalSystem::GetParameters () const {
-  return pars;
-}
-
-void DynamicalSystem::SetDimension(int n_) {
-  if(n_ <= 0)
-    return;
-  n = n_;
-  nExt = n*(n+1);
-#ifdef CVODE25
-  destroyMat(jac);
-  jac = newDenseMat(n,n);
-#endif
-#ifdef CVODE26
-  DestroyMat(jac);
-  jac = NewDenseMat(n,n);
-#endif
+BifurcationParameters* DynamicalSystem::GetParameters () {
+  return &pars;
 }
 
 int DynamicalSystem::GetDimension() const {
@@ -264,14 +252,6 @@ int DynamicalSystem::GetNumberOfParameters() const {
   return p;
 }
   
-void DynamicalSystem::SetNumberOfParameters(int p_) {
-  if(p_ >= 0) {
-    p = p_;
-    delete pars;
-    pars = new BifurcationParameters(p);
-  }
-}
-
 void DynamicalSystem::SetNumberOfEvents(int nev_) {
   if(nev_ >= 0)
     nev = nev_;

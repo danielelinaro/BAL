@@ -35,11 +35,7 @@ bal::DynamicalSystem* DynastyFactory() {
 
 namespace bal {
 
-Dynasty::Dynasty() : DynamicalSystem() {
-  SetDimension(3);
-  SetNumberOfParameters(7);
-  //SetNumberOfEvents(GetDimension());
-  SetNumberOfEvents(1);
+Dynasty::Dynasty() : DynamicalSystem(3,7,1,false) {
   constraint_type = MINIMA;
   xderiv = N_VNew_Serial(GetDimension());
 }

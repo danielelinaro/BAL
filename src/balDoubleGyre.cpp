@@ -34,9 +34,7 @@ bal::DynamicalSystem* DoubleGyreFactory() {
 
 namespace bal {
 
-DoubleGyre::DoubleGyre() {
-  SetDimension(2);
-  SetNumberOfParameters(3);
+DoubleGyre::DoubleGyre() : DynamicalSystem(2,3,0,false) {
   pi = 4*atan(1.0);
 }
 

@@ -35,10 +35,7 @@ bal::DynamicalSystem* InterpSystemFactory() {
 
 namespace bal {
 
-InterpSystem::InterpSystem() {
-  //SetDimension(2);
-  SetNumberOfParameters(0);
-  //xderiv = N_VNew_Serial(GetDimension());
+InterpSystem::InterpSystem() : DynamicalSystem(2,0,0,false) {
   interpolator = NULL;
   backward = false;
   arclength = false;
@@ -65,7 +62,6 @@ InterpSystem::InterpSystem(const InterpSystem& interpsystem) : DynamicalSystem( 
 InterpSystem::~InterpSystem() {  
   if (_dealloc)
      delete interpolator;
-  //N_VDestroy_Serial(xderiv);
 }
 
 bool InterpSystem::HasEvents() const {

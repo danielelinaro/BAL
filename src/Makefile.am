@@ -11,11 +11,12 @@ libbal_la_SOURCES = balBifurcationParameters.cpp balBifurcationParameters.h \
 	balInterp1D.cpp balInterp1D.h balInterp2D.cpp balInterp2D.h \
 	balInterp3D.cpp balInterp3D.h balInterpolator.cpp balInterpolator.h \
 	balSolution.cpp balSolution.h \
-	balLorenz.cpp balLorenz.h balInterpSystem.cpp balInterpSystem.h \
+	balLorenz.cpp balLorenz.h \
 	balDynasty.cpp balDynasty.h balRossler.cpp balRossler.h \
 	balDoubleGyre.cpp balDoubleGyre.h
 
 #libbal_la_SOURCES += balODESolver.cpp balODESolver.h balBifurcationDiagram.cpp balBifurcationDiagram.h
+#libbal_la_SOURCES += balInterpSystem.cpp balInterpSystem.h
 
 libbal_la_LDFLAGS = -version-info ${LIB_VER}
 

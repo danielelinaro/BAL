@@ -33,10 +33,7 @@ bal::DynamicalSystem* LorenzFactory() {
 
 namespace bal {
 
-Lorenz::Lorenz() {
-  SetDimension(3);
-  SetNumberOfParameters(3);
-  SetNumberOfEvents(0);
+Lorenz::Lorenz() : DynamicalSystem(3,3,0,false) {
 }
 
 Lorenz::Lorenz(const Lorenz& lor) : DynamicalSystem(lor) {}

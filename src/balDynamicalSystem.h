@@ -59,7 +59,7 @@ namespace bal {
  */
 class DynamicalSystem : public Object {
 public:
-  DynamicalSystem();
+  DynamicalSystem(int ndim, int npar, int nevents, bool extended);
   DynamicalSystem(const DynamicalSystem& system);
   virtual ~DynamicalSystem();
 
@@ -151,7 +151,7 @@ public:
   int GetDimension() const;
   int GetOriginalDimension() const;
   int GetNumberOfParameters() const;
-  BifurcationParameters* GetParameters() const;
+  BifurcationParameters* GetParameters();
 
   /** Extends dynamical system dimensionality to calculate Lyapunov exponents.
    *  The algorithm used is described in Alan Wolf et al.
@@ -164,8 +164,6 @@ public:
   virtual DynamicalSystem* Clone() const = 0;
 
 protected:
-  virtual void SetDimension(int n);
-  virtual void SetNumberOfParameters(int p);
   virtual void SetNumberOfEvents(int nev);
   
 private:
@@ -183,7 +181,7 @@ private:
   DlsMat jac;
 #endif
 
-  BifurcationParameters *pars;
+  BifurcationParameters pars;
 };
 
 } // namespace bal

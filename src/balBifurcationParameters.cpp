@@ -42,9 +42,9 @@ BifurcationParameters::BifurcationParameters(int np) : Parameters(np), plower(np
   std::cout << "BifurcationParameters constructor.\n";
 }
 
-BifurcationParameters::BifurcationParameters(const BifurcationParameters& bp) : Parameters(bp.p),
-										plower(bp.p),
-										pupper(bp.p),
+BifurcationParameters::BifurcationParameters(const BifurcationParameters& bp) : Parameters(bp),
+										plower(bp.plower),
+										pupper(bp.pupper),
 										steps(new double[bp.p]),
 										nsteps(new int[bp.p]),
 										isteps(new int[bp.p]) {

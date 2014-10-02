@@ -36,13 +36,10 @@ namespace bal {
 
 const double HindmarshRose::xrest = -1.6;
 
-HindmarshRose::HindmarshRose() {
+HindmarshRose::HindmarshRose() : DynamicalSystem(3,4,3,false) {
 #ifdef DEBUG
   std::cout << "HindmarshRose constructor.\n";
 #endif
-  SetDimension(3);
-  SetNumberOfParameters(4);
-  SetNumberOfEvents(GetDimension());
   xderiv = N_VNew_Serial(GetDimension());
 }
 

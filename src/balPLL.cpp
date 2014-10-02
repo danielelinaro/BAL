@@ -28,14 +28,41 @@
 #include <cmath>
 #include "balPLL.h"
 
+#ifndef WITHPHIERR
+#define PLL_NEV 3
+#else
+#define PLL_NEV 0
+#endif
+#ifdef WITHPHIERR
+// in this case, we have an additional state variable, PhiErr
+#ifdef EXTEND
+// we save the value of icp (the current in the charge pump)
+// and divout (the output of the frequency divider)
+#define PLL_NDIM 7
+#else
+#define PLL_NDIM 5
+#endif
+#else
+#ifdef EXTEND
+// we save the value of icp (the current in the charge pump)
+// and divout (the output of the frequency divider)
+#define PLL_NDIM 6
+#else
+// the number of state variables of the VCO
+#define PLL_NDIM 4
+#endif
+#endif
+#define PLL_NPAR 14
+
 bal::DynamicalSystem* PLLFactory() {
   return new bal::PLL;
 }
 
 namespace bal {
 
-const int PLL::npar = 14;
-const char * PLL::parname[14] = {"fref","r1","fvco","vdd","rho0","rhoap","k0","krho","kap","alpha","kvcoa","kvcob","kvcoc","tuning"};
+const int PLL::npar = PLL_NPAR;
+const char * PLL::parname[PLL_NPAR] = {"fref","r1","fvco","vdd","rho0",
+        "rhoap","k0","krho","kap","alpha","kvcoa","kvcob","kvcoc","tuning"};
 
 bool PLL::HasJacobian() const {
   return false;
@@ -49,30 +76,7 @@ bool PLL::HasEventsConstraints() const {
   return true;
 }
 
-PLL::PLL() : pi(3.141592653589793) {
-#ifndef WITHPHIERR
-  SetNumberOfEvents(3);
-#else
-  SetNumberOfEvents(0);
-#endif
-	
-  // the number of state variables of the VCO
-  int ndim = 4;
-
-#ifdef WITHPHIERR
-  // in this case, we have an additional state variable, PhiErr
-  ndim++;
-#endif
-
-#ifdef EXTEND
-  // we save the value of icp (the current in the charge pump)
-  // and divout (the output of the frequency divider)
-  ndim += 2;
-#endif
-
-  SetDimension(ndim);
-  SetNumberOfParameters(npar);
-  
+PLL::PLL() : DynamicalSystem(PLL_NDIM, PLL_NPAR, PLL_NEV, false), pi(3.141592653589793) {
   // fixed parameters
   dt = 1e-9;
   tau_d = 0.0;
