@@ -31,28 +31,34 @@
 
 namespace bal {
 
-Parameters::Parameters(int np) : p(np), pars(new double[np]) {
+Parameters::Parameters(int np) : p(np) {
 #ifdef DEBUG
   std::cout << "Parameters constructor.\n";
 #endif
-  for(int i=0; i<p; i++)
-    pars[i] = 0.0;
+  if (p) {
+    pars = new double[p];
+    for(int i=0; i<p; i++)
+      pars[i] = 0.0;
+  }
 }
 
-Parameters::Parameters(const Parameters& params) : p(params.p), pars(new double[params.p]) {
+Parameters::Parameters(const Parameters& params) : p(params.p) {
 #ifdef DEBUG
   std::cout << "Parameters copy constructor.\n";
 #endif
-  for(int i=0; i<p; i++)
-    pars[i] = params.pars[i];
-  std::cout << *this << std::endl;
+  if (p) {
+    pars = new double[p];
+    for(int i=0; i<p; i++)
+      pars[i] = params.pars[i];
+  }
 }
 
 Parameters::~Parameters () {
 #ifdef DEBUG
   std::cout << "Parameters destructor.\n";
 #endif
-  delete pars;
+  if (p)
+    delete pars;
 }
 
 int Parameters::GetNumber () const {
@@ -60,18 +66,22 @@ int Parameters::GetNumber () const {
 }
 
 double& Parameters::operator[] (int k) {
-  return pars[k];
+  if (k>=0 && k<p)
+    return pars[k];
+  throw "Parameters::operator[] - index out of bounds";
 }
 
 void Parameters::operator= (const Parameters& params) {
   if(p != params.p)
-    throw Exception("Wrong number of parameters in DynamicalSystem::SetParameters");
+    throw Exception("Parameters::operator= - wrong number of parameters");
   for(int i=0; i<p; i++)
     pars[i] = params.pars[i];
 }
 
 double& Parameters::At (int k) {
-  return pars[k];
+  if (k>=0 && k<p)
+    return pars[k];
+  throw "Parameters::At - index out of bounds";
 }
 
 double* Parameters::GetParameters () const {
@@ -82,9 +92,11 @@ Parameters* Parameters::Clone() const {
   return new Parameters(*this);
 }
 
-void Parameters::CopyValues(Parameters* _par){
-  for (int i = 0; i < _par->GetNumber(); i++)
-    pars[i] = _par->At(i);
+void Parameters::CopyValues(const Parameters* params){
+  if(p != params->p)
+    throw Exception("Parameters::CopyValues - wrong number of parameters");
+  for (int i=0; i<p; i++)
+    pars[i] = params->pars[i];
 }
 
 std::ostream& operator<< (std::ostream& os, Parameters& pars) {

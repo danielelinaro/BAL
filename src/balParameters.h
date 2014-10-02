@@ -51,7 +51,7 @@ namespace bal {
  */
 class Parameters : public Object {
 public:
-  Parameters (int numpars);
+  Parameters (int numpars = 0);
   Parameters (const Parameters& param);
   virtual ~Parameters ();
 
@@ -65,7 +65,7 @@ public:
 
   virtual Parameters* Clone() const;
 
-  void CopyValues(Parameters* _par);
+  void CopyValues(const Parameters* _par);
 
   friend std::ostream& operator<< (std::ostream& os, Parameters& pars);
 

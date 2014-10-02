@@ -36,7 +36,7 @@ BifurcationParameters::BifurcationParameters(int np) : Parameters(np), plower(np
 						       isteps(new int[np]) {
   for(int i=0; i<np; i++) {
     steps[i] = 0.0;
-    nsteps[i] = 1;
+    nsteps[i] = 0;
     isteps[i] = 0;
   }
   std::cout << "BifurcationParameters constructor.\n";
@@ -70,11 +70,15 @@ void BifurcationParameters::SetParameterBounds(const Parameters& lower, const Pa
 }
 
 void BifurcationParameters::SetIthParameterLowerBound(int i, double p) {
+  if (i<0 || i>=plower.GetNumber())
+    throw "BifurcationParameters::SetIthParameterLowerBound - index out of bounds";
   plower[i] = p;
   Setup();
 }
 
 void BifurcationParameters::SetIthParameter(int i, double p) {
+  if (i<0 || i>=plower.GetNumber())
+    throw "BifurcationParameters::SetIthParameter - index out of bounds";
   plower[i] = p;
   pupper[i] = p;
   nsteps[i] = 1;
@@ -82,11 +86,15 @@ void BifurcationParameters::SetIthParameter(int i, double p) {
 }
 
 void BifurcationParameters::SetIthParameterUpperBound(int i, double p) {
+  if (i<0 || i>=pupper.GetNumber())
+    throw "BifurcationParameters::SetIthParameterUpperBound - index out of bounds";
   pupper[i] = p;
   Setup();
 }
 
 double BifurcationParameters::GetIthParameterLowerBound(int i) {
+  if (i<0 || i>=plower.GetNumber())
+    throw "BifurcationParameters::GetIthParameterLowerBound - index out of bounds";
   return plower[i];
 }
 
@@ -95,16 +103,16 @@ double BifurcationParameters::GetIthParameter(int i) {
 }
 
 double BifurcationParameters::GetIthParameterUpperBound(int i) {
+  if (i<0 || i>=pupper.GetNumber())
+    throw "BifurcationParameters::GetIthParameterUpperBound - index out of bounds";
   return pupper[i];
 }
 
-bool BifurcationParameters::SetNumberOfSteps(int i, int s) {
-  if(i>=0 && i<p && s>0)
-    nsteps[i] = s;
-  else
-    return false;
+void BifurcationParameters::SetNumberOfSteps(int i, int s) {
+  if (i<0 || i>=plower.GetNumber())
+    throw "BifurcationParameters::SetNumberOfSteps - index out of bounds";
+  nsteps[i] = s;
   Setup();
-  return true;
 }
 
 void BifurcationParameters::SetNumberOfSteps(const int *s) {
@@ -114,9 +122,9 @@ void BifurcationParameters::SetNumberOfSteps(const int *s) {
 }
 
 int BifurcationParameters::GetNumberOfSteps(int i) const {
-  if(i>=0 && i<p)
-    return nsteps[i];
-  return -1;
+  if (i<0 || i>=plower.GetNumber())
+    throw "BifurcationParameters::GetNumberOfSteps - index out of bounds";
+  return nsteps[i];
 }
 
 int BifurcationParameters::GetTotalNumberOfTuples() const {

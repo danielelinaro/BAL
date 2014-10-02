@@ -67,7 +67,7 @@ namespace bal {
  */
 class BifurcationParameters : public Parameters {
  public:
-  BifurcationParameters(int np);
+  BifurcationParameters(int np = 0);
   BifurcationParameters(const BifurcationParameters& bp);
   ~BifurcationParameters();
 
@@ -79,7 +79,7 @@ class BifurcationParameters : public Parameters {
   double GetIthParameter(int i);
   double GetIthParameterLowerBound(int i);
   
-  bool SetNumberOfSteps(int i, int s);
+  void SetNumberOfSteps(int i, int s);
   void SetNumberOfSteps(const int *s);
   int GetNumberOfSteps(int i) const;
   

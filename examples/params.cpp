@@ -43,6 +43,13 @@ int main(int argc, char *argv[]) {
   catch(std::bad_alloc e) {
     std::cerr << e.what() << std::endl;
   }
+  try {
+    Parameters wrong;
+    wrong[0] = 1.;
+  }
+  catch(char const *e) {
+    std::cerr << e << std::endl;
+  }
   return 0;
 }
 
