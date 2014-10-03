@@ -28,9 +28,6 @@
 #ifndef _BALSOLUTION_
 #define _BALSOLUTION_
 
-#include <string>
-#include <boost/shared_ptr.hpp>
-#include <boost/shared_array.hpp>
 #include "balObject.h"
 #include "balCommon.h"
 #include "balParameters.h"
@@ -48,7 +45,8 @@ namespace bal {
  */
 class Solution : public Object {
 public:
-  Solution(int r, int c, realtype *buf);
+  Solution(int r, int c, realtype *buf, const Parameters *p);
+  Solution(int r, int c, realtype *buf, const Parameters& p);
   Solution(const Solution& solution);
   virtual ~Solution();
 
@@ -58,7 +56,7 @@ public:
   void SetSize(int r, int c);
   
   Parameters* GetParameters() const;
-  void SetParameters(const Parameters *p);
+  //void SetParameters(const Parameters *p);
   
   realtype* GetData() const;
   
@@ -75,9 +73,9 @@ public:
   bool operator< (const Solution& sol) const;
 
  private:
-  boost::shared_ptr<Parameters> parameters;
-  boost::shared_array<realtype> buffer;
-  boost::shared_array<realtype> lyapunov_exponents;
+  Parameters *parameters;
+  realtype *buffer;
+  realtype *lyapunov_exponents;
   int spectrum_dimension;
   int rows, columns;
   int nturns;
