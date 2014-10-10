@@ -57,13 +57,13 @@ realtype DoubleGyre::df(realtype t, realtype x, realtype omega, realtype eps) co
   return 2*eps*s*x + (1-2*eps*s);
 }
 
-int DoubleGyre::RHS (realtype t, N_Vector x, N_Vector xdot, void * data) {
+int DoubleGyre::RHS (realtype t, N_Vector x, N_Vector xdot, void *sys) {
   realtype x1, x2;
   realtype A, omega, eps;
   realtype fx, dfx;
-  Parameters *parameters;
-  
-  parameters = (Parameters *) data;
+  DynamicalSystem *ds = static_cast<DynamicalSystem*>(sys);
+  Parameters *parameters = ds->GetParameters();
+
   A = parameters->At(0);
   omega = parameters->At(1);
   eps = parameters->At(2);
@@ -82,11 +82,11 @@ int DoubleGyre::RHS (realtype t, N_Vector x, N_Vector xdot, void * data) {
 
 #ifdef CVODE25
 int DoubleGyre::Jacobian (long int N, DenseMat J, realtype t, N_Vector x, N_Vector fy, 
-				void *jac_data, N_Vector tmp1, N_Vector tmp2, N_Vector tmp3) {
+				void *sys, N_Vector tmp1, N_Vector tmp2, N_Vector tmp3) {
 #endif
 #ifdef CVODE26
 int DoubleGyre::Jacobian (int N, realtype t, N_Vector x, N_Vector fy, DlsMat J, 
-				void *jac_data, N_Vector tmp1, N_Vector tmp2, N_Vector tmp3) {
+				void *sys, N_Vector tmp1, N_Vector tmp2, N_Vector tmp3) {
 #endif
   return CV_SUCCESS;
 }

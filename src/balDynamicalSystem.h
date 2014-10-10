@@ -101,7 +101,7 @@ public:
       \param t Time instant in which the jacobian matrix has to be evaluated (only for time-variant systems).
       \param x Current state vector.
       \param J Result of jacobian matrix evaluation.
-      \param jac_data Vector of system's parameters values.
+      \param sys A pointer to the DynamicalSystem object.
   */
   virtual int Jacobian (int N, realtype t, N_Vector x, N_Vector fy, 
 			DlsMat J, void *sys, N_Vector tmp1, N_Vector tmp2, N_Vector tmp3);

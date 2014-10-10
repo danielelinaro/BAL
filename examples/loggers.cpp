@@ -43,8 +43,7 @@ int main(int argc, char *argv[]) {
   pars[3] = 4.0;
   
   // Solution
-  Solution sol(rows, columns, buffer);
-  sol.SetParameters(&pars);
+  Solution sol(rows, columns, buffer, pars);
 
   int copies = 250;
   // H5Logger

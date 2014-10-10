@@ -31,16 +31,14 @@ using namespace bal;
 
 int main(int argc, char *argv[]) {
 	
-  // parameters
-  Parameters pars(3);
-  pars[0] = 10.0;
-  pars[1] = 28.0;
-  pars[2] = 8./3.;
-  
   // Lorenz
   Lorenz lor;
-  lor.SetParameters(pars);
   lor.Extend(true);
+  // parameters
+  Parameters *pars = lor.GetParameters();
+  pars->At(0) = 10.0;
+  pars->At(1) = 28.0;
+  pars->At(2) = 8./3.;
 
   double x0[12] = {0,1,0,1,0,0,0,1,0,0,0,1};
   ODESolver solver;
@@ -51,8 +49,6 @@ int main(int argc, char *argv[]) {
   solver.SetIntegrationMode(TRAJ);
   solver.SetX0(x0);
   solver.Solve();
-
-  return 0;
 
   Solution *sol = solver.GetSolution();
   int r,c,i,j;

@@ -51,12 +51,12 @@ Dynasty::~Dynasty() {
   N_VDestroy_Serial(xderiv);
 }
 
-int Dynasty::RHS (realtype t, N_Vector x, N_Vector xdot, void * data) {
+int Dynasty::RHS (realtype t, N_Vector x, N_Vector xdot, void *sys) {
   realtype x1, x2, x3;
   realtype r, e, b, d, g, h, q;
-  Parameters *parameters;
-  
-  parameters = (Parameters*) data;
+  DynamicalSystem *ds = static_cast<DynamicalSystem*>(sys);
+  Parameters *parameters = ds->GetParameters();
+
   r = exp(parameters->At(0));
   e = parameters->At(1);
   b = parameters->At(2);
@@ -102,22 +102,22 @@ int Dynasty::RHS (realtype t, N_Vector x, N_Vector xdot, void * data) {
 
 #ifdef CVODE25
 int Dynasty::Jacobian (long int N, DenseMat J, realtype t, N_Vector x, N_Vector fy, 
-			  void *jac_data, N_Vector tmp1, N_Vector tmp2, N_Vector tmp3) {
+			  void *sys, N_Vector tmp1, N_Vector tmp2, N_Vector tmp3) {
 #endif
 #ifdef CVODE26
 int Dynasty::Jacobian (int N, realtype t, N_Vector x, N_Vector fy, DlsMat J, 
-			  void *jac_data, N_Vector tmp1, N_Vector tmp2, N_Vector tmp3) {
+			  void *sys, N_Vector tmp1, N_Vector tmp2, N_Vector tmp3) {
 #endif
   realtype x1, x2, x3;
   realtype r, e, b, d, g, h, q;
   realtype denx, deny, denxsquare, denysquare;
-  Parameters *parameters;
+  DynamicalSystem *ds = static_cast<DynamicalSystem*>(sys);
+  Parameters *parameters = ds->GetParameters();
   
   x1 = Ith (x, 0);
   x2 = Ith (x, 1);
   x3 = Ith (x, 2);
  
-  parameters = (Parameters*) jac_data;
   r = exp(parameters->At(0));
   e = parameters->At(1);
   b = parameters->At(2);

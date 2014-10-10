@@ -71,7 +71,8 @@ ODESolver::ODESolver(const ODESolver& solver) {
 #endif
   rows = 0;
   nvectors_allocated = false;
-  SetDynamicalSystem(dynamic_cast<DynamicalSystem*>(solver.dynsys->Clone()));
+  //SetDynamicalSystem(dynamic_cast<DynamicalSystem*>(solver.dynsys->Clone()));
+  SetDynamicalSystem(solver.dynsys.get());
   for(int i=0; i<dynsys->GetDimension(); i++)
     Ith(x0,i) = Ith(solver.x0,i);
   reltol = solver.reltol;
@@ -177,16 +178,16 @@ boost::shared_ptr<DynamicalSystem> ODESolver::GetDynamicalSystem() const {
   return dynsys;
 }
 
-void ODESolver::SetDynamicalSystemParameters(boost::shared_ptr<Parameters>& par){
-  dynsys->SetParameters(par);
-  params = par;
-}
+//void ODESolver::SetDynamicalSystemParameters(boost::shared_ptr<Parameters>& par){
+//  dynsys->SetParameters(par);
+//  params = par;
+//}
 
 Solution* ODESolver::GetSolution() const {
   if(rows == 0)
     return NULL;
-  Solution *solution = new Solution(rows,cols,buffer.get());
-  solution->SetParameters(dynsys->GetParameters().get());
+  Solution *solution = new Solution(rows,cols,buffer.get(),dynsys->GetParameters());
+  //solution->SetParameters(dynsys->GetParameters().get());
   if (mode == LYAP)
     solution->SetLyapunovExponents(lyapunov_exponents.get());
   else 
@@ -383,7 +384,7 @@ realtype* ODESolver::GetXEnd() const {
 }
 
 void ODESolver::SetX0(N_Vector X0, int n) {
-  if(X0 != NULL && dynsys != NULL) {
+  if(X0 != NULL) {
     int stop;
     if(n == -1)
       stop = dynsys->GetDimension();
@@ -395,7 +396,7 @@ void ODESolver::SetX0(N_Vector X0, int n) {
 }
 
 void ODESolver::SetX0(realtype * X0, int n) {
-  if(X0 != NULL && dynsys != NULL) {
+  if(X0 != NULL) {
     int stop;
     if(n == -1)
       stop = dynsys->GetDimension();

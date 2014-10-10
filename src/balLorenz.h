@@ -47,14 +47,14 @@ class Lorenz : public DynamicalSystem {
   Lorenz(const Lorenz& lor);
   virtual ~Lorenz();
   
-  int RHS (realtype t, N_Vector x, N_Vector xdot, void * data);
+  int RHS (realtype t, N_Vector x, N_Vector xdot, void *sys);
 #ifdef CVODE25
   int Jacobian (long int N, DenseMat J, realtype t, N_Vector x, N_Vector fy, 
-		void *jac_data, N_Vector tmp1, N_Vector tmp2, N_Vector tmp3);
+		void *sys, N_Vector tmp1, N_Vector tmp2, N_Vector tmp3);
 #endif
 #ifdef CVODE26
   int Jacobian (int N, realtype t, N_Vector x, N_Vector fy, DlsMat J, 
-		void *jac_data, N_Vector tmp1, N_Vector tmp2, N_Vector tmp3);
+		void *sys, N_Vector tmp1, N_Vector tmp2, N_Vector tmp3);
 #endif
 
   bool HasJacobian() const;

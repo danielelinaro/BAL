@@ -47,12 +47,12 @@ Rossler::~Rossler() {
   N_VDestroy_Serial(xderiv);
 }
 
-int Rossler::RHS (realtype t, N_Vector x, N_Vector xdot, void * data) {
+int Rossler::RHS (realtype t, N_Vector x, N_Vector xdot, void *sys) {
   realtype x1, x2, x3;
   realtype a, b, c;
-  Parameters * parameters;
-  
-  parameters = (Parameters *) data;
+  DynamicalSystem *ds = static_cast<DynamicalSystem*>(sys);
+  Parameters *parameters = ds->GetParameters();
+
   a = parameters->At(0);
   b = parameters->At(1);
   c = parameters->At(2);
@@ -69,21 +69,21 @@ int Rossler::RHS (realtype t, N_Vector x, N_Vector xdot, void * data) {
 
 #ifdef CVODE25
 int Rossler::Jacobian (long int N, DenseMat J, realtype t, N_Vector x, N_Vector fy, 
-			  void *jac_data, N_Vector tmp1, N_Vector tmp2, N_Vector tmp3) {
+			  void *sys, N_Vector tmp1, N_Vector tmp2, N_Vector tmp3) {
 #endif
 #ifdef CVODE26
 int Rossler::Jacobian (int N, realtype t, N_Vector x, N_Vector fy, DlsMat J, 
-			  void *jac_data, N_Vector tmp1, N_Vector tmp2, N_Vector tmp3) {
+			  void *sys, N_Vector tmp1, N_Vector tmp2, N_Vector tmp3) {
 #endif
   realtype a, b, c;
   realtype x1, x2, x3;
-  Parameters * parameters;
+  DynamicalSystem *ds = static_cast<DynamicalSystem*>(sys);
+  Parameters *parameters = ds->GetParameters();
   
   x1 = Ith (x, 0);
   x2 = Ith (x, 1);
   x3 = Ith (x, 2);
   
-  parameters = (Parameters *) jac_data;
   a = parameters->At(0);
   b = parameters->At(1);
   c = parameters->At(2);

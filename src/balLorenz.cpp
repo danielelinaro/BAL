@@ -26,6 +26,7 @@
  */
 
 #include "balLorenz.h"
+#include <iostream>
 
 bal::DynamicalSystem* LorenzFactory() {
   return new bal::Lorenz;
@@ -36,7 +37,11 @@ namespace bal {
 Lorenz::Lorenz() : DynamicalSystem(3,3,0,false) {
 }
 
-Lorenz::Lorenz(const Lorenz& lor) : DynamicalSystem(lor) {}
+Lorenz::Lorenz(const Lorenz& lor) : DynamicalSystem(lor) {
+#ifdef DEBUG
+  std::cout << "Lorenz copy constructor.\n";
+#endif
+}
 
 Lorenz::~Lorenz() {}
 
@@ -44,15 +49,15 @@ bool Lorenz::HasJacobian() const {
   return (IsExtended() ? false : true);
 }
 
-int Lorenz::RHS (realtype t, N_Vector x, N_Vector xdot, void * data) {
+int Lorenz::RHS (realtype t, N_Vector x, N_Vector xdot, void *sys) {
   // the state of the system
   realtype x1, x2, x3;
   // the parameters
   realtype sigma, rho, beta;
-  Parameters *parameters;
+  DynamicalSystem *ds = static_cast<DynamicalSystem*>(sys);
+  Parameters *parameters = ds->GetParameters();
   
   // parameters
-  parameters = (Parameters *) data;
   sigma = parameters->At(0);
   rho = parameters->At(1);
   beta = parameters->At(2);
@@ -70,21 +75,21 @@ int Lorenz::RHS (realtype t, N_Vector x, N_Vector xdot, void * data) {
 
 #ifdef CVODE25
 int Lorenz::Jacobian (long int N, DenseMat J, realtype t, N_Vector x, N_Vector fy, 
-			 void *jac_data, N_Vector tmp1, N_Vector tmp2, N_Vector tmp3) {
+			 void *sys, N_Vector tmp1, N_Vector tmp2, N_Vector tmp3) {
 #endif
 #ifdef CVODE26
 int Lorenz::Jacobian (int N, realtype t, N_Vector x, N_Vector fy, DlsMat J, 
-			 void *jac_data, N_Vector tmp1, N_Vector tmp2, N_Vector tmp3) {
+			 void *sys, N_Vector tmp1, N_Vector tmp2, N_Vector tmp3) {
 #endif
   realtype x1, x2, x3;
   realtype sigma, rho, beta;
-  Parameters * parameters;
+  DynamicalSystem *ds = static_cast<DynamicalSystem*>(sys);
+  Parameters *parameters = ds->GetParameters();
   
   x1 = Ith (x, 0);
   x2 = Ith (x, 1);
   x3 = Ith (x, 2);
  
-  parameters = (Parameters *) jac_data;
   sigma = parameters->At(0);
   rho = parameters->At(1);
   beta = parameters->At(2);

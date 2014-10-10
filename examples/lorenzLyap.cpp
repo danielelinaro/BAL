@@ -42,40 +42,33 @@ using namespace bal;
 
 
 int main(int argc, char *argv[]) {
-	
+  // Lorenz
+  Lorenz lor;
+  
   // parameters
-  Parameters * pars = Parameters::Create();
-  pars->SetNumber(3);
+  Parameters *pars = lor.GetParameters();
   pars->At(0) = 16;
   pars->At(1) = 45.92;
   pars->At(2) = 4.0;
   
-  // Lorenz
-  Lorenz *lor = Lorenz::Create();
-  lor->SetParameters(pars);
-  
   // Setting ODESolver fields 
   realtype x0[] = {10,1,0};
-  ODESolver * solver = ODESolver::Create();
-  solver->SetDynamicalSystem(lor);
-  solver->SetTransientDuration(1000);
-  solver->SetFinalTime(1.1e4);
-  solver->SetTimeStep(5);
-  solver->SetLyapunovTimeStep(5);
-  solver->SetIntegrationMode(LYAP);
-  solver->SetX0(x0);
+  ODESolver solver;
+  solver.SetDynamicalSystem(&lor);
+  solver.SetIntegrationMode(LYAP);
+  solver.SetTimeStep(5);
+  solver.SetTransientDuration(1000);
+  solver.SetFinalTime(1.1e4);
+  solver.SetLyapunovTimeStep(5);
+  solver.SetX0(x0);
 	
   // Calculating Lyapunov Exponents
-  solver->Solve();
+  solver.Solve();
   
-  for(int i=0; i<lor->GetOriginalDimension(); i++){
-    printf("%e ",solver->GetLyapunovExponents()[i]);
+  for(int i=0; i<lor.GetOriginalDimension(); i++){
+    printf("%e ",solver.GetLyapunovExponents()[i]);
   }
   printf("\n");
-  
-  solver->Destroy();
-  lor->Destroy();
-  pars->Destroy();
   
   return 0;
 }

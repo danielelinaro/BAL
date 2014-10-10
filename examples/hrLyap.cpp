@@ -32,49 +32,40 @@ using namespace bal;
 
 // TEST balODESolver calculating Lyapunov Spectrum
 int main(int argc, char *argv[]) {
+ 
+  HindmarshRose hr;
 
-  /** parameters **/
+  /** initial condition **/
   realtype x0[3] = {0.5,0.5,0.5};
-  BifurcationParameters * bp = BifurcationParameters::Create();
-  bp->SetNumber(4);
-  
-  // chaos
-  //bp->At(0) = 2.96;
-  //bp->At(1) = 3.0;
-  
-  // limit cycle 
-  //bp->At(0) = 4.0;
-  //bp->At(1) = 5.0;
-     
-  // equilibrium
-  bp->At(0) = 4.0;
-  bp->At(1) = 1.0;
 
-  bp->At(2) = 0.01;
-  bp->At(3) = 4.0;
+  Parameters *pars = hr.GetParameters();
+  /** parameters **/
+  // chaos
+  //pars->At(0) = 2.96;
+  //pars->At(1) = 3.0;
+  // limit cycle 
+  //pars->At(0) = 4.0;
+  //pars->At(1) = 5.0;
+  // equilibrium
+  pars->At(0) = 4.0;
+  pars->At(1) = 1.0;
+  pars->At(2) = 0.01;
+  pars->At(3) = 4.0;
+   
+  ODESolver solver;
+  solver.SetDynamicalSystem(&hr);
+  solver.SetIntegrationMode(LYAP);
+  solver.SetTimeStep(0.01);
+  solver.SetTransientDuration(500);
+  solver.SetLyapunovTimeStep(0.5);
+  solver.SetFinalTime(2e3);
+  solver.SetX0(x0);
+  solver.Solve();
   
-  HindmarshRose * hr = HindmarshRose::Create();
-  hr->SetParameters(bp);
-  
-  ODESolver * solver = ODESolver::Create();
-  solver->SetDynamicalSystem(hr);
-  solver->SetIntegrationMode(LYAP);
-  solver->SetTimeStep(0.01);
-  solver->SetTransientDuration(500);
-  solver->SetLyapunovTimeStep(0.5);
-  solver->SetFinalTime(2e3);
-  solver->SetX0(x0);
-  
-  solver->Solve();
-  
-  for(int i=0; i<hr->GetOriginalDimension(); i++){
-    printf("%e ",solver->GetLyapunovExponents()[i]);
+  for(int i=0; i<hr.GetOriginalDimension(); i++){
+    printf("%e ",solver.GetLyapunovExponents()[i]);
   }
   printf("\n");
-  
-  solver->Destroy();
-  hr->Destroy();
-  bp->Destroy();
   
   return 0;
 }

@@ -29,17 +29,14 @@ using namespace bal;
 
 // TEST ODESolver
 int main(int argc, char *argv[]) {
-	
-  // parameters
-  Parameters pars(4);
-  pars[0] = 2.5;
-  pars[1] = 3.5;
-  pars[2] = 0.01;
-  pars[3] = 4.0;
-  
   // HindmarshRose
   HindmarshRose hr;
-  hr.SetParameters(&pars);
+  // parameters
+  Parameters *pars = hr.GetParameters();
+  pars->At(0) = 2.5;
+  pars->At(1) = 3.5;
+  pars->At(2) = 0.01;
+  pars->At(3) = 4.0;
   
   ODESolver solver;
   solver.SetDynamicalSystem(&hr);

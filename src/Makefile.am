@@ -1,5 +1,7 @@
 
-AM_CPPFLAGS = @CVODEVERSION@ -DDEBUG -g -O0
+AM_CPPFLAGS = @CVODEVERSION@ -DDEBUG -g3 -O0
+AM_CFLAGS = -g3 -O0
+AM_CXXFLAGS = -g3 -O0
 
 lib_LTLIBRARIES = libbal.la
 libbal_la_SOURCES = balBifurcationParameters.cpp balBifurcationParameters.h \
@@ -15,7 +17,8 @@ libbal_la_SOURCES = balBifurcationParameters.cpp balBifurcationParameters.h \
 	balDynasty.cpp balDynasty.h balRossler.cpp balRossler.h \
 	balDoubleGyre.cpp balDoubleGyre.h
 
-#libbal_la_SOURCES += balODESolver.cpp balODESolver.h balBifurcationDiagram.cpp balBifurcationDiagram.h
+libbal_la_SOURCES += balODESolver.cpp balODESolver.h
+#libbal_la_SOURCES += balBifurcationDiagram.cpp balBifurcationDiagram.h
 #libbal_la_SOURCES += balInterpSystem.cpp balInterpSystem.h
 
 libbal_la_LDFLAGS = -version-info ${LIB_VER}
@@ -26,5 +29,6 @@ include_HEADERS = balBifurcationParameters.h \
 	balPLL.h balInterp1D.h balInterp2D.h balInterp3D.h balInterpolator.h balSolution.h \
 	balLorenz.h balDynasty.h balRossler.h balRandomLibrary.h balDoubleGyre.h
 
-#include_HEADERS += balODESolver.h balBifurcationDiagram.h
+include_HEADERS += balODESolver.h
+#include_HEADERS += balBifurcationDiagram.h
 

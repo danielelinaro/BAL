@@ -79,7 +79,7 @@ int InterpSystem::SetInterpolator(Interpolator *interp) {
   return 0;
 }
 
-int InterpSystem::RHS (realtype t, N_Vector x, N_Vector xdot, void * data) { 
+int InterpSystem::RHS (realtype t, N_Vector x, N_Vector xdot, void *sys) { 
   int i;
   int n = GetDimension();
   // NV_DATA_S gets a pointer to data conteined in N_Vector object

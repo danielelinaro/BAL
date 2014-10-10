@@ -112,13 +112,14 @@ PLL::PLL() : DynamicalSystem(PLL_NDIM, PLL_NPAR, PLL_NEV, false), pi(3.141592653
 PLL::~PLL() {
 }
 
-int PLL::RHS (realtype t, N_Vector X, N_Vector Xdot, void * data) {
+int PLL::RHS (realtype t, N_Vector X, N_Vector Xdot, void *sys) {
   realtype x, y, r, w;
 #ifdef WITHPHIERR
   realtype phierr;
 #endif
   realtype icp;
-  Parameters * parameters = (Parameters *) data;
+  DynamicalSystem *ds = static_cast<DynamicalSystem*>(sys);
+  Parameters *parameters = ds->GetParameters();
 
   fREF = parameters->At(0);
   T = 1.0/fREF;
@@ -213,11 +214,11 @@ int PLL::RHS (realtype t, N_Vector X, N_Vector Xdot, void * data) {
 
 #ifdef CVODE25
 int PLL::Jacobian (long int N, DenseMat J, realtype t, N_Vector x, N_Vector fy, 
-		      void *jac_data, N_Vector tmp1, N_Vector tmp2, N_Vector tmp3) {
+		      void *sys, N_Vector tmp1, N_Vector tmp2, N_Vector tmp3) {
 #endif
 #ifdef CVODE26
 int PLL::Jacobian (int N, realtype t, N_Vector x, N_Vector fy, DlsMat J, 
-		      void *jac_data, N_Vector tmp1, N_Vector tmp2, N_Vector tmp3) {
+		      void *sys, N_Vector tmp1, N_Vector tmp2, N_Vector tmp3) {
 #endif
   return ! CV_SUCCESS;
 }

@@ -53,7 +53,7 @@ class InterpSystem : public DynamicalSystem {
   InterpSystem(const InterpSystem& interpsystem);
   virtual ~InterpSystem();
 
-  int RHS (realtype t, N_Vector x, N_Vector xdot, void * data);
+  int RHS (realtype t, N_Vector x, N_Vector xdot, void *sys);
   int Events (realtype t, N_Vector x, realtype * event, void * data);
   
   bool HasEvents() const;

@@ -74,17 +74,16 @@ bool HeartNeuron::HasEventsConstraints() const {
   return true; 
 }
   
-int HeartNeuron::RHS(realtype t, N_Vector x, N_Vector xdot, void * data){
+int HeartNeuron::RHS(realtype t, N_Vector x, N_Vector xdot, void *sys) {
   realtype VK2shift,Iapp,tauK2;
   realtype V,hNa,mK2;
   realtype f;
-  
-  Parameters *param;
-  
-  param = (Parameters *) data;
-  VK2shift = param->At(0);
-  Iapp = param->At(1);
-  tauK2 = param->At(2);
+  DynamicalSystem *ds = static_cast<DynamicalSystem*>(sys);
+  Parameters *parameters = ds->GetParameters();
+
+  VK2shift = parameters->At(0);
+  Iapp = parameters->At(1);
+  tauK2 = parameters->At(2);
   
   V = Ith(x,0);
   hNa = Ith(x,1);
@@ -120,21 +119,21 @@ int HeartNeuron::Events(realtype t, N_Vector x, realtype * event, void * data){
 
 #ifdef CVODE25
 int HeartNeuron::Jacobian (long int N, DenseMat J, realtype t, N_Vector x, N_Vector fy, 
-			      void *jac_data, N_Vector tmp1, N_Vector tmp2, N_Vector tmp3) {
+			      void *sys, N_Vector tmp1, N_Vector tmp2, N_Vector tmp3) {
 #endif
 #ifdef CVODE26
 int HeartNeuron::Jacobian (int N, realtype t, N_Vector x, N_Vector fy, DlsMat J, 
-			      void *jac_data, N_Vector tmp1, N_Vector tmp2, N_Vector tmp3) {
+			      void *sys, N_Vector tmp1, N_Vector tmp2, N_Vector tmp3) {
 #endif
   realtype VK2shift,Iapp,tauK2;
   realtype V,hNa,mK2;
   realtype f;
+  DynamicalSystem *ds = static_cast<DynamicalSystem*>(sys);
+  Parameters *parameters = ds->GetParameters();
   
-  Parameters *param;
-  param = (Parameters *) jac_data;
-  VK2shift = param->At(0);
-  Iapp = param->At(1);	
-  tauK2 = param->At(2);	
+  VK2shift = parameters->At(0);
+  Iapp = parameters->At(1);	
+  tauK2 = parameters->At(2);	
   
   V = Ith(x,0);
   hNa = Ith(x,1);

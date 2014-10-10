@@ -389,7 +389,7 @@ class ODESolver : public Object {
   realtype cycle_tolerance; // SG
   
   /** Parameters of the system */
-  boost::shared_ptr<Parameters> params;
+  //boost::shared_ptr<Parameters> params;
   /** The dynamical system that has to be integrated */
   boost::shared_ptr<DynamicalSystem> dynsys;
 
