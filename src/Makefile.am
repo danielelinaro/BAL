@@ -1,7 +1,5 @@
 
-AM_CPPFLAGS = @CVODEVERSION@ -DDEBUG -g3 -O0
-AM_CFLAGS = -g3 -O0
-AM_CXXFLAGS = -g3 -O0
+AM_CPPFLAGS = @CVODEVERSION@ -DDEBUG -g -O0
 
 lib_LTLIBRARIES = libbal.la
 libbal_la_SOURCES = balBifurcationParameters.cpp balBifurcationParameters.h \
@@ -10,25 +8,24 @@ libbal_la_SOURCES = balBifurcationParameters.cpp balBifurcationParameters.h \
 	balLogger.cpp balLogger.h \
 	balObject.cpp balObject.h \
 	balParameters.cpp balParameters.h balPLL.cpp balPLL.h \
-	balInterp1D.cpp balInterp1D.h balInterp2D.cpp balInterp2D.h \
-	balInterp3D.cpp balInterp3D.h balInterpolator.cpp balInterpolator.h \
 	balSolution.cpp balSolution.h \
 	balLorenz.cpp balLorenz.h \
 	balDynasty.cpp balDynasty.h balRossler.cpp balRossler.h \
-	balDoubleGyre.cpp balDoubleGyre.h
+	balDoubleGyre.cpp balDoubleGyre.h \
+	balODESolver.cpp balODESolver.h \
+	balBifurcationDiagram.cpp balBifurcationDiagram.h
 
-libbal_la_SOURCES += balODESolver.cpp balODESolver.h
-#libbal_la_SOURCES += balBifurcationDiagram.cpp balBifurcationDiagram.h
-#libbal_la_SOURCES += balInterpSystem.cpp balInterpSystem.h
+#libbal_la_SOURCES += balInterpSystem.cpp balInterpSystem.h \
+#	balInterp1D.cpp balInterp1D.h balInterp2D.cpp balInterp2D.h \
+#	balInterp3D.cpp balInterp3D.h balInterpolator.cpp balInterpolator.h
 
 libbal_la_LDFLAGS = -version-info ${LIB_VER}
 
 include_HEADERS = balBifurcationParameters.h \
 	balCommon.h balDynamicalSystem.h balInterpSystem.h balHindmarshRose.h \
 	balHeartNeuron.h balLogger.h balObject.h balParameters.h \
-	balPLL.h balInterp1D.h balInterp2D.h balInterp3D.h balInterpolator.h balSolution.h \
-	balLorenz.h balDynasty.h balRossler.h balRandomLibrary.h balDoubleGyre.h
+	balPLL.h balSolution.h \
+	balLorenz.h balDynasty.h balRossler.h balRandomLibrary.h balDoubleGyre.h \
+	balODESolver.h balBifurcationDiagram.h
 
-include_HEADERS += balODESolver.h
-#include_HEADERS += balBifurcationDiagram.h
-
+#include_HEADERS += balInterp1D.h balInterp2D.h balInterp3D.h balInterpolator.h 

@@ -93,7 +93,7 @@ double* SummaryEntry::GetData() const {
 
 /***** BifurcationDiagram *****/
 
-BifurcationDiagram::BifurcationDiagram() : logger(new H5Logger) {
+BifurcationDiagram::BifurcationDiagram() : logger(new H5Logger()) {
   restart_from_x0 = true;
   nthreads = 2;
   mode = PARAMS;
@@ -112,11 +112,11 @@ BifurcationDiagram::BifurcationDiagram(const BifurcationDiagram& bifd) {
 BifurcationDiagram::~BifurcationDiagram() {
 }
 
-  /*
+/*
 Object* BifurcationDiagram::Clone() const {
   return new BifurcationDiagram(*this);
 }
-  */
+*/
 
 void BifurcationDiagram::SetNumberOfThreads(int _nthreads) {
   if(_nthreads > 0)
@@ -184,7 +184,7 @@ bool BifurcationDiagram::SaveSummaryData(const char *filename) {
     entry = (*it)->GetData();
     for(i=0; i<(*it)->GetN()-1; i++)
       fprintf(fid, "%e ", entry[i]);
-    if (solver->GetIntegrationMode() == MLE)
+    if (mode == MLE)
       fprintf(fid,"%e\n", (double) entry[(*it)->GetN()-1]);
     else 
       fprintf(fid,"%d\n", (int) entry[(*it)->GetN()-1]);
@@ -235,14 +235,8 @@ void BifurcationDiagram::RestartFromX0(bool restart) {
 }
 
 bool BifurcationDiagram::SetMode(diagram_mode _mode) {
-  switch(_mode) {
-  case PARAMS:
-    break;
-  case IC:
-    break;
-  default:
+  if (mode != PARAMS && mode != IC && mode != MLE)
     return false;
-  }
   mode = _mode;
   return true;
 }
@@ -423,41 +417,41 @@ void BifurcationDiagram::ComputeDiagramMultiThread() {
   }
 }
 
-void BifurcationDiagram::IntegrateAndEnqueue(ODESolver * sol, int solutionId) {
-  sol->Solve();
-  Solution *solution = sol->GetSolution();
-  solution->SetID(solutionId);
-  
-  {
-    boost::mutex::scoped_lock lock(list_mutex);
-    while (solutions.size() >= LIST_MAX_SIZE) {  
-      
-      /**
-       * we notify the thread that will write (which is waiting on q_full)
-       * that the solution list in now full
-       **/
-      q_full.notify_one();
-
-      /**
-       * this thread goes on wait on q_empty conditional variable,
-       * thus unlocking list_mutex until the thread that writes has emptied the list
-       **/
-      q_empty.wait(lock);
-    }
-    // insert a new solution into the list
-    if (solver->GetIntegrationMode() != MLE)
-      solutions.push_back(solution);
-    // insert a new summary into the list
-    summary.push_back(new SummaryEntry(solution,mode));
-  }	
-  
-  if (solver->GetIntegrationMode() == MLE)
-    delete solution;
-  
-  if(! restart_from_x0)
-    sol->SetX0(sol->GetXEnd());
-
-}
+// // void BifurcationDiagram::IntegrateAndEnqueue(ODESolver * sol, int solutionId) {
+// //   sol->Solve();
+// //   Solution *solution = sol->GetSolution();
+// //   solution->SetID(solutionId);
+// //   
+// //   {
+// //     boost::mutex::scoped_lock lock(list_mutex);
+// //     while (solutions.size() >= LIST_MAX_SIZE) {  
+// //       
+// //       /**
+// //        * we notify the thread that will write (which is waiting on q_full)
+// //        * that the solution list in now full
+// //        **/
+// //       q_full.notify_one();
+// // 
+// //       /**
+// //        * this thread goes on wait on q_empty conditional variable,
+// //        * thus unlocking list_mutex until the thread that writes has emptied the list
+// //        **/
+// //       q_empty.wait(lock);
+// //     }
+// //     // insert a new solution into the list
+// //     if (solver->GetIntegrationMode() != MLE)
+// //       solutions.push_back(solution);
+// //     // insert a new summary into the list
+// //     summary.push_back(new SummaryEntry(solution,mode));
+// //   }	
+// //   
+// //   if (solver->GetIntegrationMode() == MLE)
+// //     delete solution;
+// //   
+// //   if(! restart_from_x0)
+// //     sol->SetX0(sol->GetXEnd());
+// // 
+// // }
 
 } // namespace bal
 

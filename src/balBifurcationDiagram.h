@@ -203,9 +203,9 @@ class BifurcationDiagram : public Object {
   /**
    * Sets whether each new integration should restart or not from the
    * original initial conditions.
-	 * \param restart If it is set to false each integration starts from the final state of
-	 * the previous one. This may give an additional speed-up because the system
-	 * could start already at steady state.
+   * \param restart If it is set to false each integration starts from the final state of
+   * the previous one. This may give an additional speed-up because the system
+   * could start already at steady state.
    */
   void RestartFromX0(bool restart);
 
@@ -242,7 +242,7 @@ class BifurcationDiagram : public Object {
    * Initializes the set of initial conditions used for basins of attraction analysis.
    * \param nx0 Number of initial conditions.
    * \param x0  Matrix of initial conditions where the generic entry \f$x[i][j]\f$ refers to
-   *						the \f$j_{th}\f$ component of the \f$i_{th}\f$ initial condition.
+   *		the \f$j_{th}\f$ component of the \f$i_{th}\f$ initial condition.
    */
   void SetInitialConditions(int nx0, double **x0);
   

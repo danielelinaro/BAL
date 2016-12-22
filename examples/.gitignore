@@ -3,3 +3,12 @@ dynsys
 lorenz
 params
 loggers
+basin
+bifdiag
+bifdiagLyap
+dynasty
+hrLyap
+lorenzLyap
+pll
+rosslerLyap
+solver

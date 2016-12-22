@@ -34,17 +34,18 @@ using namespace bal;
 int main(int argc, char *argv[]) {
   int steps[4] = {10,1,1,1};
   realtype x0[3] = {0.5,0.5,0.5};
-  BifurcationParameters bp(4);
-  bp.SetIthParameterLowerBound(0,2.9);
-  bp.SetIthParameterUpperBound(0,3.18);
-  bp.SetIthParameter(1,3);
-  bp.SetIthParameter(2,0.01);
-  bp.SetIthParameter(3,4.0);
-  bp.SetNumberOfSteps(steps);
   HindmarshRose hr;
-  hr.SetParameters(bp);
   BifurcationDiagram bifd;
-  bifd.SetDynamicalSystem(hr);
+  BifurcationParameters *bp = hr.GetParameters();
+
+  bp->SetIthParameterLowerBound(0,2.9);
+  bp->SetIthParameterUpperBound(0,3.18);
+  bp->SetIthParameter(1,3);
+  bp->SetIthParameter(2,0.01);
+  bp->SetIthParameter(3,4.0);
+  bp->SetNumberOfSteps(steps);
+
+  bifd.SetDynamicalSystem(&hr);
   bifd.RestartFromX0(true);
   bifd.GetODESolver()->SetIntegrationMode(BOTH);
   bifd.GetODESolver()->HaltAtEquilibrium(true);

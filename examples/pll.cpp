@@ -49,10 +49,10 @@ int main(int argc, char *argv[]) {
   ptree config;
   read_xml(argv[1], config);
   char name[100];
-  
   int steps[PLL::npar];
-  BifurcationParameters * bp = BifurcationParameters::Create();
-  bp->SetNumber(PLL::npar);
+
+  PLL pll;
+  BifurcationParameters *bp = pll.GetParameters();
   
   for(int i=0; i<PLL::npar; i++) {
     sprintf(name,"pll.%s.steps",PLL::parname[i]);
@@ -85,29 +85,24 @@ int main(int argc, char *argv[]) {
   x0[1] = config.get<double>("pll.vdd.min");	
   
   bp->SetNumberOfSteps(steps);
-  PLL * pll = PLL::Create();
-  pll->SetParameters(bp);
-  BifurcationDiagram * bifd = BifurcationDiagram::Create();
-  bifd->RestartFromX0(true);
-  bifd->SetDynamicalSystem(pll);
-  bifd->SetFilename((char *) config.get<std::string>("simulation.outputfile").c_str());
+  BifurcationDiagram bifd;
+  bifd.RestartFromX0(true);
+  bifd.SetDynamicalSystem(&pll);
+  bifd.SetFilename((char *) config.get<std::string>("simulation.outputfile").c_str());
   if(config.get<bool>("simulation.trajectory"))
-    bifd->GetODESolver()->SetIntegrationMode(BOTH);
+    bifd.GetODESolver()->SetIntegrationMode(BOTH);
   else
-    bifd->GetODESolver()->SetIntegrationMode(EVENTS);
-  bifd->GetODESolver()->SetTransientDuration(config.get<double>("simulation.ttran"));
-  bifd->GetODESolver()->HaltAtEquilibrium(false);
-  bifd->GetODESolver()->HaltAtCycle(false);
-  bifd->GetODESolver()->SetFinalTime(config.get<double>("simulation.tout"));
-  bifd->GetODESolver()->SetTimeStep(1e-11);
-  bifd->GetODESolver()->SetMaxNumberOfIntersections((int) 1e7);
-  bifd->GetODESolver()->SetX0(x0);
-  bifd->GetODESolver()->SetRelativeTolerance(1e-10);
-  bifd->SetNumberOfThreads(1);
-  bifd->ComputeDiagram();
-  bifd->Destroy();
-  pll->Destroy();
-  bp->Destroy();
+    bifd.GetODESolver()->SetIntegrationMode(EVENTS);
+  bifd.GetODESolver()->SetTransientDuration(config.get<double>("simulation.ttran"));
+  bifd.GetODESolver()->HaltAtEquilibrium(false);
+  bifd.GetODESolver()->HaltAtCycle(false);
+  bifd.GetODESolver()->SetFinalTime(config.get<double>("simulation.tout"));
+  bifd.GetODESolver()->SetTimeStep(1e-11);
+  bifd.GetODESolver()->SetMaxNumberOfIntersections((int) 1e7);
+  bifd.GetODESolver()->SetX0(x0);
+  bifd.GetODESolver()->SetRelativeTolerance(1e-10);
+  bifd.SetNumberOfThreads(1);
+  bifd.ComputeDiagram();
   
   return EXIT_SUCCESS;
 }

@@ -33,11 +33,12 @@ using namespace bal;
 // TEST BifurcationDiagram multithread computing MLE bifurcation diagram of Hindmarsh-Rose dynamical system
 
 int main(int argc, char *argv[]) {
-
   int steps[4] = {10,1,1,1};
   realtype x0[3] = {0.5,0.5,0.5};
-  BifurcationParameters * bp = BifurcationParameters::Create();
-  bp->SetNumber(4);
+  HindmarshRose hr;
+  BifurcationParameters *bp = hr.GetParameters();
+  BifurcationDiagram bifd;
+
   bp->SetIthParameterLowerBound(0,2.5);
   bp->SetIthParameterUpperBound(0,3.5);
   //bp->SetIthParameterLowerBound(1,2.5);
@@ -47,27 +48,17 @@ int main(int argc, char *argv[]) {
   bp->SetIthParameter(3,4.0);
   bp->SetNumberOfSteps(steps);
   
-  HindmarshRose * hr = HindmarshRose::Create();
-  hr->SetParameters(bp);
-  
-  BifurcationDiagram * bifd = BifurcationDiagram::Create();
-  bifd->SetDynamicalSystem(hr);
-  bifd->GetODESolver()->SetIntegrationMode(LYAP);
-  bifd->GetODESolver()->SetTransientDuration(5e2);
-  bifd->GetODESolver()->SetLyapunovTimeStep(1);
-  bifd->GetODESolver()->SetTimeStep(0.5);
-  bifd->GetODESolver()->SetFinalTime(2e3);
-  bifd->GetODESolver()->SetX0(x0);
-  
-  bifd->SetNumberOfThreads(argc > 1 ? atoi(argv[1]) : 2);
-  
-  bifd->ComputeDiagram();
-  bifd->SaveSummaryData("LyapDiagTest.classified");
+  bifd.SetDynamicalSystem(&hr);
+  bifd.GetODESolver()->SetIntegrationMode(LYAP);
+  bifd.GetODESolver()->SetTransientDuration(5e2);
+  bifd.GetODESolver()->SetLyapunovTimeStep(1);
+  bifd.GetODESolver()->SetTimeStep(0.5);
+  bifd.GetODESolver()->SetFinalTime(2e3);
+  bifd.GetODESolver()->SetX0(x0);
+  bifd.SetNumberOfThreads(argc > 1 ? atoi(argv[1]) : 2);
+  bifd.ComputeDiagram();
+  bifd.SaveSummaryData("LyapDiagTest.classified");
 
-  bifd->Destroy();
-  hr->Destroy();
-  bp->Destroy();
-  
   return 0;
 }
 

@@ -31,11 +31,14 @@
 using namespace bal;
 
 int main(int argc, char *argv[]) {
-
   int steps[7] = {1,101,1,1,1,1,1};
   realtype x0[3] = {0.5,0.5,0.5};
-  BifurcationParameters * bp = BifurcationParameters::Create();
-  bp->SetNumber(7);
+  Dynasty dynasty;
+  BifurcationParameters * bp = dynasty.GetParameters();
+  BifurcationDiagram bifd;
+
+  dynasty.SpecialOptions((const void *) "minima");
+
   bp->SetIthParameter(0,-3.1); // r
   bp->SetIthParameterLowerBound(1,1.8); // e
   bp->SetIthParameterUpperBound(1,2.8); // e
@@ -45,31 +48,24 @@ int main(int argc, char *argv[]) {
   bp->SetIthParameter(5,0.1); // h
   bp->SetIthParameter(6,0.4); // q
   bp->SetNumberOfSteps(steps);
-  Dynasty * dynasty = Dynasty::Create();
-  dynasty->SetParameters(bp);
-  dynasty->SpecialOptions((const void *) "minima");
-  BifurcationDiagram * bifd = BifurcationDiagram::Create();
-  bifd->SetDynamicalSystem(dynasty);
-  bifd->GetODESolver()->SetIntegrationMode(EVENTS);
-  bifd->GetODESolver()->HaltAtEquilibrium(true);
-  bifd->GetODESolver()->HaltAtCycle(false);
-  bifd->GetODESolver()->SetTransientDuration(5e3);
-  bifd->GetODESolver()->SetFinalTime(1e6);
-  bifd->GetODESolver()->SetEquilibriumTolerance(1e-6);
-  bifd->GetODESolver()->SetRelativeTolerance(1e-8);
-  bifd->GetODESolver()->SetAbsoluteTolerance(1e-13);
-  bifd->GetODESolver()->SetMaxNumberOfIntersections(1000);
-  bifd->GetODESolver()->SetX0(x0);
-  bifd->SetFilename("dynasty.h5");
-  bifd->SetNumberOfThreads(argc > 1 ? atoi(argv[1]) : 2);
-  bifd->RestartFromX0(true);
-  bifd->ComputeDiagram();
-  bifd->SaveSummaryData("dynasty.classified");
 
-  bifd->Destroy();
-  dynasty->Destroy();
-  bp->Destroy();
-  
+  bifd.SetDynamicalSystem(&dynasty);
+  bifd.GetODESolver()->SetIntegrationMode(EVENTS);
+  bifd.GetODESolver()->HaltAtEquilibrium(true);
+  bifd.GetODESolver()->HaltAtCycle(false);
+  bifd.GetODESolver()->SetTransientDuration(5e3);
+  bifd.GetODESolver()->SetFinalTime(1e6);
+  bifd.GetODESolver()->SetEquilibriumTolerance(1e-6);
+  bifd.GetODESolver()->SetRelativeTolerance(1e-8);
+  bifd.GetODESolver()->SetAbsoluteTolerance(1e-13);
+  bifd.GetODESolver()->SetMaxNumberOfIntersections(1000);
+  bifd.GetODESolver()->SetX0(x0);
+  bifd.SetFilename("dynasty.h5");
+  bifd.SetNumberOfThreads(argc > 1 ? atoi(argv[1]) : 2);
+  bifd.RestartFromX0(true);
+  bifd.ComputeDiagram();
+  bifd.SaveSummaryData("dynasty.classified");
+
   return 0;
 }
 

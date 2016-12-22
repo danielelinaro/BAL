@@ -33,29 +33,25 @@ using namespace bal;
 
 // TEST BifurcationDiagram
 int main(int argc, char *argv[]) {
+  HindmarshRose hr;
 
-  Parameters * par = Parameters::Create();
-  par->SetNumber(4);
+  Parameters *par = hr.GetParameters();
   par->At(0) = 2.88;
   par->At(1) = 2.6;
   par->At(2) = 0.01;
   par->At(3) = 4.0;
 
-  HindmarshRose * hr = HindmarshRose::Create();
-  hr->SetParameters(par);
-
-  BifurcationDiagram * bifd = BifurcationDiagram::Create();
-  bifd->SetDynamicalSystem(hr);
-  bifd->SetFilename("hr-basin.h5");
-  bifd->GetODESolver()->SetIntegrationMode(EVENTS);
-  bifd->GetODESolver()->HaltAtEquilibrium(true);
-  bifd->GetODESolver()->HaltAtCycle(true);
-  bifd->GetODESolver()->SetTransientDuration(0e3);
-  bifd->GetODESolver()->SetFinalTime(5e3);
-  bifd->GetODESolver()->SetTimeStep(0.1);
-  bifd->GetODESolver()->SetMaxNumberOfIntersections(300);
-
-  bifd->SetNumberOfThreads(argc > 1 ? atoi(argv[1]) : 2);
+  BifurcationDiagram bifd;
+  bifd.SetDynamicalSystem(&hr);
+  bifd.SetFilename("hr-basin.h5");
+  bifd.GetODESolver()->SetIntegrationMode(EVENTS);
+  bifd.GetODESolver()->HaltAtEquilibrium(true);
+  bifd.GetODESolver()->HaltAtCycle(true);
+  bifd.GetODESolver()->SetTransientDuration(0e3);
+  bifd.GetODESolver()->SetFinalTime(5e3);
+  bifd.GetODESolver()->SetTimeStep(0.1);
+  bifd.GetODESolver()->SetMaxNumberOfIntersections(300);
+  bifd.SetNumberOfThreads(argc > 1 ? atoi(argv[1]) : 2);
 
   //double x0_chaos[] = {-0.882461371550183,-3.661932217696160,2.870154513826437};
   int nX0 = 1000;
@@ -76,13 +72,10 @@ int main(int argc, char *argv[]) {
     X0[i][1] = -10 + 12*((double) random()/RAND_MAX);
     X0[i][2] = -1+3.0*((double) random()/RAND_MAX);
   }
-  bifd->SetMode(IC);
-  bifd->SetInitialConditions(nX0,X0);
-  bifd->ComputeDiagram();
-  bifd->SaveSummaryData("hr-basin.classified");
-  bifd->Destroy();
-  hr->Destroy();
-  par->Destroy();
+  bifd.SetMode(IC);
+  bifd.SetInitialConditions(nX0,X0);
+  bifd.ComputeDiagram();
+  bifd.SaveSummaryData("hr-basin.classified");
   
   return 0;
 }
