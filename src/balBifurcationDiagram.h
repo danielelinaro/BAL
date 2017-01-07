@@ -96,7 +96,7 @@ class SummaryEntry : public Object {
   int id;
 };
 
-bool CompareSummaryEntry(SummaryEntry *entry1, SummaryEntry *entry2);
+bool CompareSummaryEntries(SummaryEntry *entry1, SummaryEntry *entry2);
 
 /**
  * \class BifurcationDiagram

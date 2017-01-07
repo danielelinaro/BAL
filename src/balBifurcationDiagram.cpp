@@ -169,7 +169,7 @@ bool BifurcationDiagram::SaveSummaryData(const char *filename) {
     return false;
   
   // CHECK
-  //summary.sort(CompareSummaryEntry);
+  //summary.sort(CompareSummaryEntries);
   
   int i;
   double *entry;
@@ -198,7 +198,7 @@ double** BifurcationDiagram::GetSummaryData(int *size) {
   if(!summary.size())
     return NULL;
   
-  summary.sort(CompareSummaryEntry);
+  summary.sort(CompareSummaryEntries);
   
   int i, j;
   double **data, *entry;
@@ -297,7 +297,7 @@ void BifurcationDiagram::ComputeDiagramMultiThread() {
 
   BifurcationParameters *pars;
 	
-  if (solver->GetIntegrationMode() == MLE)
+  if (solver->GetIntegrationMode() == LYAP)
     restart_from_x0 = true;
   
   switch(mode) {
@@ -323,7 +323,7 @@ void BifurcationDiagram::ComputeDiagramMultiThread() {
   /**
    * launching the thread of the writing routine: it activates only when list size >= LIST_MAX_SIZE
    **/
-  if (solver->GetIntegrationMode() != MLE) {
+  if (solver->GetIntegrationMode() != LYAP) {
     //logger_thread = new boost::thread(&Logger::SaveSolutionThreaded,logger,solutions,&list_mutex,&q_empty,&q_full);
     // CHECK
     //logger_thread = new boost::thread(&LoggerThread,logger,solutions,list_mutex,q_empty,q_full);
@@ -361,8 +361,10 @@ void BifurcationDiagram::ComputeDiagramMultiThread() {
   boost::shared_ptr<ODESolver> *lsol = new boost::shared_ptr<ODESolver>[nthreads];
   boost::shared_ptr<Parameters> *lpar = new boost::shared_ptr<Parameters>[nthreads];
   for(i = 0; i < nthreads; i++) {
-    lpar[i] = parameters->Clone();
-    lsol[i] = solver->Clone();
+    boost::shared_ptr<Parameters> p(parameters->Clone());
+    lpar[i] = p;
+    boost::shared_ptr<ODESolver> s(solver->Clone());
+    lsol[i] = s;
     lsol[i]->SetDynamicalSystemParameters(lpar[i]);
   }
 
@@ -409,7 +411,7 @@ void BifurcationDiagram::ComputeDiagramMultiThread() {
   delete [] lsol;
   delete [] lpar;
 
-  if (solver->GetIntegrationMode() != MLE) {
+  if (solver->GetIntegrationMode() != LYAP) {
     /* interrupting logger_thread */
     logger_thread.interrupt();
     /* waiting logger thread to writing the remaining solution in the queue and exit */
@@ -417,41 +419,41 @@ void BifurcationDiagram::ComputeDiagramMultiThread() {
   }
 }
 
-// // void BifurcationDiagram::IntegrateAndEnqueue(ODESolver * sol, int solutionId) {
-// //   sol->Solve();
-// //   Solution *solution = sol->GetSolution();
-// //   solution->SetID(solutionId);
-// //   
-// //   {
-// //     boost::mutex::scoped_lock lock(list_mutex);
-// //     while (solutions.size() >= LIST_MAX_SIZE) {  
-// //       
-// //       /**
-// //        * we notify the thread that will write (which is waiting on q_full)
-// //        * that the solution list in now full
-// //        **/
-// //       q_full.notify_one();
-// // 
-// //       /**
-// //        * this thread goes on wait on q_empty conditional variable,
-// //        * thus unlocking list_mutex until the thread that writes has emptied the list
-// //        **/
-// //       q_empty.wait(lock);
-// //     }
-// //     // insert a new solution into the list
-// //     if (solver->GetIntegrationMode() != MLE)
-// //       solutions.push_back(solution);
-// //     // insert a new summary into the list
-// //     summary.push_back(new SummaryEntry(solution,mode));
-// //   }	
-// //   
-// //   if (solver->GetIntegrationMode() == MLE)
-// //     delete solution;
-// //   
-// //   if(! restart_from_x0)
-// //     sol->SetX0(sol->GetXEnd());
-// // 
-// // }
+void BifurcationDiagram::IntegrateAndEnqueue(ODESolver * sol, int solutionId) {
+  sol->Solve();
+  Solution *solution = sol->GetSolution();
+  solution->SetID(solutionId);
+  
+  {
+    boost::mutex::scoped_lock lock(list_mutex);
+    while (solutions.size() >= LIST_MAX_SIZE) {  
+      
+      /**
+       * we notify the thread that will write (which is waiting on q_full)
+       * that the solution list in now full
+       **/
+      q_full.notify_one();
+
+      /**
+       * this thread goes on wait on q_empty conditional variable,
+       * thus unlocking list_mutex until the thread that writes has emptied the list
+       **/
+      q_empty.wait(lock);
+    }
+    // insert a new solution into the list
+    if (solver->GetIntegrationMode() != LYAP)
+      solutions.push_back(solution);
+    // insert a new summary into the list
+    summary.push_back(new SummaryEntry(solution,mode));
+  }	
+  
+  if (solver->GetIntegrationMode() == LYAP)
+    delete solution;
+  
+  if(! restart_from_x0)
+    sol->SetX0(sol->GetXEnd());
+
+}
 
 } // namespace bal
 
