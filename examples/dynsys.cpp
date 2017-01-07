@@ -56,11 +56,12 @@ int main(int argc, char *argv[]) {
   N_Vector xdot = N_VNew_Serial(n);
   
   // parameters
-  Parameters *pars = hr.GetParameters();
-  pars->At(0) = 3.0;
-  pars->At(1) = 5.0;
-  pars->At(2) = 0.01;
-  pars->At(3) = 4.0;
+  Parameters pars(hr.GetNumberOfParameters());
+  hr.SetParameters(&pars);
+  pars[0] = 3.0;
+  pars[1] = 5.0;
+  pars[2] = 0.01;
+  pars[3] = 4.0;
  
   if(argc == n+1) {
     for(i=0; i<n; i++)

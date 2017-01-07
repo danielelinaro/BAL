@@ -76,11 +76,11 @@ public:
   Parameters *parameters;
   realtype *buffer;
   realtype *lyapunov_exponents;
+  bool lyapunov_mode;
   int spectrum_dimension;
   int rows, columns;
   int nturns;
   int ID;
-  bool lyapunov_mode;
 };
 
 /** Compare function (based on solution ID number) that allows to

@@ -43,8 +43,7 @@ Solution::Solution(int r, int c, realtype *buf, const Parameters *p)
   memcpy(buffer, buf, r*c*sizeof(realtype));
 }
 
-Solution::Solution(int r, int c, realtype *buf, const Parameters& p) {
-  Solution(r,c,buf,&p);
+Solution::Solution(int r, int c, realtype *buf, const Parameters& p) : Solution(r,c,buf,&p) {
 }
 
 Solution::Solution(const Solution& solution) 
@@ -63,8 +62,8 @@ Solution::Solution(const Solution& solution)
 
 Solution::~Solution() {
   delete buffer;
-  delete lyapunov_exponents;
   delete parameters;
+  if (lyapunov_mode) delete lyapunov_exponents;
 #ifdef DEBUG
   std::cout << "Solution destructor.\n";
 #endif
@@ -104,6 +103,7 @@ int Solution::GetNumberOfTurns() const {
 }
 
 void Solution::SetLyapunovExponents(const realtype *lp) {
+  lyapunov_mode = true;
   memcpy(lyapunov_exponents, lp, spectrum_dimension*sizeof(realtype));
 }
 
