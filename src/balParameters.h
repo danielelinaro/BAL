@@ -59,8 +59,10 @@ public:
   /** Returns a pointer to parameters vector. */
   double* GetParameters () const;
   /** Allows to access to a parameter as a vector element. */
-  double& At (int k);
+  double At (int k) const;
   double& operator[] (int k);
+  /** Read-only access to parameters. */
+  //double Nth (int k) const;
   void operator=(const Parameters& param);
 
   virtual Parameters* Clone() const;

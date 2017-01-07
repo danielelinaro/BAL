@@ -207,11 +207,11 @@ int DynamicalSystem::EventsWrapper (realtype t, N_Vector x, realtype *event, voi
 void DynamicalSystem::EventsConstraints (realtype t, N_Vector x, int *constraints, void *sys) {
 }
 
-Parameters* DynamicalSystem::GetParameters () const {
+const Parameters* DynamicalSystem::GetParameters () const {
   return pars;
 }
 
-void DynamicalSystem::SetParameters(Parameters* params) {
+void DynamicalSystem::SetParameters(const Parameters* params) {
   if (params->GetNumber() < p) {
     throw "The number of parameters passed is smaller than that of this system.";
   }
@@ -219,6 +219,10 @@ void DynamicalSystem::SetParameters(Parameters* params) {
     fprintf(stderr, "The number of parameters passed is greater than that of this system.\n");
   }
   pars = params;
+}
+
+void DynamicalSystem::SetParameters(const Parameters& params) {
+  SetParameters(&params);
 }
 
 int DynamicalSystem::GetDimension() const {

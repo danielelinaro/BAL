@@ -152,8 +152,9 @@ public:
   int GetDimension() const;
   int GetOriginalDimension() const;
   int GetNumberOfParameters() const;
-  Parameters* GetParameters() const;
-  void SetParameters(Parameters* params);
+  const Parameters* GetParameters() const;
+  void SetParameters(const Parameters* params);
+  void SetParameters(const Parameters& params);
 
   /** Extends dynamical system dimensionality to calculate Lyapunov exponents.
    *  The algorithm used is described in Alan Wolf et al.
@@ -183,7 +184,7 @@ private:
   DlsMat jac;
 #endif
 
-  Parameters* pars;
+  const Parameters* pars;
 };
 
 } // namespace bal

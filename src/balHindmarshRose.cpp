@@ -63,7 +63,7 @@ int HindmarshRose::RHS (realtype t, N_Vector x, N_Vector xdot, void *sys) {
   realtype x1, x2, x3;
   realtype b, I, u, s;
   DynamicalSystem *ds = static_cast<DynamicalSystem*>(sys);
-  Parameters *parameters = ds->GetParameters();
+  const Parameters *parameters = ds->GetParameters();
   
   b = parameters->At(0);
   I = parameters->At(1);
@@ -92,7 +92,7 @@ int HindmarshRose::Jacobian (int N, realtype t, N_Vector x, N_Vector fy, DlsMat 
   realtype b, I, u, s;
   realtype x1, x2, x3;
   DynamicalSystem *ds = static_cast<DynamicalSystem*>(sys);
-  Parameters *parameters = ds->GetParameters();
+  const Parameters *parameters = ds->GetParameters();
   
   x1 = Ith (x, 0);
   x2 = Ith (x, 1);
@@ -128,7 +128,7 @@ void HindmarshRose::EventsConstraints (realtype t, N_Vector x, int *constraints,
   realtype x1, x2, x3;
   realtype ris[3], xdot[3];
   DynamicalSystem *ds = static_cast<DynamicalSystem*>(sys);
-  Parameters *parameters = ds->GetParameters();
+  const Parameters *parameters = ds->GetParameters();
   
   x1 = Ith (x, 0);
   x2 = Ith (x, 1);

@@ -55,7 +55,7 @@ int Dynasty::RHS (realtype t, N_Vector x, N_Vector xdot, void *sys) {
   realtype x1, x2, x3;
   realtype r, e, b, d, g, h, q;
   DynamicalSystem *ds = static_cast<DynamicalSystem*>(sys);
-  Parameters *parameters = ds->GetParameters();
+  const Parameters *parameters = ds->GetParameters();
 
   r = exp(parameters->At(0));
   e = parameters->At(1);
@@ -112,7 +112,7 @@ int Dynasty::Jacobian (int N, realtype t, N_Vector x, N_Vector fy, DlsMat J,
   realtype r, e, b, d, g, h, q;
   realtype denx, deny, denxsquare, denysquare;
   DynamicalSystem *ds = static_cast<DynamicalSystem*>(sys);
-  Parameters *parameters = ds->GetParameters();
+  const Parameters *parameters = ds->GetParameters();
   
   x1 = Ith (x, 0);
   x2 = Ith (x, 1);
@@ -156,7 +156,7 @@ void Dynasty::EventsConstraints (realtype t, N_Vector x, int * constraints, void
   realtype r, e, b, d, g, h, q;
   realtype denx, deny, denxsquare, denysquare;
   realtype ris[3], xdot[3];
-  Parameters *parameters;
+  const Parameters *parameters = static_cast<Parameters*>(data);
   
   if(constraint_type != MINIMA && constraint_type != MAXIMA) {
     for(int i=0; i<GetNumberOfEvents(); i++)
@@ -168,7 +168,6 @@ void Dynasty::EventsConstraints (realtype t, N_Vector x, int * constraints, void
   x2 = Ith (x, 1);
   x3 = Ith (x, 2);
  
-  parameters = (Parameters*) data;
   r = exp(parameters->At(0));
   e = parameters->At(1);
   b = parameters->At(2);

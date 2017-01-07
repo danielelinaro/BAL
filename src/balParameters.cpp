@@ -78,11 +78,17 @@ void Parameters::operator= (const Parameters& params) {
     pars[i] = params.pars[i];
 }
 
-double& Parameters::At (int k) {
+double Parameters::At (int k) const {
   if (k>=0 && k<p)
     return pars[k];
   throw "Parameters::At - index out of bounds";
 }
+
+//double Parameters::Nth (int k) const {
+//  if (k>=0 && k<p)
+//    return pars[k];
+//  throw "Parameters::Ith - index out of bounds";
+//}
 
 double* Parameters::GetParameters () const {
   return pars;

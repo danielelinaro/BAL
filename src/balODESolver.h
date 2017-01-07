@@ -30,8 +30,6 @@
 #include <cmath>
 #include <iostream>
 #include <string>
-#include <boost/shared_array.hpp>
-#include <boost/shared_ptr.hpp>
 
 #include "balObject.h"
 #include "balCommon.h"
@@ -102,7 +100,7 @@ typedef enum {
         EVENTS,
         /** Records both trajectory and events */
         BOTH,
-        /** Compute Lyapunov spectrum */
+        /** Computes Lyapunov spectrum */
         LYAP
 } integration_mode;
 
@@ -192,7 +190,7 @@ typedef enum {
  \example lorenzLyap.cpp
  \example hrLyap.cpp
  
- \sa DynamicalSystem BifurcationParameters Solution
+ \sa DynamicalSystem Parameters Solution
 */
 	
 class ODESolver : public Object {
@@ -202,13 +200,14 @@ class ODESolver : public Object {
   ODESolver(const ODESolver& solver);
   virtual ~ODESolver();
 
-  boost::shared_array<realtype> GetBuffer() const;
+  realtype* GetBuffer() const;
   int GetBufferSize() const;
   void GetBufferSize(int *r, int *c) const;
   
   void SetDynamicalSystem(DynamicalSystem *ds);
-  boost::shared_ptr<DynamicalSystem> GetDynamicalSystem() const;
-  void SetDynamicalSystemParameters(boost::shared_ptr<Parameters>& par);
+  void SetDynamicalSystem(DynamicalSystem& ds);
+  const DynamicalSystem* GetDynamicalSystem() const;
+  //void SetDynamicalSystemParameters(Parameters* par);
   
   Solution* GetSolution() const;
   
@@ -253,7 +252,7 @@ class ODESolver : public Object {
   void SetEquilibriumTolerance(realtype tol);
   realtype GetCycleTolerance() const;
   void SetCycleTolerance(realtype tol);
-  boost::shared_array<realtype> GetLyapunovExponents() const;
+  realtype* GetLyapunovExponents() const;
   
   N_Vector GetX() const;
   N_Vector GetXdot() const;
@@ -262,16 +261,18 @@ class ODESolver : public Object {
   void SetX0(N_Vector X0, int n = -1);
   void SetX0(realtype *X0, int n = -1);
   
-/** Saves in a ASCII file only the steady state part of an oscillating solution.
-	The solution has to be obtained by an integration in bal::EVENTS or bal::BOTH mode.
-*/
+  /** Saves in a ASCII file only the steady state part of an oscillating solution.
+   *  The solution has to be obtained by an integration in bal::EVENTS or bal::BOTH mode.
+   */
   bool SaveOrbit(const char *filename) const;
   
-/** Initializes and configures CVode for integration with the fields previously set by user (dynamical system, jacobian, tollerances, stiffness).\ Allocates memory for the solution buffer depending on integration time options.
-*/
+  /** Initializes and configures CVode for integration with the fields previously set by
+   *  the user (dynamical system, jacobian, tollerances, stiffness).
+   *  Allocates memory for the solution buffer depending on integration time options.
+   */
   virtual bool Setup();
   
-/** Performs the integration according to the chosen bal::integration_mode. */
+  /** Performs the integration according to the chosen bal::integration_mode. */
   virtual bool Solve();
   
   virtual ODESolver* Clone() const;
@@ -303,12 +304,12 @@ class ODESolver : public Object {
   /** Number of equations */
   int neq;
   /** Number of parameters */
-  int npar;
+  //int npar;
   /** Number of events */
   int nev;
   
   /** Buffer for integration data */
-  boost::shared_array<realtype> buffer;
+  realtype* buffer;
   /** The total size of the buffer */
   unsigned long bufsize;
   /** The (virtual) dimensions of the buffer */
@@ -327,10 +328,10 @@ class ODESolver : public Object {
   realtype tfinal; // SG
   /** Integration time step */
   realtype tstep; // SG
-  /** Lypunov exponents calculus tstep*/
+  /** Lypunov exponents calculation tstep */
   realtype lyap_tstep;
   /** The Lyapunov spectrum of the system */
-  boost::shared_array<realtype> lyapunov_exponents;
+  realtype* lyapunov_exponents;
 	
   /** Relative tolerance */
   realtype reltol; // SG
@@ -352,9 +353,9 @@ class ODESolver : public Object {
   int max_intersections; // SG
   /** Event location array (each element has value 1 when the corresponding
    * event has been located */
-  boost::shared_array<int> events;
+  int* events;
   /** Constraints on the location of events */
-  boost::shared_array<int> events_constraints;
+  int* events_constraints;
   /** Initial state */
   N_Vector x0; // SG
   /** Current state */
@@ -389,9 +390,10 @@ class ODESolver : public Object {
   realtype cycle_tolerance; // SG
   
   /** Parameters of the system */
-  //boost::shared_ptr<Parameters> params;
+  //Parameters* params;
+  
   /** The dynamical system that has to be integrated */
-  boost::shared_ptr<DynamicalSystem> dynsys;
+  DynamicalSystem* dynsys;
 
   bool _dealloc;
 };

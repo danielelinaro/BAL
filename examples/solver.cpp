@@ -32,14 +32,15 @@ int main(int argc, char *argv[]) {
   // HindmarshRose
   HindmarshRose hr;
   // parameters
-  Parameters *pars = hr.GetParameters();
-  pars->At(0) = 2.5;
-  pars->At(1) = 3.5;
-  pars->At(2) = 0.01;
-  pars->At(3) = 4.0;
+  Parameters pars(hr.GetNumberOfParameters());
+  pars[0] = 2.5;
+  pars[1] = 3.5;
+  pars[2] = 0.01;
+  pars[3] = 4.0;
+  hr.SetParameters(pars);
   
   ODESolver solver;
-  solver.SetDynamicalSystem(&hr);
+  solver.SetDynamicalSystem(hr);
   solver.SetTransientDuration(1000.0);
   solver.SetFinalTime(2000.0);
   solver.SetMaxNumberOfIntersections(1000);

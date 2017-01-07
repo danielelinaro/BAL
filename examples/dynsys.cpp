@@ -57,7 +57,7 @@ int main(int argc, char *argv[]) {
   
   // parameters
   Parameters pars(hr.GetNumberOfParameters());
-  hr.SetParameters(&pars);
+  hr.SetParameters(pars);
   pars[0] = 3.0;
   pars[1] = 5.0;
   pars[2] = 0.01;
