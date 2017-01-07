@@ -87,11 +87,9 @@ realtype* Solution::GetData() const {
   return buffer;
 }	
 
-/*
 void Solution::SetParameters(const Parameters *p) {
-  parameters = boost::shared_ptr<Parameters>(new Parameters(*p));
+  parameters = dynamic_cast<Parameters*>(p->Clone());
 }
-*/
 
 Parameters* Solution::GetParameters() const {
   return parameters;

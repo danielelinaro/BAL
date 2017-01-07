@@ -56,7 +56,7 @@ public:
   void SetSize(int r, int c);
   
   Parameters* GetParameters() const;
-  //void SetParameters(const Parameters *p);
+  void SetParameters(const Parameters *p);
   
   realtype* GetData() const;
   
