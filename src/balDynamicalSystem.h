@@ -37,7 +37,7 @@
 #include <cvode/cvode.h>
 
 #include "balObject.h"
-#include "balBifurcationParameters.h"
+#include "balParameters.h"
 
 namespace bal {
 
@@ -60,6 +60,7 @@ namespace bal {
 class DynamicalSystem : public Object {
 public:
   DynamicalSystem(int ndim, int npar, int nevents, bool extended);
+  DynamicalSystem(int ndim, Parameters* params, int nevents, bool extended);
   DynamicalSystem(const DynamicalSystem& system);
   virtual ~DynamicalSystem();
 
@@ -151,7 +152,8 @@ public:
   int GetDimension() const;
   int GetOriginalDimension() const;
   int GetNumberOfParameters() const;
-  BifurcationParameters* GetParameters();
+  Parameters* GetParameters() const;
+  void SetParameters(Parameters* params);
 
   /** Extends dynamical system dimensionality to calculate Lyapunov exponents.
    *  The algorithm used is described in Alan Wolf et al.
@@ -181,7 +183,7 @@ private:
   DlsMat jac;
 #endif
 
-  BifurcationParameters pars;
+  Parameters* pars;
 };
 
 } // namespace bal

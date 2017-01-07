@@ -30,7 +30,7 @@
 
 namespace bal {
 
-DynamicalSystem::DynamicalSystem(int ndim, int npar, int nevents, bool extended) : pars(npar) {
+DynamicalSystem::DynamicalSystem(int ndim, int npar, int nevents, bool extended) {
 #ifdef DEBUG
   std::cout << "DynamicalSystem constructor.\n";
 #endif
@@ -42,6 +42,7 @@ DynamicalSystem::DynamicalSystem(int ndim, int npar, int nevents, bool extended)
     throw "DynamicalSystem::DynamicalSystem - number of events cannot be negative";
   n = ndim;
   p = npar;
+  pars = NULL;
   nExt = n*(n+1);
   nev = nevents;
   ext = extended;
@@ -51,6 +52,11 @@ DynamicalSystem::DynamicalSystem(int ndim, int npar, int nevents, bool extended)
 #ifdef CVODE26
   jac = NewDenseMat(n,n);
 #endif
+}
+
+DynamicalSystem::DynamicalSystem(int ndim, Parameters* params, int nevents, bool extended) : 
+        DynamicalSystem(ndim, params->GetNumber(), nevents, extended) {
+  pars = params;
 }
 
 DynamicalSystem::DynamicalSystem(const DynamicalSystem& system) : pars(system.pars) {
@@ -201,8 +207,18 @@ int DynamicalSystem::EventsWrapper (realtype t, N_Vector x, realtype *event, voi
 void DynamicalSystem::EventsConstraints (realtype t, N_Vector x, int *constraints, void *sys) {
 }
 
-BifurcationParameters* DynamicalSystem::GetParameters () {
-  return &pars;
+Parameters* DynamicalSystem::GetParameters () const {
+  return pars;
+}
+
+void DynamicalSystem::SetParameters(Parameters* params) {
+  if (params->GetNumber() < p) {
+    throw "The number of parameters passed is smaller than that of this system.";
+  }
+  else if (params->GetNumber() != p) {
+    fprintf(stderr, "The number of parameters passed is greater than that of this system.\n");
+  }
+  pars = params;
 }
 
 int DynamicalSystem::GetDimension() const {
