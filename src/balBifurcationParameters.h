@@ -92,7 +92,7 @@ class BifurcationParameters : public Parameters {
   bool IsFirst() const;
   bool IsLast() const;
   
-  virtual Parameters* Clone() const;
+  virtual BifurcationParameters* Clone() const;
 
  protected:
   void Setup();

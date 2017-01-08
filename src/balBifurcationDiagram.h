@@ -38,13 +38,11 @@
 #include "balObject.h"
 #include "balCommon.h"
 
-#include <boost/shared_ptr.hpp>
-#include <boost/shared_array.hpp>
 #include <list>
 #include <boost/thread.hpp>
 #include <boost/thread/thread.hpp>
 #include <boost/thread/condition.hpp>
-#include <boost/ref.hpp>
+//#include <boost/ref.hpp>
 
 //#define DEBUG
 
@@ -123,7 +121,6 @@ bool CompareSummaryEntries(SummaryEntry *entry1, SummaryEntry *entry2);
 class BifurcationDiagram : public Object {
  public:
   BifurcationDiagram();
-  BifurcationDiagram(const BifurcationDiagram& bifd);
   virtual ~BifurcationDiagram();
 
   /**
@@ -135,13 +132,18 @@ class BifurcationDiagram : public Object {
    * \sa bal::DynamicalSystem
    */
   void SetDynamicalSystem(DynamicalSystem *sys);
+  void SetDynamicalSystem(DynamicalSystem& sys);
 
   /**
    * Gets the dynamical system to integrate.
    * \return The dynamical system used in the computation of the
    * bifurcation diagram.
    */
-  boost::shared_ptr<DynamicalSystem> GetDynamicalSystem() const;
+  DynamicalSystem* GetDynamicalSystem() const;
+
+  void SetBifurcationParameters(BifurcationParameters *pars);
+  void SetBifurcationParameters(BifurcationParameters& pars);
+  BifurcationParameters* GetBifurcationParameters() const;
 
   /**
    * Sets the logger used for saving integration data to file. A logger
@@ -157,7 +159,7 @@ class BifurcationDiagram : public Object {
   /**
    * \return The logger used for saving data to file.
    */
-  boost::shared_ptr<Logger> GetLogger() const;
+  Logger* GetLogger() const;
 
   /**
    * Sets the ODESolver used to integrate the dynamical system. An ODE
@@ -174,7 +176,7 @@ class BifurcationDiagram : public Object {
    * the system. It is useful to set parameters of the ODE solver.
    * \return The ODE solver used to integrate the system.
    */
-  boost::shared_ptr<ODESolver> GetODESolver() const;
+  ODESolver* GetODESolver() const;
 
   /**
    * Sets the name of the file where data will be saved.
@@ -255,11 +257,11 @@ class BifurcationDiagram : public Object {
  private:
 
   /** The ODE solver used to integrate the system */
-  boost::shared_ptr<ODESolver> solver;
+  ODESolver *solver;
   /** The dynamical system to integrate */
-  boost::shared_ptr<DynamicalSystem> system;
+  DynamicalSystem *system;
   /** The parameters of the dynamical system */
-  Parameters *parameters;
+  BifurcationParameters *parameters;
 
   /**
    * The object used to save data to a file: by default H5 file logging
@@ -267,7 +269,7 @@ class BifurcationDiagram : public Object {
    * if the user wants to use another logger, they should provide it
    * by using the SetLogger member.
    */
-  boost::shared_ptr<Logger> logger;
+  Logger* logger;
 
   /** The number of dimensions of the system. */
   int ndim;

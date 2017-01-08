@@ -26,26 +26,29 @@
 #include "balDynamicalSystem.h"
 #include "balHindmarshRose.h"
 #include "balODESolver.h"
-#include "balBifurcationDiagram.h"
 #include "balBifurcationParameters.h"
+#include "balBifurcationDiagram.h"
 using namespace bal;
 
 // TEST BifurcationDiagram
 int main(int argc, char *argv[]) {
-  int steps[4] = {10,1,1,1};
+  int steps[4] = {200,1,1,1};
   realtype x0[3] = {0.5,0.5,0.5};
+
+  // the dynamical system
   HindmarshRose hr;
+
+  BifurcationParameters pars(hr.GetNumberOfParameters());
+  pars.SetIthParameterLowerBound(0,2.9);
+  pars.SetIthParameterUpperBound(0,3.18);
+  pars.SetIthParameter(1,3);
+  pars.SetIthParameter(2,0.01);
+  pars.SetIthParameter(3,4.0);
+  pars.SetNumberOfSteps(steps);
+
   BifurcationDiagram bifd;
-  BifurcationParameters *bp = hr.GetParameters();
-
-  bp->SetIthParameterLowerBound(0,2.9);
-  bp->SetIthParameterUpperBound(0,3.18);
-  bp->SetIthParameter(1,3);
-  bp->SetIthParameter(2,0.01);
-  bp->SetIthParameter(3,4.0);
-  bp->SetNumberOfSteps(steps);
-
-  bifd.SetDynamicalSystem(&hr);
+  bifd.SetDynamicalSystem(hr);
+  bifd.SetBifurcationParameters(pars);
   bifd.RestartFromX0(true);
   bifd.GetODESolver()->SetIntegrationMode(BOTH);
   bifd.GetODESolver()->HaltAtEquilibrium(true);
@@ -57,8 +60,6 @@ int main(int argc, char *argv[]) {
   bifd.GetODESolver()->SetX0(x0);
   bifd.SetFilename("hr_comp.h5",false);
   bifd.SetNumberOfThreads(argc > 1 ? atoi(argv[1]) : 2);
-  bifd.SetNumberOfThreads(1);
-
   bifd.ComputeDiagram();
   bifd.SaveSummaryData("hr_comp.classified");
 

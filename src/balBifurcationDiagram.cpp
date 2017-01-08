@@ -93,7 +93,7 @@ double* SummaryEntry::GetData() const {
 
 /***** BifurcationDiagram *****/
 
-BifurcationDiagram::BifurcationDiagram() : logger(new H5Logger()) {
+BifurcationDiagram::BifurcationDiagram() : logger(new H5Logger()), solver(new ODESolver()) {
   restart_from_x0 = true;
   nthreads = 2;
   mode = PARAMS;
@@ -102,14 +102,9 @@ BifurcationDiagram::BifurcationDiagram() : logger(new H5Logger()) {
   signal(SIGINT, ResetColours);
 }
 
-BifurcationDiagram::BifurcationDiagram(const BifurcationDiagram& bifd) {
-  restart_from_x0 = bifd.restart_from_x0;
-  nthreads = bifd.nthreads;
-  mode = bifd.mode;
-  // TODO: COMPLETARE!
-}
-
 BifurcationDiagram::~BifurcationDiagram() {
+  delete logger;
+  delete solver;
 }
 
 /*
@@ -128,31 +123,46 @@ int BifurcationDiagram::GetNumberOfThreads() const {
 }
 
 void BifurcationDiagram::SetDynamicalSystem(DynamicalSystem *sys) {
-  system = boost::shared_ptr<DynamicalSystem>(dynamic_cast<DynamicalSystem*>(sys->Clone()));
+  system = sys;
   ndim = system->GetDimension();
-  solver->SetDynamicalSystem(sys);
-  //parameters = system->GetParameters();
-  //npar = parameters->GetNumber();
-  npar = system->GetParameters()->GetNumber();
+  solver->SetDynamicalSystem(system);
 }
 
-boost::shared_ptr<DynamicalSystem> BifurcationDiagram::GetDynamicalSystem() const {
+void BifurcationDiagram::SetDynamicalSystem(DynamicalSystem& sys) {
+  SetDynamicalSystem(&sys);
+}
+
+DynamicalSystem* BifurcationDiagram::GetDynamicalSystem() const {
   return system;
 }
 
-void BifurcationDiagram::SetLogger(Logger *log) {
-  logger = boost::shared_ptr<Logger>(dynamic_cast<Logger*>(log->Clone()));
+void BifurcationDiagram::SetBifurcationParameters(BifurcationParameters *pars) {
+  parameters = pars;
+  npar = parameters->GetNumber();
+  system->SetParameters(parameters);
 }
 
-boost::shared_ptr<Logger> BifurcationDiagram::GetLogger() const {
+void BifurcationDiagram::SetBifurcationParameters(BifurcationParameters& pars) {
+  SetBifurcationParameters(&pars);
+}
+
+BifurcationParameters* BifurcationDiagram::GetBifurcationParameters() const {
+  return parameters;
+}
+
+void BifurcationDiagram::SetLogger(Logger *log) {
+  logger = log;
+}
+
+Logger* BifurcationDiagram::GetLogger() const {
   return logger;
 }
 
-void BifurcationDiagram::SetODESolver(ODESolver * sol) {
-  solver = boost::shared_ptr<ODESolver>(dynamic_cast<ODESolver*>(sol->Clone()));
+void BifurcationDiagram::SetODESolver(ODESolver *sol) {
+  solver = sol;
 }
 
-boost::shared_ptr<ODESolver> BifurcationDiagram::GetODESolver() const {
+ODESolver* BifurcationDiagram::GetODESolver() const {
   return solver;
 }
 
@@ -248,43 +258,8 @@ int BifurcationDiagram::GetMode() const {
 void BifurcationDiagram::ComputeDiagram() {
   solutions.clear();
   summary.clear();
-
-  /* this switch is really not necessary: it is safe to always *
-   * use ComputeDiagramMultiThread().                          */
-  /*
-    switch(nthreads) {
-    case 1:
-    ComputeDiagramSingleThread();
-    break;
-    default:
-    ComputeDiagramMultiThread();
-    }
-  */
   ComputeDiagramMultiThread();
 }
-
-/*
-void BifurcationDiagram::ComputeDiagramSingleThread() {
-  BifurcationParameters * pars = (BifurcationParameters *) parameters;
-  pars->Reset();
-  int total = pars->GetTotalNumberOfTuples();
-  Solution * solution;
-  for(int cnt=0; cnt<total; cnt++, pars->Next()) {
-    printf("%c%s", ESC, GREEN);
-    printf("[%05d/%05d]\r", cnt+1, total); fflush(stdout);
-    printf("%c%s", ESC, NORMAL);
-    solver->Solve();
-    solution = solver->GetSolution();
-    summary->push_back(new SummaryEntry(solution));
-    logger->SaveSolution(solution);
-    solution->Destroy();
-    if(! restart_from_x0) {
-      solver->SetX0(solver->GetXEnd());
-    }
-  }
-  printf("\n"); fflush(stdout);
-}
-*/
 
 void BifurcationDiagram::ComputeDiagramMultiThread() {
   int i, idx, cnt, solutionId;
@@ -295,26 +270,23 @@ void BifurcationDiagram::ComputeDiagramMultiThread() {
   // the number of for loops that will be performed after the prologue
   int nloops;
 
-  BifurcationParameters *pars;
-	
   if (solver->GetIntegrationMode() == LYAP)
     restart_from_x0 = true;
   
   switch(mode) {
-  case PARAMS:
-    pars = (BifurcationParameters *) parameters;
-    pars->Reset();
-    total = pars->GetTotalNumberOfTuples();
-    break;
-  case IC:
-    RestartFromX0(true);
-    idx = 0;
-    solver->SetX0(X0[idx]);
-    total = nX0;
-    break;
-  default:
-    fprintf(stderr, "Unknown mode of operation in BifurcationDiagram::ComputeDiagramMultiThread.\n");
-    return;
+    case PARAMS:
+      parameters->Reset();
+      total = parameters->GetTotalNumberOfTuples();
+      break;
+    case IC:
+      RestartFromX0(true);
+      idx = 0;
+      solver->SetX0(X0[idx]);
+      total = nX0;
+      break;
+    default:
+      fprintf(stderr, "Unknown mode of operation in BifurcationDiagram::ComputeDiagramMultiThread.\n");
+      return;
   }
   
   nloops = total / nthreads;
@@ -332,7 +304,7 @@ void BifurcationDiagram::ComputeDiagramMultiThread() {
    * calculating the first total % nthreads solutions in a serial fashion
    **/
   for(cnt = 0, solutionId = 1; cnt < prologue; cnt++, solutionId++) {
-    IntegrateAndEnqueue(solver.get(),solutionId);
+    IntegrateAndEnqueue(solver,solutionId);
     printf("%c%s", ESC, GREEN);
 #ifdef DEBUG
     if(mode == IC)
@@ -345,7 +317,7 @@ void BifurcationDiagram::ComputeDiagramMultiThread() {
     printf("%c%s", ESC, NORMAL); fflush(stdout);
     switch(mode) {
     case PARAMS:
-      pars->Next();
+      parameters->Next();
       break;
     case IC:
       idx++;
@@ -358,14 +330,14 @@ void BifurcationDiagram::ComputeDiagramMultiThread() {
   /*
    * we make nthreads copies of both the solvers and the parameters of the dynamical system
    */
-  boost::shared_ptr<ODESolver> *lsol = new boost::shared_ptr<ODESolver>[nthreads];
-  boost::shared_ptr<Parameters> *lpar = new boost::shared_ptr<Parameters>[nthreads];
+  ODESolver **lsol = new ODESolver*[nthreads];
+  BifurcationParameters **lpar = new BifurcationParameters*[nthreads];
   for(i = 0; i < nthreads; i++) {
-    boost::shared_ptr<Parameters> p(parameters->Clone());
-    lpar[i] = p;
-    boost::shared_ptr<ODESolver> s(solver->Clone());
-    lsol[i] = s;
-    lsol[i]->SetDynamicalSystemParameters(lpar[i]);
+    lpar[i] = parameters->Clone();
+    lsol[i] = solver->Clone();
+    // CHECK: not sure the following two lines are correct
+    lsol[i]->SetDynamicalSystem(solver->GetDynamicalSystem()->Clone());
+    lsol[i]->GetDynamicalSystem()->SetParameters(lpar[i]);
   }
 
   // the array of pointers to the threads
@@ -375,8 +347,8 @@ void BifurcationDiagram::ComputeDiagramMultiThread() {
     /* we set to each solver a different tuple of parameters */
     switch(mode) {
     case PARAMS:
-      for(i = 0; i < nthreads; i++, pars->Next())
-	lpar[i]->CopyValues(pars);
+      for(i = 0; i < nthreads; i++, parameters->Next())
+	lpar[i]->CopyValues(parameters);
       break;
     case IC:
       for(i = 0; i < nthreads; i++, idx++)
@@ -385,7 +357,7 @@ void BifurcationDiagram::ComputeDiagramMultiThread() {
     }
     /* launch the nthread solvers */
     for (i = 0; i < nthreads; i++, solutionId++)
-      threads[i] = new boost::thread(&BifurcationDiagram::IntegrateAndEnqueue,this,lsol[i].get(),solutionId);
+      threads[i] = new boost::thread(&BifurcationDiagram::IntegrateAndEnqueue,this,lsol[i],solutionId);
 		
     
     for (i = 0; i < nthreads; i++) {
@@ -408,8 +380,14 @@ void BifurcationDiagram::ComputeDiagramMultiThread() {
   /**
    * we destroy the solvers and the parameters that were allocated previously
    **/
-  delete [] lsol;
-  delete [] lpar;
+  for (i=0; i<nthreads; i++) {
+    DynamicalSystem *ds = lsol[i]->GetDynamicalSystem();
+    delete lsol[i];
+    delete ds;
+    delete lpar[i];
+  }
+  delete lsol;
+  delete lpar;
 
   if (solver->GetIntegrationMode() != LYAP) {
     /* interrupting logger_thread */

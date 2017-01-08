@@ -206,7 +206,7 @@ class ODESolver : public Object {
   
   void SetDynamicalSystem(DynamicalSystem *ds);
   void SetDynamicalSystem(DynamicalSystem& ds);
-  const DynamicalSystem* GetDynamicalSystem() const;
+  DynamicalSystem* GetDynamicalSystem() const;
   //void SetDynamicalSystemParameters(Parameters* par);
   
   Solution* GetSolution() const;

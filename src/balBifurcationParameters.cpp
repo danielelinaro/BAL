@@ -34,12 +34,14 @@ BifurcationParameters::BifurcationParameters(int np) : Parameters(np), plower(np
 						       steps(new double[np]),
 						       nsteps(new int[np]),
 						       isteps(new int[np]) {
+#ifdef DEBUG
+  std::cout << "BifurcationParameters constructor.\n";
+#endif
   for(int i=0; i<np; i++) {
     steps[i] = 0.0;
     nsteps[i] = 0;
     isteps[i] = 0;
   }
-  std::cout << "BifurcationParameters constructor.\n";
 }
 
 BifurcationParameters::BifurcationParameters(const BifurcationParameters& bp) : Parameters(bp),
@@ -48,16 +50,20 @@ BifurcationParameters::BifurcationParameters(const BifurcationParameters& bp) : 
 										steps(new double[bp.p]),
 										nsteps(new int[bp.p]),
 										isteps(new int[bp.p]) {
+#ifdef DEBUG
+  std::cout << "BifurcationParameters copy constructor.\n";
+#endif
   for(int i=0; i<p; i++) {
     steps[i] = bp.steps[i];
     nsteps[i] = bp.nsteps[i];
     isteps[i] = bp.isteps[i];
   }
-  std::cout << "BifurcationParameters copy constructor.\n";
 }
 
 BifurcationParameters::~BifurcationParameters() {
+#ifdef DEBUG
   std::cout << "BifurcationParameters destructor.\n";
+#endif
   delete steps;
   delete nsteps;
   delete isteps;
@@ -186,7 +192,7 @@ bool BifurcationParameters::IsLast() const {
   return count == total;
 }
 
-Parameters* BifurcationParameters::Clone() const {
+BifurcationParameters* BifurcationParameters::Clone() const {
   return new BifurcationParameters(*this);
 }
 

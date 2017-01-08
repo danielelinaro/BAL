@@ -32,7 +32,7 @@ namespace bal {
 
 ODESolver::ODESolver() {
 #ifdef DEBUG
-  std::cout << "ODESolver constructor.\n";
+  fprintf(stderr, "ODESolver constructor: this is at 0x%x.\n", this);
 #endif
   //neq = npar = nev = 0;
   neq = nev = 0;
@@ -46,8 +46,8 @@ ODESolver::ODESolver() {
   ttran = T_TRAN;
   tfinal = T_END;
   lyap_tstep = 100*STEP;
+  dynsys = NULL;
   lyapunov_exponents = NULL;
-  setup = false;
   max_intersections = DEFAULT_INTERSECTIONS;
   bufsize = 0;
   buffer = NULL;
@@ -66,17 +66,14 @@ ODESolver::ODESolver() {
   x_inters = NULL;
   nvectors_allocated = false;
   class_event = 1;
+  setup = false;
 }
 
 ODESolver::ODESolver(const ODESolver& solver) {
 #ifdef DEBUG
-  std::cout << "ODESolver copy constructor.\n";
+  fprintf(stderr, "ODESolver copy constructor: this is at 0x%x.\n", this);
 #endif
   rows = 0;
-  nvectors_allocated = false;
-  SetDynamicalSystem(solver.dynsys);
-  for(int i=0; i<dynsys->GetDimension(); i++)
-    Ith(x0,i) = Ith(solver.x0,i);
   reltol = solver.reltol;
   abstol = solver.abstol;
   mode = solver.mode;
@@ -87,9 +84,6 @@ ODESolver::ODESolver(const ODESolver& solver) {
   ttran = solver.ttran;
   tfinal = solver.tfinal;
   lyap_tstep = solver.lyap_tstep;
-  lyapunov_exponents = new realtype[dynsys->GetOriginalDimension()];
-  for(int i=0; i<dynsys->GetOriginalDimension(); i++)
-    lyapunov_exponents[i] = solver.lyapunov_exponents[i];
   max_intersections = solver.max_intersections;
   bufsize = 0;
   errfp = fopen(ERROR_FILE, "a");
@@ -100,13 +94,21 @@ ODESolver::ODESolver(const ODESolver& solver) {
   cycle_tolerance = solver.cycle_tolerance;
   class_event = solver.class_event;
   cvode_mem = NULL;
+  nvectors_allocated = false;
+  if (solver.dynsys) {
+    SetDynamicalSystem(solver.dynsys);
+    for(int i=0; i<dynsys->GetDimension(); i++)
+      Ith(x0,i) = Ith(solver.x0,i);
+    for(int i=0; i<dynsys->GetOriginalDimension(); i++)
+      lyapunov_exponents[i] = solver.lyapunov_exponents[i];
+  }
   // we force cvode_mem to be re-allocated.
   setup = false;
 }
 
 ODESolver::~ODESolver() {
 #ifdef DEBUG
-  std::cout << "ODESolver destructor.\n";
+  fprintf(stderr, "ODESolver destructor: this is at 0x%x.\n", this);
 #endif
   if(nvectors_allocated) {
     N_VDestroy_Serial(x);
@@ -118,12 +120,11 @@ ODESolver::~ODESolver() {
     CVodeFree(&cvode_mem);
   }
   fclose(errfp);
-  if(mode == LYAP)
+  if(dynsys) {
     delete lyapunov_exponents;
-  if(nev) {
-    delete events;
-    if(dynsys->HasEventsConstraints()) {
-      delete events_constraints;
+    if(nev) {
+      delete events;
+      if(dynsys->HasEventsConstraints()) delete events_constraints;
     }
   }
 }
@@ -150,27 +151,25 @@ void ODESolver::SetDynamicalSystem(DynamicalSystem *ds) {
       N_VDestroy_Serial(x_inters);
     nvectors_allocated = false;
   }
-  if(dynsys != NULL) {
-    if(mode == LYAP)
-      delete lyapunov_exponents;
+  if(dynsys) {
+    delete lyapunov_exponents;
     if(nev) {
       delete events;
-      if(dynsys->HasEventsConstraints()) {
-        delete events_constraints;
-      }
+      if(dynsys->HasEventsConstraints()) delete events_constraints;
     }
   }
 
   dynsys = ds;
   neq = dynsys->GetDimension();
   nev = dynsys->GetNumberOfEvents();
+  lyapunov_exponents = new realtype[dynsys->GetOriginalDimension()];
   if(nev) {
     events = new int[nev];
     if(dynsys->HasEventsConstraints()) {
-	// if constraints are presents, their number must be equal to the
-	// number of events. if, for some reason, the i-th constraint makes
-	// no sense, then it is sufficient that the dynamical system class
-	// always return events_constraints[i] = 1.
+      // if constraints are presents, their number must be equal to the
+      // number of events. if, for some reason, the i-th constraint makes
+      // no sense, then it is sufficient that the dynamical system class
+      // always return events_constraints[i] = 1.
       events_constraints = new int[nev];
     }
   }
@@ -196,7 +195,7 @@ void ODESolver::SetDynamicalSystem(DynamicalSystem& ds) {
   SetDynamicalSystem(&ds);
 }
 
-const DynamicalSystem* ODESolver::GetDynamicalSystem() const {
+DynamicalSystem* ODESolver::GetDynamicalSystem() const {
   return dynsys;
 }
 
@@ -424,7 +423,6 @@ void ODESolver::SetX0(realtype * X0, int n) {
       stop = dynsys->GetDimension();
     else
       stop = n;
-    printf("stop = %d\n", stop);
     for(int i=0; i<stop; i++)
       Ith(x0,i) = X0[i];
   }

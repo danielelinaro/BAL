@@ -409,7 +409,7 @@ $ export LDFLAGS="-L/home/john/local/lib" \endverbatim
 
 #define PI				(3.141592653589793)
 
-#define	LIST_MAX_SIZE	1000
+#define	LIST_MAX_SIZE	100
 
 #include <exception>
 
