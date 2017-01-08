@@ -304,7 +304,7 @@ class BifurcationDiagram : public Object {
    */
   std::list<SummaryEntry *> summary;
 
-  boost::thread logger_thread;
+  boost::thread* logger_thread;
   boost::mutex list_mutex;
   boost::condition_variable q_empty;
   boost::condition_variable q_full;

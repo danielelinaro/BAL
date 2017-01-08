@@ -32,36 +32,36 @@
 namespace bal {
 
 ///// THREAD /////
-void LoggerThread(Logger *logger, std::list<Solution*>& solutions,
-		  boost::mutex& list_mutex,
-		  boost::condition_variable& q_empty, boost::condition_variable& q_full) {
-  if(!logger->IsOpen())
+void LoggerThread(Logger *logger, std::list<Solution*> *solutions, boost::mutex *list_mutex,
+		  boost::condition_variable *q_empty, boost::condition_variable *q_full) {
+  if(!logger->IsOpen()) {
     return;
+  }
   
   Solution *s;
   while (true) {
     try {
       {
-	boost::mutex::scoped_lock lock(list_mutex);
-	while (solutions.size() < LIST_MAX_SIZE) {
-	  q_full.wait(lock);  // INTERRUPTION POINT
+	boost::mutex::scoped_lock lock(*list_mutex);
+	while (solutions->size() < LIST_MAX_SIZE) {
+	  q_full->wait(lock);  // INTERRUPTION POINT
 	}
-	solutions.sort(CompareSolutions);
-	while (! solutions.empty()) {
-	  s = solutions.front();
-	  solutions.pop_front();
+	solutions->sort(CompareSolutions);
+	while (! solutions->empty()) {
+	  s = solutions->front();
+	  solutions->pop_front();
 	  logger->SaveSolution(s);
 	  delete s;
 	}
       }
-      /* notifies all threaded solvers the queue is now empty, giving them the control */
-      q_empty.notify_all();
+      // notifies all threaded solvers the queue is now empty, giving them the control
+      q_empty->notify_all();
     }
     catch (boost::thread_interrupted&) {
-      solutions.sort(CompareSolutions);
-      while (! solutions.empty()) {
-	s = solutions.front();
-	solutions.pop_front();
+      solutions->sort(CompareSolutions);
+      while (! solutions->empty()) {
+	s = solutions->front();
+	solutions->pop_front();
 	logger->SaveSolution(s);
 	delete s;
       }

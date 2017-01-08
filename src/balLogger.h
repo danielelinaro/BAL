@@ -109,9 +109,8 @@ public:
   bool compressed;
 };
 
-void LoggerThread(Logger *logger, std::list<Solution*>& solutions,
-		  boost::mutex& list_mutex,
-		  boost::condition_variable& q_empty, boost::condition_variable& q_full);
+void LoggerThread(Logger *logger, std::list<Solution*> *solutions, boost::mutex *list_mutex,
+        boost::condition_variable *q_empty, boost::condition_variable *q_full);
 
 /**
  * \class H5Logger 

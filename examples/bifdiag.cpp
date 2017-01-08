@@ -32,15 +32,15 @@ using namespace bal;
 
 // TEST BifurcationDiagram
 int main(int argc, char *argv[]) {
-  int steps[4] = {200,1,1,1};
+  int steps[4] = {1000,1,1,1};
   realtype x0[3] = {0.5,0.5,0.5};
 
   // the dynamical system
   HindmarshRose hr;
 
   BifurcationParameters pars(hr.GetNumberOfParameters());
-  pars.SetIthParameterLowerBound(0,2.9);
-  pars.SetIthParameterUpperBound(0,3.18);
+  pars.SetIthParameterLowerBound(0,3.03);
+  pars.SetIthParameterUpperBound(0,3.08);
   pars.SetIthParameter(1,3);
   pars.SetIthParameter(2,0.01);
   pars.SetIthParameter(3,4.0);
@@ -50,13 +50,13 @@ int main(int argc, char *argv[]) {
   bifd.SetDynamicalSystem(hr);
   bifd.SetBifurcationParameters(pars);
   bifd.RestartFromX0(true);
-  bifd.GetODESolver()->SetIntegrationMode(BOTH);
+  bifd.GetODESolver()->SetIntegrationMode(EVENTS);
   bifd.GetODESolver()->HaltAtEquilibrium(true);
   bifd.GetODESolver()->HaltAtCycle(true);
-  bifd.GetODESolver()->SetInitialTime(10.);
-  bifd.GetODESolver()->SetTransientDuration(10);
+  bifd.GetODESolver()->SetInitialTime(0.);
+  bifd.GetODESolver()->SetTransientDuration(1e3);
   bifd.GetODESolver()->SetFinalTime(1e4);
-  bifd.GetODESolver()->SetMaxNumberOfIntersections(500);
+  bifd.GetODESolver()->SetMaxNumberOfIntersections(2000);
   bifd.GetODESolver()->SetX0(x0);
   bifd.SetFilename("hr_comp.h5",false);
   bifd.SetNumberOfThreads(argc > 1 ? atoi(argv[1]) : 2);

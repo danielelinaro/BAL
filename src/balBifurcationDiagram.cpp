@@ -296,9 +296,7 @@ void BifurcationDiagram::ComputeDiagramMultiThread() {
    * launching the thread of the writing routine: it activates only when list size >= LIST_MAX_SIZE
    **/
   if (solver->GetIntegrationMode() != LYAP) {
-    //logger_thread = new boost::thread(&Logger::SaveSolutionThreaded,logger,solutions,&list_mutex,&q_empty,&q_full);
-    // CHECK
-    //logger_thread = new boost::thread(&LoggerThread,logger,solutions,list_mutex,q_empty,q_full);
+    logger_thread = new boost::thread(&LoggerThread,logger,&solutions,&list_mutex,&q_empty,&q_full);
   }
   /**
    * calculating the first total % nthreads solutions in a serial fashion
@@ -330,8 +328,8 @@ void BifurcationDiagram::ComputeDiagramMultiThread() {
   /*
    * we make nthreads copies of both the solvers and the parameters of the dynamical system
    */
-  ODESolver **lsol = new ODESolver*[nthreads];
-  BifurcationParameters **lpar = new BifurcationParameters*[nthreads];
+  ODESolver *lsol[nthreads];
+  BifurcationParameters *lpar[nthreads];
   for(i = 0; i < nthreads; i++) {
     lpar[i] = parameters->Clone();
     lsol[i] = solver->Clone();
@@ -362,6 +360,7 @@ void BifurcationDiagram::ComputeDiagramMultiThread() {
     
     for (i = 0; i < nthreads; i++) {
       threads[i]->join();
+      delete threads[i];
       printf("%c%s", ESC, GREEN);
 #ifdef DEBUG
       if(mode == IC)
@@ -386,14 +385,13 @@ void BifurcationDiagram::ComputeDiagramMultiThread() {
     delete ds;
     delete lpar[i];
   }
-  delete lsol;
-  delete lpar;
 
   if (solver->GetIntegrationMode() != LYAP) {
     /* interrupting logger_thread */
-    logger_thread.interrupt();
+    logger_thread->interrupt();
     /* waiting logger thread to writing the remaining solution in the queue and exit */
-    logger_thread.join();
+    logger_thread->join();
+    delete logger_thread;
   }
 }
 
